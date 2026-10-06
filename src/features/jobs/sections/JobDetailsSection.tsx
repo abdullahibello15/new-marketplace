@@ -13,8 +13,9 @@ import { JobDetails } from '../components/JobDetails';
 import { JobStatusBadge } from '../components/JobStatusBadge';
 import { JobTimeline } from '../components/JobTimeline';
 import { MessagesPlaceholder } from '../components/MessagesPlaceholder';
-import { QuoteResponse } from '../components/customer/QuoteResponse';
+import { CustomerJobPanel } from '../components/customer/CustomerJobPanel';
 import { useJob } from '../hooks/useJob';
+import { JobRemindersLine } from '../../reminders/components/JobRemindersLine';
 
 const BACK = { to: JOB_ROUTES.myJobs, label: 'My Jobs' };
 
@@ -82,13 +83,8 @@ export function JobDetailsSection() {
             <MessagesPlaceholder otherParty={job.vendorName} />
           </div>
           <aside className="space-y-5 lg:sticky lg:top-6 lg:self-start" aria-label="Quote and activity">
-            {job.quote ?
-            <QuoteResponse job={job} onUpdated={replace} /> :
-
-            <p className="rounded-2xl border border-dashed border-line p-4 text-sm text-muted">
-                No quote yet. {job.vendorName} will send one here.
-              </p>
-            }
+            <CustomerJobPanel job={job} onUpdated={replace} />
+            <JobRemindersLine job={job} viewer="customer" />
             <JobActivity job={job} viewer="customer" />
             <Link to={vendorProfilePath(job.vendorId)} className={buttonClasses({ variant: 'secondary', fullWidth: true })}>
               View {job.vendorName}

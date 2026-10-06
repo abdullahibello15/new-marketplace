@@ -5,6 +5,10 @@ import { BIO_MAX_LENGTH, TRADE_OTHER_MAX_LENGTH, tradeCategories } from '../../d
 import { serviceDurations } from '../../data/vendorPortal';
 import { validateDayHours } from '../../utils/workingHours';
 import {
+  DELIVERY_FEE_MAX,
+  PICKUP_ADDRESS_MAX,
+  PICKUP_ADDRESS_MIN,
+  PICKUP_INSTRUCTIONS_MAX,
   NAME_MAX,
   NAME_MIN,
   PORTFOLIO_MAX,
@@ -65,6 +69,45 @@ superRefine((day, ctx) => {
   if (problem) ctx.addIssue({ code: 'custom', message: problem });
 });
 
+/** "1,500" → 1500. Unlike service prices, 0 is allowed: it means free delivery. */
+const deliveryFeeField = z.
+string().
+transform((raw, ctx) => {
+  const digits = raw.replace(/[₦,\s]/g, '');
+  if (!digits) {
+    ctx.addIssue({ code: 'custom', message: 'Add a delivery fee, or 0 for free delivery.' });
+    return z.NEVER;
+  }
+  if (!/^\d+$/.test(digits)) {
+    ctx.addIssue({ code: 'custom', message: 'Use whole Naira, like 1,500.' });
+    return z.NEVER;
+  }
+  return Number(digits);
+}).
+pipe(z.number().max(DELIVERY_FEE_MAX, `Keep the delivery fee to ₦${DELIVERY_FEE_MAX.toLocaleString('en-NG')} or less.`));
+
+/** Pickup and delivery for product orders: at least one on, and each one that's on fully filled in. */
+const fulfilmentSchema = z.
+object({
+  pickupEnabled: z.boolean(),
+  pickupAddress: cleanText.pipe(z.string().max(PICKUP_ADDRESS_MAX, `Keep the address to ${PICKUP_ADDRESS_MAX} characters.`)),
+  pickupInstructions: cleanText.pipe(z.string().max(PICKUP_INSTRUCTIONS_MAX, `Keep instructions to ${PICKUP_INSTRUCTIONS_MAX} characters.`)),
+  deliveryEnabled: z.boolean(),
+  deliveryFee: deliveryFeeField,
+  deliveryAreas: z.array(z.string().pipe(z.custom<NigerLga>(isLga, 'That isn’t a Niger State LGA.')))
+}).
+superRefine((f, ctx) => {
+  if (!f.pickupEnabled && !f.deliveryEnabled) {
+    ctx.addIssue({ code: 'custom', path: ['pickupEnabled'], message: 'Turn on pickup, delivery or both so customers can get their orders.' });
+  }
+  if (f.pickupEnabled && f.pickupAddress.length < PICKUP_ADDRESS_MIN) {
+    ctx.addIssue({ code: 'custom', path: ['pickupAddress'], message: 'Add the address or landmark customers collect from.' });
+  }
+  if (f.deliveryEnabled && f.deliveryAreas.length === 0) {
+    ctx.addIssue({ code: 'custom', path: ['deliveryAreas'], message: 'Pick at least one LGA you deliver to.' });
+  }
+});
+
 export const profileSchema = z.
 object({
   name: cleanText.pipe(
@@ -84,7 +127,9 @@ object({
     sat: dayHoursSchema,
     sun: dayHoursSchema
   }),
-  serviceAreas: z.array(z.string().pipe(z.custom<NigerLga>(isLga, 'That isn’t a Niger State LGA.'))).min(1, 'Pick at least one LGA you serve.')
+  serviceAreas: z.array(z.string().pipe(z.custom<NigerLga>(isLga, 'That isn’t a Niger State LGA.'))).min(1, 'Pick at least one LGA you serve.'),
+  fulfilment: fulfilmentSchema,
+  acceptsCash: z.boolean()
 }).
 superRefine((v, ctx) => {
   if (v.tradeCategory === 'other' && !v.tradeCategoryOther) {

@@ -12,11 +12,10 @@ export interface MockTransaction {
   payoutStatus: PayoutStatus;
 }
 
+/** Earnings from before escrow. Jobs paid online since then (e.g. #2318, #2319) come from the escrow ledger instead. */
 export const mockTransactions: MockTransaction[] = [
-{ id: 't201', customerName: 'Emeka Nwosu', item: 'Drain unblocking', completedAt: daysFromNow(-1, 10), grossAmount: 5500, payoutStatus: 'pending' },
 { id: 't202', customerName: 'Salisu Tanko', item: 'Toilet cistern repair', completedAt: daysFromNow(-2, 13), grossAmount: 12000, payoutStatus: 'pending' },
 { id: 't203', customerName: 'Chinedu Okeke', item: 'Shower mixer install', completedAt: daysFromNow(-3, 16), grossAmount: 15000, payoutStatus: 'pending' },
-{ id: 't204', customerName: 'Grace Ibrahim', item: 'Water tank installation', completedAt: daysFromNow(-6, 15), grossAmount: 33100, payoutStatus: 'paid' },
 { id: 't205', customerName: 'Halima Yusuf', item: 'Tap replacement', completedAt: daysFromNow(-7, 11), grossAmount: 6500, payoutStatus: 'paid' },
 { id: 't206', customerName: 'Yusuf Danjuma', item: 'Pipe wrench, 14 inch', completedAt: daysFromNow(-9, 12), grossAmount: 7500, payoutStatus: 'paid' },
 { id: 't207', customerName: 'Fatima Bello', item: 'Leak inspection & fix', completedAt: daysFromNow(-12, 12), grossAmount: 9200, payoutStatus: 'paid' },

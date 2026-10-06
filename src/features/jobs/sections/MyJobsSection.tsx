@@ -7,19 +7,20 @@ import { EmptyState } from '../../../components/ui/EmptyState';
 import { ErrorState } from '../../../components/ui/ErrorState';
 import { LoadingState } from '../../../components/ui/LoadingState';
 import { PageContainer } from '../../../components/ui/PageContainer';
-import { JOB_ROUTES, JOB_STATUS } from '../constants';
+import { CURRENT_CUSTOMER_ID, JOB_ACTOR, JOB_ROUTES } from '../constants';
 import { JobListItem } from '../components/JobListItem';
 import { JobStatusFilter } from '../components/customer/JobStatusFilter';
 import { useMyJobs } from '../hooks/useMyJobs';
-import { isQuoteExpired } from '../utils/quote';
+import { NotificationList } from '../components/notifications/NotificationList';
+import { actionHint } from '../utils/actionHints';
 import type { Job } from '../types';
 
-/** The customer only needs to act on an open quote. */
-const needsCustomer = (job: Job) => job.status === JOB_STATUS.Quoted && job.quote !== null && !isQuoteExpired(job.quote);
+/** What, if anything, the customer needs to do on each job (shared rules in utils/actionHints). */
+const hintFor = (job: Job) => actionHint(job, JOB_ACTOR.Customer);
 
 export function MyJobsSection() {
   const m = useMyJobs();
-  const waiting = m.jobs.filter(needsCustomer).length;
+  const waiting = m.jobs.filter((j) => hintFor(j) !== null).length;
 
   function renderList() {
     if (m.status === 'error') return <ErrorState message={m.error ?? ''} onRetry={m.reload} />;
@@ -59,8 +60,8 @@ export function MyJobsSection() {
             job={job}
             to={JOB_ROUTES.job(job.id)}
             title={job.vendorName}
-            actionHint={needsCustomer(job) ? 'Quote ready: accept or reject' : null}
-            highlighted={needsCustomer(job)} />
+            actionHint={hintFor(job)}
+            highlighted={hintFor(job) !== null} />
 
           </li>
         )}
@@ -70,8 +71,9 @@ export function MyJobsSection() {
 
   return (
     <>
-      <PageHeader title="My Jobs" subtitle={waiting ? `${waiting} ${waiting === 1 ? 'quote needs' : 'quotes need'} your answer` : 'Track your job requests and bookings'} />
+      <PageHeader title="My Jobs" subtitle={waiting ? `${waiting} ${waiting === 1 ? 'job needs' : 'jobs need'} your attention` : 'Track your job requests and bookings'} />
       <PageContainer className="space-y-4">
+        <NotificationList recipient={JOB_ACTOR.Customer} recipientId={CURRENT_CUSTOMER_ID} linkFor={JOB_ROUTES.job} />
         {m.jobs.length > 0 && <JobStatusFilter value={m.filter} onChange={m.setFilter} counts={m.counts} total={m.jobs.length} />}
         {renderList()}
       </PageContainer>

@@ -7,7 +7,9 @@ import { ErrorState } from '../../../components/ui/ErrorState';
 import { LoadingState } from '../../../components/ui/LoadingState';
 import { PageContainer } from '../../../components/ui/PageContainer';
 import { vendorAccount } from '../../../data/vendorPortal';
-import { JOB_STATUS } from '../../jobs/constants';
+import { JOB_ACTOR } from '../../jobs/constants';
+import { NotificationList } from '../../jobs/components/notifications/NotificationList';
+import { actionHint } from '../../jobs/utils/actionHints';
 import { JobListItem } from '../../jobs/components/JobListItem';
 import { DASHBOARD_ROUTES } from '../constants';
 import { RequestFilters } from '../components/requests/RequestFilters';
@@ -42,15 +44,15 @@ export function RequestsSection() {
     return (
       <ul className="grid gap-3 lg:grid-cols-2 lg:gap-4">
         {list.results.map((job) => {
-          const isNew = job.status === JOB_STATUS.Requested;
+          const hint = actionHint(job, JOB_ACTOR.Vendor);
           return (
             <li key={job.id}>
               <JobListItem
                 job={job}
                 to={DASHBOARD_ROUTES.request(job.id)}
                 title={job.customerName}
-                actionHint={isNew ? 'New request: send a quote or decline' : null}
-                highlighted={isNew} />
+                actionHint={hint}
+                highlighted={hint !== null} />
 
             </li>);
 
@@ -75,6 +77,9 @@ export function RequestsSection() {
         } />
 
       <PageContainer>
+        <div className="mb-5">
+          <NotificationList recipient={JOB_ACTOR.Vendor} recipientId={vendorAccount.vendorId} linkFor={DASHBOARD_ROUTES.request} />
+        </div>
         <RequestFilters
           query={list.query}
           onQueryChange={list.setQuery}

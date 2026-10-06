@@ -167,12 +167,37 @@ export function makeQuoteSchema({ workingHours }: {workingHours: WorkingHours;})
 export type QuoteFormValues = z.input<ReturnType<typeof makeQuoteSchema>>;
 export type QuoteFormData = z.output<ReturnType<typeof makeQuoteSchema>>;
 
-/** Optional reason when declining a request or rejecting a quote. */
-export const reasonSchema = z.object({
-  reason: cleanText.pipe(z.string().max(REASON_MAX, `Keep it to ${REASON_MAX} characters.`))
-});
-export type ReasonFormValues = z.input<typeof reasonSchema>;
-export type ReasonFormData = z.output<typeof reasonSchema>;
+/** Picking "Other" from a preset reason list means the text box is required. */
+export const OTHER_REASON = 'other';
+
+/**
+ * A reason for declining, rejecting or cancelling. Free text by default; with `presetIds` it's a
+ * choice from a list plus "Other". `required` makes a reason mandatory (e.g. cancellation policy).
+ */
+export function makeReasonSchema({ required = false, presetIds = [] }: {required?: boolean;presetIds?: string[];} = {}) {
+  return z.
+  object({
+    preset: z.string(),
+    reason: cleanText.pipe(z.string().max(REASON_MAX, `Keep it to ${REASON_MAX} characters.`))
+  }).
+  superRefine((v, ctx) => {
+    if (presetIds.length > 0) {
+      if (!v.preset) {
+        if (required) ctx.addIssue({ code: 'custom', path: ['preset'], message: 'Choose a reason.' });
+        return;
+      }
+      if (v.preset !== OTHER_REASON && !presetIds.includes(v.preset)) {
+        ctx.addIssue({ code: 'custom', path: ['preset'], message: 'Choose a reason from the list.' });
+      } else if (v.preset === OTHER_REASON && !v.reason) {
+        ctx.addIssue({ code: 'custom', path: ['reason'], message: 'Tell us the reason.' });
+      }
+    } else if (required && !v.reason) {
+      ctx.addIssue({ code: 'custom', path: ['reason'], message: 'Please give a reason.' });
+    }
+  });
+}
+export type ReasonFormValues = z.input<ReturnType<typeof makeReasonSchema>>;
+export type ReasonFormData = z.output<ReturnType<typeof makeReasonSchema>>;
 
 /* ---------- Task 56: reschedule (either side) ---------- */
 

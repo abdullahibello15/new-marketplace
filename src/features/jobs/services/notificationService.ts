@@ -25,6 +25,11 @@ export function recordJobEvent(job: Job, event: JobEvent, at = new Date().toISOS
   notifications = [...created, ...notifications];
 }
 
+/** Adds one ready-written notification about a job, e.g. a booking reminder from the reminder service. */
+export function recordJobNotification(jobId: string, recipient: JobParty, recipientId: string, title: string, body: string, at = new Date().toISOString()): void {
+  notifications = [{ id: `n${nextId++}`, recipient, recipientId, jobId, title, body, createdAt: at, read: false }, ...notifications];
+}
+
 /** GET /me/notifications */
 export function listNotifications(recipient: JobParty, recipientId: string): Promise<JobNotification[]> {
   return mockResponse(

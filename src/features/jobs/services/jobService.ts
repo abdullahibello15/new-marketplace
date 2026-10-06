@@ -1,15 +1,19 @@
 import { findTradeCategory } from '../../../data/tradeCategories';
 import { ApiError, mockResponse } from '../../../services/mockApi';
-import { getAllVendors } from '../../../services/vendorStore';
+import { getAllVendors, incrementVendorCancellations } from '../../../services/vendorStore';
 import { user } from '../../../data/user';
-import { CURRENT_CUSTOMER_ID, JOB_ACTOR, JOB_STATUS, RESCHEDULE_CUTOFF_HOURS, RESCHEDULE_STATUS } from '../constants';
+import { CURRENT_CUSTOMER_ID, DISPUTE_OUTCOME, DISPUTE_OUTCOME_LABELS, JOB_ACTOR, JOB_STATUS, RESCHEDULE_CUTOFF_HOURS, RESCHEDULE_STATUS } from '../constants';
+import { CANCELLATION_POLICY, getCancellationTerms } from '../cancellationPolicy';
 import { mockJobs } from '../mock/jobs';
 import { pendingReschedule, rescheduleBlockedReason, rescheduleResponseBlockedReason } from '../reschedule';
 import { JobTransitionError, applyTransition, transitionBlockedReason } from '../stateMachine';
 import { recordJobEvent } from './notificationService';
+import { onJobRescheduled, onJobStatusChanged, onJobsLoaded } from '../../reminders/jobReminderEvents';
+import { deliverDueReminders } from '../../reminders/services/reminderService';
+import { applyJobEscrowChange } from '../../payments/services/escrowService';
 import type { JobEvent } from '../utils/notificationCopy';
 import type { StarLevel } from '../../vendor-dashboard/types';
-import type { DisputeReason, Job, JobActor, JobParty, JobStatus, NewJobRequest, QuoteInput } from '../types';
+import type { DisputeOutcome, DisputeReason, Job, JobActor, JobParty, JobStatus, NewJobRequest, QuoteInput } from '../types';
 
 /*
  * The one job store for the whole app: the customer's My Jobs and the vendor's requests both read and
@@ -27,6 +31,8 @@ for (const job of jobs) {
   const pending = pendingReschedule(job);
   if (pending) recordJobEvent(job, { type: 'reschedule_requested', request: pending }, pending.createdAt);
 }
+// Booking reminders for jobs that are already scheduled.
+onJobsLoaded(jobs);
 
 const newestFirst = (a: Job, b: Job) => b.updatedAt.localeCompare(a.updatedAt);
 
@@ -45,6 +51,7 @@ function save(updated: Job, event?: JobEvent, at?: string): Job {
 /** Runs a state-machine transition, saves it and notifies. Blocked moves become a 409 the UI can show. */
 function transition(id: string, to: JobStatus, by: JobActor, options: Parameters<typeof applyTransition>[3] = {}): Job {
   let updated: Job;
+  const from = findJob(id).status;
   try {
     updated = applyTransition(findJob(id), to, by, options);
   } catch (e) {
@@ -52,17 +59,23 @@ function transition(id: string, to: JobStatus, by: JobActor, options: Parameters
     throw e;
   }
   const change = updated.history[updated.history.length - 1];
-  return save(updated, { type: 'status', change }, change.at);
+  const saved = save(updated, { type: 'status', change }, change.at);
+  // State-machine events → booking reminders, and escrow (release on completion, refund on cancel, hold on dispute).
+  onJobStatusChanged(saved, from);
+  applyJobEscrowChange(saved, from);
+  return saved;
 }
 
 /**
  * MOCK of the server's scheduled tasks (a cron job in production). Runs before every read, so the
  * effect is the same as if a timer had fired:
  *  - work not confirmed or disputed within 48 hours is confirmed automatically;
- *  - completed jobs with no review step after 7 days are closed.
+ *  - completed jobs with no review step after 7 days are closed;
+ *  - booking reminders whose time has come are delivered (MOCK: see reminderService).
  * The state machine's timing guards decide when each is allowed; this only tries.
  */
 export function runScheduledJobTasks(now = new Date()): void {
+  deliverDueReminders(now);
   for (const job of jobs) {
     if (job.status === JOB_STATUS.AwaitingConfirmation && !transitionBlockedReason(job, JOB_STATUS.Completed, JOB_ACTOR.System, now)) {
       transition(job.id, JOB_STATUS.Completed, JOB_ACTOR.System, { note: 'Confirmed automatically: no reply within 48 hours', at: now });
@@ -134,6 +147,7 @@ export function createJobRequest(input: NewJobRequest): Promise<Job> {
       reschedules: [],
       dispute: null,
       review: null,
+      cancellation: null,
       createdAt: now,
       updatedAt: now
     };
@@ -290,6 +304,52 @@ export function respondToReschedule(jobId: string, requestId: string, by: JobPar
     const answered = { ...request, status: accept ? RESCHEDULE_STATUS.Accepted : RESCHEDULE_STATUS.Declined, respondedAt: now };
     const reschedules = job.reschedules.map((r) => r.id === requestId ? answered : r);
     const updated: Job = { ...job, reschedules, scheduledAt: accept ? answered.proposedStart : job.scheduledAt, updatedAt: now };
-    return save(updated, { type: 'reschedule_answered', request: answered }, now);
+    const saved = save(updated, { type: 'reschedule_answered', request: answered }, now);
+    if (accept) onJobRescheduled(saved);
+    return saved;
   });
+}
+
+/* ---------- Task 57: cancellation ---------- */
+
+/**
+ * POST /jobs/:id/cancel — any cancellable status → Cancelled. The cancellation policy decides whether
+ * it's allowed, the fee and whether a reason is needed (enforced again by the state machine). A vendor
+ * cancelling an accepted job is counted on their profile. The other side is notified; the calendar
+ * frees the slot because Cancelled isn't a booked status.
+ */
+export function cancelJob(jobId: string, by: JobParty, reason: string): Promise<Job> {
+  return mockResponse(() => {
+    const job = findJob(jobId);
+    const now = new Date();
+    const terms = getCancellationTerms(job, by, now);
+    const updated = transition(jobId, JOB_STATUS.Cancelled, by, {
+      at: now,
+      note: reason.trim() || undefined,
+      changes: { cancellation: { by, at: now.toISOString(), reason: reason.trim(), fee: terms.fee, rule: terms.rule } }
+    });
+    if (by === JOB_ACTOR.Vendor && job.status === JOB_STATUS.Scheduled && CANCELLATION_POLICY.countVendorCancellationsAfterAcceptance) {
+      incrementVendorCancellations(job.vendorId);
+    }
+    return updated;
+  });
+}
+
+/* ---------- Task 66: dispute resolution (MOCK admin action) ---------- */
+
+/**
+ * POST /admin/jobs/:id/dispute/resolve — Gwani's team closes a dispute. Uses the state machine's
+ * platform-only moves: Disputed → Completed (release, or split) or Disputed → Cancelled (refund).
+ * `refundAmount` is what goes back to the customer from escrow; escrow applies it on the transition.
+ */
+export function resolveDispute(jobId: string, outcome: DisputeOutcome, refundAmount: number): Promise<Job> {
+  return mockResponse(() => {
+    const job = findJob(jobId);
+    if (job.status !== JOB_STATUS.Disputed || !job.dispute) throw new ApiError('This job isn’t in dispute.', 409);
+    const resolution = { outcome, refundAmount: Math.max(0, Math.round(refundAmount)), at: new Date().toISOString() };
+    return transition(jobId, outcome === DISPUTE_OUTCOME.RefundCustomer ? JOB_STATUS.Cancelled : JOB_STATUS.Completed, JOB_ACTOR.System, {
+      note: DISPUTE_OUTCOME_LABELS[outcome],
+      changes: { dispute: { ...job.dispute, resolution } }
+    });
+  }, 700);
 }

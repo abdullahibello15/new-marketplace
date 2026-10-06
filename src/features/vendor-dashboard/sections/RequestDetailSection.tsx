@@ -15,6 +15,7 @@ import { MessagesPlaceholder } from '../../jobs/components/MessagesPlaceholder';
 import { DASHBOARD_ROUTES } from '../constants';
 import { VendorJobPanel } from '../components/requests/VendorJobPanel';
 import { useRequests } from '../hooks/useRequests';
+import { JobRemindersLine } from '../../reminders/components/JobRemindersLine';
 
 const BACK = { to: DASHBOARD_ROUTES.requests, label: 'Requests' };
 
@@ -69,6 +70,7 @@ export function RequestDetailSection() {
           </div>
           <aside className="space-y-5 lg:sticky lg:top-6 lg:self-start" aria-label="Quote and activity">
             <VendorJobPanel job={job} />
+            <JobRemindersLine job={job} viewer="vendor" />
             <JobActivity job={job} viewer="vendor" />
           </aside>
         </div>

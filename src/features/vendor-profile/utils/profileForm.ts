@@ -1,7 +1,8 @@
 import { serviceDurations } from '../../../data/vendorPortal';
 import { formatNumberInput } from '../../../lib/numberInput';
 import { NEW_SERVICE_ID_PREFIX } from '../constants';
-import type { Vendor, VendorProfilePatch } from '../../../types/marketplace';
+import { fulfilmentFor } from '../../orders/utils/fulfilment';
+import type { Vendor, VendorFulfilment, VendorProfilePatch } from '../../../types/marketplace';
 import type { ProfileFormData, ProfileFormValues, ServiceFormValues } from '../types';
 
 /** 2000 → "2,000", the format price inputs display. */
@@ -24,7 +25,20 @@ export function toFormValues(vendor: Vendor): ProfileFormValues {
       photo: s.photo
     })),
     workingHours: vendor.workingHours,
-    serviceAreas: vendor.serviceAreas
+    serviceAreas: vendor.serviceAreas,
+    fulfilment: toFulfilmentValues(fulfilmentFor(vendor)),
+    acceptsCash: vendor.acceptsCash !== false
+  };
+}
+
+function toFulfilmentValues(f: VendorFulfilment): ProfileFormValues['fulfilment'] {
+  return {
+    pickupEnabled: f.pickup.enabled,
+    pickupAddress: f.pickup.address,
+    pickupInstructions: f.pickup.instructions,
+    deliveryEnabled: f.delivery.enabled,
+    deliveryFee: formatPriceInput(f.delivery.fee),
+    deliveryAreas: f.delivery.areas
   };
 }
 
@@ -52,6 +66,11 @@ export function toProfilePatch(data: ProfileFormData): VendorProfilePatch {
     gallery: data.gallery,
     services: data.services.map((s) => ({ ...s, description: s.description || undefined })),
     workingHours: data.workingHours,
-    serviceAreas: data.serviceAreas
+    serviceAreas: data.serviceAreas,
+    fulfilment: {
+      pickup: { enabled: data.fulfilment.pickupEnabled, address: data.fulfilment.pickupAddress, instructions: data.fulfilment.pickupInstructions },
+      delivery: { enabled: data.fulfilment.deliveryEnabled, fee: data.fulfilment.deliveryFee, areas: data.fulfilment.deliveryAreas }
+    },
+    acceptsCash: data.acceptsCash
   };
 }

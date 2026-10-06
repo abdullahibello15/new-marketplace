@@ -1,4 +1,4 @@
-import type { DisputeReason, JobActor, JobStatus, RescheduleStatus, TimeWindow } from './types';
+import type { DisputeOutcome, DisputeReason, JobActor, JobStatus, RescheduleStatus, TimeWindow } from './types';
 
 /**
  * Every job status, in one place. Main path:
@@ -162,6 +162,19 @@ export const DISPUTE_REASON_LABELS: Record<DisputeReason, string> = {
   other: 'Something else'
 };
 
+/** How Gwani's team can resolve a dispute. Release → Completed, refund → Cancelled, split → Completed with part refunded. */
+export const DISPUTE_OUTCOME = {
+  ReleaseToVendor: 'release',
+  RefundCustomer: 'refund',
+  Split: 'split'
+} as const;
+
+export const DISPUTE_OUTCOME_LABELS: Record<DisputeOutcome, string> = {
+  release: 'Resolved in the vendor’s favour',
+  refund: 'Resolved in the customer’s favour: full refund',
+  split: 'Resolved with a partial refund'
+};
+
 export const DISPUTE_DETAILS_MIN = 10;
 export const DISPUTE_DETAILS_MAX = 500;
 export const REVIEW_COMMENT_MAX = 500;
@@ -229,6 +242,9 @@ export const QUOTE_EXPIRY_OPTIONS: {hours: number;label: string;}[] = [
 
 /** The signed-in customer in this front-end-only build. A real app gets this from the session. */
 export const CURRENT_CUSTOMER_ID = 'cust-aisha';
+
+/** How often an open job page checks for changes made by the other side. */
+export const JOB_POLL_INTERVAL_MS = 20_000;
 
 /* ---------- Routes ---------- */
 

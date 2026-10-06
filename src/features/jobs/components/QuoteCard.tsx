@@ -3,6 +3,7 @@ import { format } from 'date-fns';
 import { Badge } from '../../../components/ui/Badge';
 import { Price } from '../../../components/ui/Price';
 import { durationLabel, isQuoteExpired, quoteExpiryText } from '../utils/quote';
+import { CancellationPolicySummary } from './cancel/CancellationPolicySummary';
 import type { JobQuote } from '../types';
 
 interface QuoteCardProps {
@@ -53,6 +54,7 @@ export function QuoteCard({ quote, agreed = false, bookedFor = null, footer }: Q
           </div>
         </div>
       </dl>
+      <CancellationPolicySummary className="mt-3" />
       {footer && <div className="mt-4 border-t border-line pt-4">{footer}</div>}
     </section>);
 

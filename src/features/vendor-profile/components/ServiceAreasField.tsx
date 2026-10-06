@@ -9,9 +9,17 @@ import type { ProfileFormData, ProfileFormValues } from '../types';
 /** Keeps areas in the same alphabetical order as the master list. */
 const sortAreas = (areas: string[]): NigerLga[] => nigerLgas.filter((lga) => areas.includes(lga));
 
-export function ServiceAreasField() {
+interface ServiceAreasFieldProps {
+  /** Which list of LGAs this edits: where you take jobs, or where you deliver product orders. */
+  name?: 'serviceAreas' | 'fulfilment.deliveryAreas';
+  /** Prefix for element ids, unique per instance on the page. */
+  idPrefix?: string;
+  label?: string;
+}
+
+export function ServiceAreasField({ name = 'serviceAreas', idPrefix = 'profile-areas', label: labelText = 'Add a Local Government Area' }: ServiceAreasFieldProps) {
   const { control } = useFormContext<ProfileFormValues, unknown, ProfileFormData>();
-  const { field, fieldState } = useController({ control, name: 'serviceAreas' });
+  const { field, fieldState } = useController({ control, name });
   const selectRef = useRef<HTMLSelectElement | null>(null);
   const areas = field.value;
   const available = nigerLgas.filter((lga) => !areas.includes(lga));
@@ -28,15 +36,15 @@ export function ServiceAreasField() {
   return (
     <>
       <div className="flex items-baseline justify-between gap-3">
-        <label htmlFor="profile-areas-add" className={label}>
-          Add a Local Government Area
+        <label htmlFor={`${idPrefix}-add`} className={label}>
+          {labelText}
         </label>
         <span className="text-xs font-semibold text-muted">
           {areas.length} of {nigerLgas.length}
         </span>
       </div>
       <select
-        id="profile-areas-add"
+        id={`${idPrefix}-add`}
         ref={(el) => {
           selectRef.current = el;
           field.ref(el);
@@ -46,7 +54,7 @@ export function ServiceAreasField() {
         disabled={available.length === 0}
         onChange={(e) => e.target.value && change([...areas, e.target.value])}
         aria-invalid={Boolean(error)}
-        aria-describedby={error ? 'profile-areas-error' : undefined}
+        aria-describedby={error ? `${idPrefix}-error` : undefined}
         className={`${fieldClass} ${error ? bad : ok} disabled:opacity-60`}>
 
         <option value="">{available.length ? 'Choose an LGA…' : 'All LGAs selected'}</option>
@@ -57,7 +65,7 @@ export function ServiceAreasField() {
         )}
       </select>
       {error &&
-      <p id="profile-areas-error" className={errorText}>
+      <p id={`${idPrefix}-error`} className={errorText}>
           {error}
         </p>
       }

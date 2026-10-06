@@ -31,7 +31,7 @@ export function AppShell({ navItems, homeTo, modeLabel, account, switchLink }: A
 
   return (
     <div className="min-h-screen w-full bg-cream font-sans text-ink">
-      <aside className="fixed inset-y-0 left-0 hidden w-64 flex-col overflow-y-auto bg-pine-deep px-5 py-7 text-white lg:flex">
+      <aside className="fixed inset-y-0 left-0 hidden w-64 print:hidden flex-col overflow-y-auto bg-pine-deep px-5 py-7 text-white lg:flex">
         <Link to={homeTo} className="flex items-center gap-2.5 rounded-lg px-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60">
           <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-mustard text-lg font-extrabold text-ink">G</span>
           <span className="text-xl font-extrabold tracking-tight">Gwani</span>
@@ -77,7 +77,7 @@ export function AppShell({ navItems, homeTo, modeLabel, account, switchLink }: A
         </div>
       </aside>
 
-      <main className="pb-24 lg:pb-0 lg:pl-64">
+      <main className="pb-24 lg:pb-0 lg:pl-64 print:p-0">
         {/* Routes are lazy-loaded; keep the shell and nav visible while a page's code downloads. */}
         <Suspense
           fallback={
@@ -93,7 +93,7 @@ export function AppShell({ navItems, homeTo, modeLabel, account, switchLink }: A
       <nav
         aria-label="Main"
         style={{ gridTemplateColumns: `repeat(${barColumns}, minmax(0, 1fr))` }}
-        className="fixed inset-x-0 bottom-0 z-20 grid border-t border-line bg-cream pb-[env(safe-area-inset-bottom)] lg:hidden">
+        className="fixed inset-x-0 bottom-0 z-20 grid border-t border-line bg-cream pb-[env(safe-area-inset-bottom)] lg:hidden print:hidden">
 
         {barItems.map((item) =>
         <BottomNavItem
@@ -102,7 +102,9 @@ export function AppShell({ navItems, homeTo, modeLabel, account, switchLink }: A
           icon={item.icon}
           label={item.shortLabel ?? item.label}
           active={item.match(pathname)}
-          badge={item.badge} />
+          badge={item.badge}
+          badgeStyle={item.badgeStyle}
+          badgeLabel={item.badgeLabel} />
 
         )}
         {moreItems.length > 0 &&

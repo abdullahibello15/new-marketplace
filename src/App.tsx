@@ -8,6 +8,8 @@ import { VendorPortalProvider } from './contexts/VendorPortalContext';
 import { CustomerShell } from './components/CustomerShell';
 import { VendorShell } from './components/VendorShell';
 import { PlaceProvider } from './features/discovery/context/PlaceProvider';
+import { CartProvider } from './features/orders/context/CartProvider';
+import { VendorOrdersProvider } from './features/orders/context/VendorOrdersProvider';
 import { LegacyVendorRedirect } from './features/public-profile/sections/LegacyVendorRedirect';
 import { LegacyJobRequestRedirect } from './features/jobs/sections/LegacyJobRequestRedirect';
 import { Inbox } from './pages/Inbox';
@@ -39,6 +41,25 @@ const ReviewsSection = lazy(() => import('./features/vendor-dashboard/sections/R
 const SubscriptionSection = lazy(() =>
 import('./features/vendor-dashboard/sections/SubscriptionSection').then((m) => ({ default: m.SubscriptionSection }))
 );
+const CartSection = lazy(() => import('./features/orders/sections/CartSection').then((m) => ({ default: m.CartSection })));
+const CheckoutSection = lazy(() => import('./features/orders/sections/CheckoutSection').then((m) => ({ default: m.CheckoutSection })));
+const MyOrdersSection = lazy(() => import('./features/orders/sections/MyOrdersSection').then((m) => ({ default: m.MyOrdersSection })));
+const OrderDetailsSection = lazy(() => import('./features/orders/sections/OrderDetailsSection').then((m) => ({ default: m.OrderDetailsSection })));
+const VendorOrdersSection = lazy(() => import('./features/orders/sections/VendorOrdersSection').then((m) => ({ default: m.VendorOrdersSection })));
+const VendorOrderDetailSection = lazy(() =>
+import('./features/orders/sections/VendorOrderDetailSection').then((m) => ({ default: m.VendorOrderDetailSection }))
+);
+const PaymentCheckoutSection = lazy(() =>
+import('./features/payments/sections/PaymentCheckoutSection').then((m) => ({ default: m.PaymentCheckoutSection }))
+);
+const ReceiptSection = lazy(() => import('./features/payments/sections/ReceiptSection').then((m) => ({ default: m.ReceiptSection })));
+const NotificationPreferencesSection = lazy(() =>
+import('./features/reminders/sections/NotificationPreferencesSection').then((m) => ({ default: m.NotificationPreferencesSection }))
+);
+// Dev builds only: Vite replaces import.meta.env.DEV with false in production, so this chunk isn't built.
+const ReminderDevSection = import.meta.env.DEV ?
+lazy(() => import('./features/reminders/sections/ReminderDevSection').then((m) => ({ default: m.ReminderDevSection }))) :
+null;
 const EditProfileSection = lazy(() =>
 import('./features/vendor-profile/sections/EditProfileSection').then((m) => ({ default: m.EditProfileSection }))
 );
@@ -50,7 +71,9 @@ const router = createBrowserRouter(
       <Route
         element={
         <PlaceProvider>
-            <CustomerShell />
+            <CartProvider>
+              <CustomerShell />
+            </CartProvider>
           </PlaceProvider>
         }>
 
@@ -63,20 +86,32 @@ const router = createBrowserRouter(
         <Route path="/jobs" element={<MyJobsSection />} />
         <Route path="/jobs/:jobId" element={<JobDetailsSection />} />
         <Route path="/bookings" element={<Navigate to="/jobs" replace />} />
+        <Route path="/cart" element={<CartSection />} />
+        <Route path="/checkout" element={<CheckoutSection />} />
+        <Route path="/orders" element={<MyOrdersSection />} />
+        <Route path="/orders/:orderId" element={<OrderDetailsSection />} />
+        <Route path="/pay/:kind/:id" element={<PaymentCheckoutSection />} />
+        <Route path="/payments/:reference/receipt" element={<ReceiptSection />} />
         <Route path="/inbox" element={<Inbox />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/profile/notifications" element={<NotificationPreferencesSection party="customer" />} />
+        {ReminderDevSection && <Route path="/dev/reminders" element={<ReminderDevSection />} />}
         <Route path="*" element={<NotFound />} />
       </Route>
       <Route
         path="/pro"
         element={
         <RequestsProvider>
-            <VendorShell />
+            <VendorOrdersProvider>
+              <VendorShell />
+            </VendorOrdersProvider>
           </RequestsProvider>
         }>
 
         <Route index element={<RequestsSection />} />
         <Route path="requests/:requestId" element={<RequestDetailSection />} />
+        <Route path="orders" element={<VendorOrdersSection />} />
+        <Route path="orders/:orderId" element={<VendorOrderDetailSection />} />
         <Route path="calendar" element={<CalendarSection />} />
         <Route path="catalogue" element={<Catalogue />} />
         <Route path="catalogue/products" element={<Products />} />
@@ -87,6 +122,7 @@ const router = createBrowserRouter(
         <Route path="reviews" element={<ReviewsSection />} />
         <Route path="subscription" element={<SubscriptionSection />} />
         <Route path="profile" element={<EditProfileSection />} />
+        <Route path="notifications" element={<NotificationPreferencesSection party="vendor" />} />
       </Route>
     </>
   )

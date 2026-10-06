@@ -3,6 +3,8 @@ import type { LucideIcon } from 'lucide-react';
 /** "main" items sit at the top of the sidebar; "account" items sit in a group above the account footer. */
 export type NavGroup = 'main' | 'account';
 
+export type NavBadgeStyle = 'dot' | 'count';
+
 /** Where an item lives on phones: the bottom bar, or the "More" menu when the bar would be too crowded. */
 export type MobileNavPlacement = 'bar' | 'more';
 
@@ -14,6 +16,10 @@ export interface NavItem {
   icon: LucideIcon;
   match: (path: string) => boolean;
   badge?: number;
+  /** "dot" (default) marks something new; "count" shows the number, e.g. items in the cart. */
+  badgeStyle?: NavBadgeStyle;
+  /** Accessible name for the badge, e.g. "3 items in cart". Defaults to "N new". */
+  badgeLabel?: string;
   /** Defaults to "main". */
   group?: NavGroup;
   /** Defaults to "bar". */

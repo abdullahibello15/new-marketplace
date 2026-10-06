@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { BriefcaseIcon, ChevronRightIcon } from 'lucide-react';
+import { BellIcon, BriefcaseIcon, ChevronRightIcon } from 'lucide-react';
+import { REMINDER_ROUTES } from '../features/reminders/constants';
 import { PageHeader } from '../components/PageHeader';
 import { useJobs } from '../contexts/JobsContext';
 import { user } from '../data/user';
@@ -26,6 +27,19 @@ export function Profile() {
             </div>
           )}
         </dl>
+        <Link
+          to={REMINDER_ROUTES.customerPreferences}
+          className="mt-4 flex items-center gap-4 rounded-2xl border border-line bg-white px-4 py-4 transition-colors duration-150 hover:border-pine/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-pine/40 lg:max-w-2xl lg:px-5">
+
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#E3EEEC] text-pine" aria-hidden="true">
+            <BellIcon className="h-5 w-5" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="font-bold text-ink">Notifications</p>
+            <p className="text-sm text-muted">Booking reminders by push and SMS</p>
+          </div>
+          <ChevronRightIcon className="h-5 w-5 text-muted" aria-hidden="true" />
+        </Link>
         <Link
           to="/pro"
           className="mt-4 flex items-center gap-4 rounded-2xl border border-line bg-white px-4 py-4 transition-colors duration-150 hover:border-pine/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-pine/40 lg:max-w-2xl lg:px-5">

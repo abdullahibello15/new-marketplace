@@ -1,5 +1,14 @@
 import { makeWorkingHours } from './weekdays';
-import type { GeoPoint, NigerLga, TradeCategory, Vendor, VendorUnavailability, Verification } from '../types/marketplace';
+import type {
+  GeoPoint,
+  NigerLga,
+  ProductCategory,
+  TradeCategory,
+  Vendor,
+  VendorFulfilment,
+  VendorUnavailability,
+  Verification } from
+'../types/marketplace';
 
 /**
  * Extra directory vendors so the customer feed has enough to sort by distance and paginate.
@@ -28,6 +37,9 @@ interface DirectoryVendorSeed {
   /** [name, min ₦, max ₦, duration] */
   services: [string, number, number, string][];
   serviceAreas: NigerLga[];
+  /** Retail vendors' shop: [name, category, price ₦, stock]. */
+  products?: [string, ProductCategory, number, number][];
+  fulfilment?: VendorFulfilment;
 }
 
 const MON_SAT_8_TO_6 = makeWorkingHours({
@@ -83,7 +95,18 @@ function directoryVendor(seed: DirectoryVendorSeed): Vendor {
     })),
     workingHours: MON_SAT_8_TO_6,
     serviceAreas: seed.serviceAreas,
-    products: []
+    products: (seed.products ?? []).map(([name, category, price, stock], i) => ({
+      id: `${seed.id}-p${i + 1}`,
+      name,
+      category,
+      price,
+      description: '',
+      stock,
+      lowStockThreshold: 5,
+      images: [seed.photo],
+      available: true
+    })),
+    ...(seed.fulfilment ? { fulfilment: seed.fulfilment } : {})
   };
 }
 
@@ -132,7 +155,18 @@ directoryVendor({
   photo: IMG.bike,
   responseTimeMinutes: 10,
   services: [['Foodstuff delivery', 500, 2000, '~1–2 hrs'], ['Bulk rice & beans (50kg)', 45000, 90000, '~1 day']],
-  serviceAreas: ['Chanchaga', 'Bosso']
+  serviceAreas: ['Chanchaga', 'Bosso'],
+  products: [
+  ['Local rice, 5kg', 'other', 7500, 30],
+  ['Honey beans, 5kg', 'other', 9000, 12],
+  ['Yellow garri, 4 paint rubbers', 'other', 6000, 4],
+  ['Groundnut oil, 3L', 'other', 8500, 0],
+  ['Fresh pepper mix (bag)', 'other', 2500, 20]],
+
+  fulfilment: {
+    pickup: { enabled: true, address: 'Stall 31, Kure Market (foodstuff line), Minna', instructions: 'Collect before 5pm. Show your order number at the stall.' },
+    delivery: { enabled: true, fee: 1000, areas: ['Chanchaga', 'Bosso'] }
+  }
 }),
 directoryVendor({
   id: 'danladi-carpentry',
@@ -205,7 +239,17 @@ directoryVendor({
   photo: IMG.bike,
   responseTimeMinutes: 20,
   services: [['Provisions delivery', 500, 1500, '~1 hr'], ['Carton drinks (wholesale)', 4500, 12000, '~1 hr']],
-  serviceAreas: ['Chanchaga']
+  serviceAreas: ['Chanchaga'],
+  products: [
+  ['Malt drink, carton of 24', 'other', 9800, 15],
+  ['Bottled water, pack of 12', 'other', 2200, 40],
+  ['Bathing soap, pack of 6', 'other', 3000, 3],
+  ['Tin tomatoes, carton', 'other', 14500, 6]],
+
+  fulfilment: {
+    pickup: { enabled: true, address: 'Kure Market, Block C (drinks section), Minna', instructions: 'Wholesale orders can take 30 minutes to pack.' },
+    delivery: { enabled: true, fee: 800, areas: ['Chanchaga'] }
+  }
 }),
 directoryVendor({
   id: 'yusuf-borehole',
@@ -368,7 +412,16 @@ directoryVendor({
   photo: IMG.bike,
   responseTimeMinutes: 30,
   services: [['Vegetable & grain delivery', 500, 2500, '~1–2 hrs']],
-  serviceAreas: ['Bosso', 'Chanchaga']
+  serviceAreas: ['Bosso', 'Chanchaga'],
+  products: [
+  ['Tomatoes, small basket', 'other', 4000, 10],
+  ['Onions, 2kg', 'other', 2800, 18],
+  ['Millet, 5kg', 'other', 5500, 7]],
+
+  fulfilment: {
+    pickup: { enabled: true, address: 'Bosso Market, gate 2', instructions: 'Open daily 7am–6pm.' },
+    delivery: { enabled: true, fee: 0, areas: ['Bosso'] }
+  }
 }),
 // Hasn't set a map location yet: listed in results, left off the map.
 directoryVendor({

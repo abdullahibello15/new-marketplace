@@ -9,6 +9,8 @@ import { useScrollToHash } from '../../../hooks/useScrollToHash';
 import { useUnsavedChangesGuard } from '../../../hooks/useUnsavedChangesGuard';
 import { PROFILE_SECTION } from '../constants';
 import { AboutFields } from '../components/AboutFields';
+import { FulfilmentField } from '../components/FulfilmentField';
+import { PaymentsField } from '../components/PaymentsField';
 import { PortfolioField } from '../components/PortfolioField';
 import { ProfilePreview } from '../components/ProfilePreview';
 import { ProfileSaveBar } from '../components/ProfileSaveBar';
@@ -62,6 +64,12 @@ export function EditProfileSection() {
               </ProfileSectionCard>
               <ProfileSectionCard section={PROFILE_SECTION.Areas} hasError={errs.has(PROFILE_SECTION.Areas)}>
                 <ServiceAreasField />
+              </ProfileSectionCard>
+              <ProfileSectionCard section={PROFILE_SECTION.Fulfilment} hasError={errs.has(PROFILE_SECTION.Fulfilment)}>
+                <FulfilmentField />
+              </ProfileSectionCard>
+              <ProfileSectionCard section={PROFILE_SECTION.Payments} hasError={errs.has(PROFILE_SECTION.Payments)}>
+                <PaymentsField />
               </ProfileSectionCard>
               <ProfileSaveBar isDirty={editor.isDirty} isSubmitting={editor.isSubmitting} onDiscard={() => setConfirmDiscard(true)} />
             </div>

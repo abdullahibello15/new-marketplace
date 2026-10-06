@@ -10,13 +10,14 @@ import { reviewSchema, type ReviewFormData, type ReviewFormValues } from '../../
 import type { Job } from '../../types';
 
 interface ReviewPromptProps {
-  job: Job;
+  /** Anything with the vendor's name: a job, or a retail order. */
+  job: Pick<Job, 'vendorName'>;
   busy: string | null;
   onSubmit: (data: ReviewFormData) => Promise<boolean>;
   onSkip: () => void;
 }
 
-/** After confirming: rate and review the vendor. Submitting or skipping closes the job. */
+/** After confirming: rate and review the vendor. Submitting or skipping closes the job (or finishes the order). */
 export function ReviewPrompt({ job, busy, onSubmit, onSkip }: ReviewPromptProps) {
   const uid = useId();
   const {

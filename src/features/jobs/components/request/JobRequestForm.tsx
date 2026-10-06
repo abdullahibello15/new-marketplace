@@ -3,6 +3,7 @@ import { Button } from '../../../../components/ui/Button';
 import { ConfirmDialog } from '../../../../components/ui/ConfirmDialog';
 import { useUnsavedChangesGuard } from '../../../../hooks/useUnsavedChangesGuard';
 import { useJobRequestForm } from '../../hooks/useJobRequestForm';
+import { CancellationPolicySummary } from '../cancel/CancellationPolicySummary';
 import { JobAddressFields } from './JobAddressFields';
 import { JobDescriptionFields } from './JobDescriptionFields';
 import { JobPhotosField } from './JobPhotosField';
@@ -48,6 +49,8 @@ export function JobRequestForm({ vendor }: {vendor: Vendor;}) {
             onUseLocation={r.detectLocation} />
 
         </RequestFormSection>
+
+        <CancellationPolicySummary />
 
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-muted">You’ll get a quote first. Nothing is booked or paid until you accept it.</p>

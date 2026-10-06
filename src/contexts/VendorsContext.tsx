@@ -1,6 +1,5 @@
-import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
-import { vendors as seedVendors } from '../data/vendors';
-import { applyVendorPatch } from '../services/vendorStore';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { applyVendorPatch, getAllVendors, subscribeVendors } from '../services/vendorStore';
 import type { Vendor, VendorProfilePatch } from '../types/marketplace';
 
 interface VendorsContextValue {
@@ -12,15 +11,15 @@ interface VendorsContextValue {
 const VendorsContext = createContext<VendorsContextValue | null>(null);
 
 export function VendorsProvider({ children }: {children: React.ReactNode;}) {
-  const [vendors, setVendors] = useState<Vendor[]>(seedVendors);
+  const [vendors, setVendors] = useState<Vendor[]>(() => [...getAllVendors()]);
+
+  // The mock API's vendor store is the source of truth: profile edits write to it, and so do services
+  // (an order confirmed by the vendor reduces stock), so the vendor's product pages always match.
+  useEffect(() => subscribeVendors(() => setVendors([...getAllVendors()])), []);
 
   const getVendor = useCallback((id: string) => vendors.find((v) => v.id === id), [vendors]);
 
-  const updateVendorProfile = useCallback((id: string, patch: VendorProfilePatch) => {
-    setVendors((prev) => prev.map((v) => v.id === id ? { ...v, ...patch } : v));
-    // Keep the mock API's copy in step so customer search sees the change.
-    applyVendorPatch(id, patch);
-  }, []);
+  const updateVendorProfile = useCallback((id: string, patch: VendorProfilePatch) => applyVendorPatch(id, patch), []);
 
   const value = useMemo(() => ({ vendors, getVendor, updateVendorProfile }), [vendors, getVendor, updateVendorProfile]);
 

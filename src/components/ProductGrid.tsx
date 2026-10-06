@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { ImageOffIcon, ImagesIcon } from 'lucide-react';
 import { Lightbox } from './Lightbox';
 import { StockBadge } from './StockBadge';
@@ -26,8 +26,11 @@ function ProductImage({ src, dimmed }: {src: string;dimmed: boolean;}) {
 
 }
 
-/** Public shop grid. Hidden products (and any without a photo) never show. */
-export function ProductGrid({ products }: {products: Product[];}) {
+/**
+ * Public shop grid. Hidden products (and any without a photo) never show. `renderAction` adds a control
+ * under each product, e.g. Add to cart.
+ */
+export function ProductGrid({ products, renderAction }: {products: Product[];renderAction?: (product: Product) => React.ReactNode;}) {
   const [open, setOpen] = useState<{product: Product;index: number;} | null>(null);
   const visible = products.filter((p) => p.available && p.images.length > 0);
   if (visible.length === 0) return null;
@@ -73,6 +76,7 @@ export function ProductGrid({ products }: {products: Product[];}) {
                   <p className="text-xs font-bold text-mustard-dark">Only {p.stock} left</p> :
                   null}
                 </div>
+                {renderAction && <div className="pt-3">{renderAction(p)}</div>}
               </div>
             </li>);
 

@@ -177,6 +177,8 @@ export interface Vendor {
   responseTimeMinutes?: number | null;
   /** Present while the vendor isn't taking new bookings or orders. */
   unavailable?: VendorUnavailability | null;
+  /** Jobs the vendor cancelled after the customer accepted their quote (MOCK reliability signal). */
+  cancellationCount?: number;
   photo: string;
   /** Portfolio photos, max 10. */
   gallery: string[];
@@ -189,12 +191,34 @@ export interface Vendor {
   workingHours: WorkingHours;
   serviceAreas: NigerLga[];
   products: Product[];
+  /** How customers get product orders. Missing for vendors who haven't set it; see orders/utils/fulfilment. */
+  fulfilment?: VendorFulfilment;
+  /** Takes cash on completion (services, and retail pickup). Missing means yes; vendors can opt out in profile settings. */
+  acceptsCash?: boolean;
+}
+
+/** Pickup and delivery options for product orders. At least one is enabled. */
+export interface VendorFulfilment {
+  pickup: {
+    enabled: boolean;
+    /** Shop or stall address customers collect from, e.g. "Shop 12, Kure Market, Minna". */
+    address: string;
+    /** e.g. "Ask for Bala at the blue kiosk. Open Mon–Sat, 8am–6pm." */
+    instructions: string;
+  };
+  delivery: {
+    enabled: boolean;
+    /** Flat fee per order in whole Naira (MOCK). 0 means free delivery. */
+    fee: number;
+    /** LGAs the vendor delivers to. Delivery elsewhere is blocked at checkout. */
+    areas: NigerLga[];
+  };
 }
 
 export type VendorProfileInput = Pick<Vendor, 'bio' | 'tradeCategory' | 'tradeCategoryOther'>;
 
 export type VendorProfilePatch = Partial<
-  Pick<Vendor, 'name' | 'bio' | 'tradeCategory' | 'tradeCategoryOther' | 'gallery' | 'services' | 'workingHours' | 'serviceAreas' | 'products'>>;
+  Pick<Vendor, 'name' | 'bio' | 'tradeCategory' | 'tradeCategoryOther' | 'gallery' | 'services' | 'workingHours' | 'serviceAreas' | 'products' | 'fulfilment' | 'acceptsCash'>>;
 
 export type JobStage = 'requested' | 'quoted' | 'accepted' | 'in_progress' | 'completed';
 

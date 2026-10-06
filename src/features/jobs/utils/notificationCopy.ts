@@ -67,6 +67,12 @@ export function notificationsFor(job: Job, event: JobEvent): NotificationDraft[]
         }];
       }
     case JOB_STATUS.Completed:
+      if (job.dispute?.resolution) {
+        return [
+        { recipient: 'customer', title: 'Dispute resolved', body: `Gwani’s team resolved the problem with ${ref}. See the job for the outcome.` },
+        { recipient: 'vendor', title: 'Dispute resolved', body: `Gwani’s team resolved the problem with ${ref}. See the job for the outcome.` }];
+
+      }
       return viaSystem ?
       [
       { recipient: 'customer', title: 'Job confirmed automatically', body: `We confirmed ${ref} because there was no reply within 48 hours.` },
@@ -86,6 +92,10 @@ export function notificationsFor(job: Job, event: JobEvent): NotificationDraft[]
       if (by === JOB_ACTOR.System) {
         return [{ recipient: 'customer', title: 'Job cancelled', body: `${ref} was cancelled.` }, { recipient: 'vendor', title: 'Job cancelled', body: `${ref} was cancelled.` }];
       }
-      return [{ recipient: other(by), title: 'Job cancelled', body: `${nameOf(job, by)} cancelled ${ref}.` }];
+      return [{
+        recipient: other(by),
+        title: 'Job cancelled',
+        body: `${nameOf(job, by)} cancelled ${ref}${event.change.note ? `: “${event.change.note}”.` : '.'}${job.scheduledAt ? ' The booked slot is now free.' : ''}`
+      }];
   }
 }

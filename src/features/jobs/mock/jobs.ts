@@ -7,6 +7,7 @@ import type {
   JobActor,
   JobAddress,
   JobArrival,
+  JobDispute,
   JobQuote,
   JobReview,
   JobStatus,
@@ -62,6 +63,7 @@ interface Seed {
   arrival?: JobArrival;
   reschedules?: RescheduleRequest[];
   review?: JobReview;
+  dispute?: JobDispute;
   /** Copy the quote's start and price as the agreed booking. */
   booked?: boolean;
 }
@@ -88,8 +90,9 @@ function job(seed: Seed): Job {
     agreedPrice: seed.booked && seed.quote ? seed.quote.amount : null,
     arrival: seed.arrival ?? null,
     reschedules: seed.reschedules ?? [],
-    dispute: null,
+    dispute: seed.dispute ?? null,
     review: seed.review ?? null,
+    cancellation: null,
     createdAt: seed.history[0].at,
     updatedAt: last.at
   };
@@ -379,11 +382,18 @@ job({
   quote: quote(9200, 'Leak tracing, opening and repairing the wall section, pipe repair.', 2, hoursFromNow(-1.25), at(-1, 12), at(-2, 15)),
   arrival: { at: hoursFromNow(-1), locationLabel: 'near Bosso Estate, Minna', coordinates: null },
   booked: true,
+  // Paid by card (held in escrow), then disputed: the money stays held until Gwani resolves it.
+  dispute: {
+    reason: 'not_finished',
+    details: 'The wall was opened but the leak is still there and the wall is wet again.',
+    at: hoursFromNow(-0.3)
+  },
   history: [
   step('requested', at(-3, 9), 'customer'),
   step('quoted', at(-2, 15), 'vendor'),
   step('scheduled', at(-2, 18), 'customer'),
-  step('in_progress', hoursFromNow(-1), 'vendor')]
+  step('in_progress', hoursFromNow(-1), 'vendor'),
+  step('disputed', hoursFromNow(-0.3), 'customer', 'The wall was opened but the leak is still there and the wall is wet again.')]
 
 }),
 job({

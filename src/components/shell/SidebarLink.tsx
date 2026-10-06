@@ -13,7 +13,10 @@ export function SidebarLink({ item, active }: {item: NavItem;active: boolean;}) 
       <Icon className="h-5 w-5" aria-hidden="true" />
       {item.label}
       {item.badge ?
-      <span className="ml-auto rounded-full bg-clay px-2 text-xs font-bold leading-5 text-white">{item.badge}</span> :
+      <span className="ml-auto rounded-full bg-clay px-2 text-xs font-bold leading-5 text-white">
+          <span aria-hidden={item.badgeLabel ? true : undefined}>{item.badge}</span>
+          {item.badgeLabel && <span className="sr-only">{item.badgeLabel}</span>}
+        </span> :
       null}
     </Link>);
 

@@ -1,6 +1,7 @@
 import type { GeoPoint, NigerLga } from '../../types/marketplace';
+import type { CancellationRule } from './cancellationPolicy';
 import type { StarLevel } from '../vendor-dashboard/types';
-import type { DISPUTE_REASON, JOB_ACTOR, JOB_STATUS, RESCHEDULE_STATUS, TIME_WINDOW } from './constants';
+import type { DISPUTE_OUTCOME, DISPUTE_REASON, JOB_ACTOR, JOB_STATUS, RESCHEDULE_STATUS, TIME_WINDOW } from './constants';
 
 type ValueOf<T> = T[keyof T];
 
@@ -10,6 +11,7 @@ export type JobActor = ValueOf<typeof JOB_ACTOR>;
 export type TimeWindow = ValueOf<typeof TIME_WINDOW>;
 export type RescheduleStatus = ValueOf<typeof RESCHEDULE_STATUS>;
 export type DisputeReason = ValueOf<typeof DISPUTE_REASON>;
+export type DisputeOutcome = ValueOf<typeof DISPUTE_OUTCOME>;
 /** The two people on a job. The platform ("system") never requests or answers a reschedule. */
 export type JobParty = Exclude<JobActor, 'system'>;
 
@@ -78,6 +80,8 @@ export interface Job {
   dispute: JobDispute | null;
   /** The customer's rating and review, left after confirming. */
   review: JobReview | null;
+  /** Who cancelled, when, why and on what terms. Also in `history` as the Cancelled entry. */
+  cancellation: JobCancellation | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -117,6 +121,24 @@ export interface JobDispute {
   reason: DisputeReason;
   details: string;
   at: string;
+  /** Set when Gwani's team resolves it. Escrow reads refundAmount to split the held money. */
+  resolution?: DisputeResolution | null;
+}
+
+export interface DisputeResolution {
+  outcome: DisputeOutcome;
+  /** Whole Naira returned to the customer from escrow (0 when resolved for the vendor). */
+  refundAmount: number;
+  at: string;
+}
+
+export interface JobCancellation {
+  by: JobActor;
+  at: string;
+  reason: string;
+  /** MOCK late-cancellation fee in whole Naira (shown, never charged). */
+  fee: number;
+  rule: CancellationRule;
 }
 
 export interface JobReview {

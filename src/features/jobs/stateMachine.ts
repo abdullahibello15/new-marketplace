@@ -8,6 +8,7 @@ import {
   JOB_STATUS_META,
   START_JOB_EARLY_MINUTES } from
 './constants';
+import { getCancellationTerms } from './cancellationPolicy';
 import type { Job, JobActor, JobStatus } from './types';
 
 /**
@@ -15,9 +16,11 @@ import type { Job, JobActor, JobStatus } from './types';
  * Anything not listed is rejected. A status with no entries is an end state.
  *
  *   Requested ─▶ Quoted ─▶ Scheduled ─▶ In Progress ─▶ Awaiting confirmation ─▶ Completed ─▶ Closed
- *      │decline    │reject     │cancel                       │report a problem
+ *      │decline    │reject     │cancel        └──report a problem──┤
  *      ▼           ▼           ▼                             ▼
  *   Declined  Quote Rejected  Cancelled                   Disputed ──(review team)──▶ Completed / Cancelled
+ *
+ * Who may cancel, when, with what fee and whether a reason is needed comes from cancellationPolicy.ts.
  */
 const { Customer, Vendor, System } = JOB_ACTOR;
 
@@ -39,7 +42,9 @@ export const JOB_TRANSITIONS: Record<JobStatus, Partial<Record<JobStatus, readon
   },
   in_progress: {
     // "Mark work done": the customer then confirms.
-    awaiting_confirmation: [Vendor]
+    awaiting_confirmation: [Vendor],
+    // The customer can't cancel once work has started (see cancellationPolicy), but can report a problem.
+    disputed: [Customer]
   },
   awaiting_confirmation: {
     // The customer confirms, or the platform does after AUTO_CONFIRM_HOURS.
@@ -113,11 +118,21 @@ export function canTransition(from: JobStatus, to: JobStatus, by: JobActor): boo
   return JOB_TRANSITIONS[from][to]?.includes(by) ?? false;
 }
 
-/** Why `by` can't move the job to `to` right now, or null if they can. Covers the table and the timing guards. */
-export function transitionBlockedReason(job: Job, to: JobStatus, by: JobActor, now = new Date()): string | null {
+/**
+ * Why `by` can't move the job to `to` right now, or null if they can. Covers the table, the timing guards and
+ * the cancellation policy (including its reason requirement, checked against `note`).
+ */
+export function transitionBlockedReason(job: Job, to: JobStatus, by: JobActor, now = new Date(), { note }: {note?: string;} = {}): string | null {
+  const from = JOB_STATUS_META[job.status].label;
+  if (isEndState(job.status)) return `This job is already ${from.toLowerCase()} and can’t change.`;
+  if (to === JOB_STATUS.Cancelled) {
+    // One policy for every cancellation: the same terms the cancel dialog shows. Checked before the
+    // table so a refusal explains the policy ("use Report a problem") rather than a bare status rule.
+    const terms = getCancellationTerms(job, by, now);
+    if (!terms.allowed) return terms.blockedReason;
+    if (terms.reasonRequired && !note?.trim()) return 'Please give a reason for cancelling.';
+  }
   if (!canTransition(job.status, to, by)) {
-    const from = JOB_STATUS_META[job.status].label;
-    if (isEndState(job.status)) return `This job is already ${from.toLowerCase()} and can’t change.`;
     return `A job can’t go from ${from} to ${JOB_STATUS_META[to].label}${by === System ? '' : ` by the ${by}`}.`;
   }
   return GUARDS[`${job.status}>${to}`]?.[by]?.(job, now) ?? null;
@@ -143,7 +158,7 @@ to: JobStatus,
 by: JobActor,
 { note, changes, at = new Date() }: {note?: string;changes?: Partial<Omit<Job, 'status' | 'history'>>;at?: Date;} = {})
 : Job {
-  const blocked = transitionBlockedReason(job, to, by, at);
+  const blocked = transitionBlockedReason(job, to, by, at, { note });
   if (blocked) throw new JobTransitionError(blocked);
   const timestamp = at.toISOString();
   return {

@@ -1,5 +1,5 @@
 import type { BadgeTone } from '../../components/ui/Badge';
-import type { PayoutStatus, ReportReason, SubscriptionStatus } from './types';
+import type { EarningStage, InvoiceKind, InvoiceStatus, ReportReason, SubscriptionStatus } from './types';
 
 /* ---------- Calendar ---------- */
 
@@ -19,18 +19,31 @@ export const WEEK_STARTS_ON = 1;
 
 /* ---------- Earnings ---------- */
 
-export const PLATFORM_FEE_RATE = 0.05;
+// The platform commission lives in payments/escrow/escrowConfig.ts (taken when escrow releases).
 export const EARNINGS_CHART_MONTHS = 6;
 export const RECENT_TRANSACTIONS_LIMIT = 8;
 
+/** Payout state of the older, pre-escrow transactions in the mock history. */
 export const PAYOUT_STATUS = {
   Paid: 'paid',
   Pending: 'pending'
 } as const;
 
-export const PAYOUT_STATUS_META: Record<PayoutStatus, {label: string;tone: BadgeTone;}> = {
-  paid: { label: 'Paid out', tone: 'success' },
-  pending: { label: 'Pending', tone: 'warning' }
+/** Where the money for one transaction is. Pending = held in escrow; Available = released, not yet paid out. */
+export const EARNING_STAGE = {
+  Pending: 'pending',
+  OnHold: 'on_hold',
+  Available: 'available',
+  PaidOut: 'paid_out',
+  Refunded: 'refunded'
+} as const;
+
+export const EARNING_STAGE_META: Record<EarningStage, {label: string;tone: BadgeTone;}> = {
+  pending: { label: 'Held in escrow', tone: 'info' },
+  on_hold: { label: 'Disputed: on hold', tone: 'danger' },
+  available: { label: 'Available', tone: 'warning' },
+  paid_out: { label: 'Paid out', tone: 'success' },
+  refunded: { label: 'Refunded', tone: 'neutral' }
 };
 
 /* ---------- Reviews ---------- */
@@ -58,26 +71,68 @@ export const STAR_LEVELS = [5, 4, 3, 2, 1] as const;
 
 /* ---------- Subscription ---------- */
 
+/** Timings (warning days, grace days) live in plans.ts with the plans. */
 export const SUBSCRIPTION_STATUS = {
   Active: 'active',
   ExpiringSoon: 'expiring_soon',
+  /** Past the end date but inside the grace period: still visible, renew now. */
+  Grace: 'grace',
+  /** Grace is over: the profile is limited (hidden from search, no new requests). */
   Expired: 'expired'
 } as const;
 
 export const SUBSCRIPTION_STATUS_META: Record<SubscriptionStatus, {label: string;tone: BadgeTone;}> = {
   active: { label: 'Active', tone: 'success' },
   expiring_soon: { label: 'Expiring soon', tone: 'warning' },
-  expired: { label: 'Expired', tone: 'danger' }
+  grace: { label: 'Grace period', tone: 'warning' },
+  expired: { label: 'Expired: profile limited', tone: 'danger' }
 };
-
-/** Show the renewal warning when this many days or fewer remain. */
-export const EXPIRY_WARNING_DAYS = 7;
 
 export const PLAN_ID = {
   Starter: 'starter',
-  Trade: 'trade',
-  Pro: 'pro'
+  Standard: 'standard',
+  Premium: 'premium'
 } as const;
+
+/** What each plan limits. Values per plan are in plans.ts. */
+export const PLAN_LIMIT = {
+  PortfolioPhotos: 'portfolioPhotos',
+  Products: 'products',
+  Services: 'services'
+} as const;
+
+export const BILLING_PERIOD = {
+  Monthly: 'monthly'
+} as const;
+
+/** What an invoice is for. */
+export const INVOICE_KIND = {
+  Subscribe: 'subscribe',
+  Renew: 'renew',
+  Upgrade: 'upgrade',
+  Downgrade: 'downgrade'
+} as const;
+
+export const INVOICE_KIND_LABELS: Record<InvoiceKind, string> = {
+  subscribe: 'New subscription',
+  renew: 'Renewal',
+  upgrade: 'Upgrade (prorated)',
+  downgrade: 'Downgrade (next period)'
+};
+
+export const INVOICE_STATUS = {
+  /** Waiting for payment. */
+  Open: 'open',
+  Paid: 'paid',
+  /** Replaced by a newer invoice before it was paid. */
+  Void: 'void'
+} as const;
+
+export const INVOICE_STATUS_META: Record<InvoiceStatus, {label: string;tone: BadgeTone;}> = {
+  open: { label: 'Awaiting payment', tone: 'warning' },
+  paid: { label: 'Paid', tone: 'success' },
+  void: { label: 'Replaced', tone: 'neutral' }
+};
 
 /* ---------- Routes ---------- */
 
@@ -88,5 +143,9 @@ export const DASHBOARD_ROUTES = {
   calendarDay: (dateKey: string) => `/pro/calendar?date=${dateKey}`,
   earnings: '/pro/earnings',
   reviews: '/pro/reviews',
-  subscription: '/pro/subscription'
+  subscription: '/pro/subscription',
+  billing: '/pro/subscription/billing',
+  invoice: (id: string) => `/pro/subscription/billing/${encodeURIComponent(id)}`,
+  /** The shared payment screen, inside the vendor portal. */
+  pay: (kind: string, id: string) => `/pro/pay/${kind}/${encodeURIComponent(id)}`
 } as const;

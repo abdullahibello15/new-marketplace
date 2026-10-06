@@ -108,7 +108,11 @@ export const vendors: Vendor[] = [
     lowStockThreshold: 5,
     images: ["/7dc19955-5e58-4910-a155-bea401f35289.jpg"],
     available: false
-  }]
+  }],
+  fulfilment: {
+    pickup: { enabled: true, address: 'Shop 4, Tunga Market Road, Minna', instructions: 'Ask for Bala at the blue kiosk. Open Mon–Sat, 8am–6pm.' },
+    delivery: { enabled: true, fee: 1500, areas: ['Bosso', 'Chanchaga'] }
+  }
 },
 {
   id: 'hauwa-tailoring',
@@ -146,7 +150,12 @@ export const vendors: Vendor[] = [
   products: [
   { id: 'p11', name: 'Ankara fabric, 6 yards', category: 'fabrics', price: 12000, description: 'Wax print, 100% cotton. New patterns every month.', stock: 40, lowStockThreshold: 5, images: ["/a149d194-c7e0-476e-aee4-cd560be7cc60.jpg"], available: true },
   { id: 'p12', name: 'Ready-made kaftan', category: 'ready_made_clothing', price: 18500, description: 'Sizes M to XXL. Free hemming.', stock: 8, lowStockThreshold: 10, images: ["/a149d194-c7e0-476e-aee4-cd560be7cc60.jpg"], available: true },
-  { id: 'p13', name: 'Gele head tie', category: 'accessories', price: 4500, description: '', stock: 25, lowStockThreshold: 5, images: ["/a149d194-c7e0-476e-aee4-cd560be7cc60.jpg"], available: true }]
+  { id: 'p13', name: 'Gele head tie', category: 'accessories', price: 4500, description: '', stock: 25, lowStockThreshold: 5, images: ["/a149d194-c7e0-476e-aee4-cd560be7cc60.jpg"], available: true }],
+  // Pickup only: Hauwa doesn't deliver.
+  fulfilment: {
+    pickup: { enabled: true, address: 'Hauwa Tailoring, opposite Chanchaga Primary School', instructions: 'Call when you arrive and I’ll bring your order out.' },
+    delivery: { enabled: false, fee: 0, areas: [] }
+  }
 },
 {
   id: 'ibrahim-electrical',
@@ -184,7 +193,14 @@ export const vendors: Vendor[] = [
   products: [
   { id: 'p21', name: 'LED bulb 15W (pack of 4)', category: 'electrical_supplies', price: 4800, description: 'Cool white, E27 screw base.', stock: 60, lowStockThreshold: 5, images: ["/8cea2981-0ed5-4d4d-aa23-828c0576dded.jpg"], available: true },
   { id: 'p22', name: '13A double socket', category: 'electrical_supplies', price: 2500, description: 'Switched, with surface box.', stock: 2, lowStockThreshold: 5, images: ["/8cea2981-0ed5-4d4d-aa23-828c0576dded.jpg"], available: true },
-  { id: 'p23', name: 'Digital multimeter', category: 'tools', price: 15000, description: 'Auto-ranging, with leads and case.', stock: 5, lowStockThreshold: 5, images: ["/8cea2981-0ed5-4d4d-aa23-828c0576dded.jpg"], available: true }]
+  { id: 'p23', name: 'Digital multimeter', category: 'tools', price: 15000, description: 'Auto-ranging, with leads and case.', stock: 5, lowStockThreshold: 5, images: ["/8cea2981-0ed5-4d4d-aa23-828c0576dded.jpg"], available: true }],
+  // Delivery only: no shop front.
+  fulfilment: {
+    pickup: { enabled: false, address: '', instructions: '' },
+    delivery: { enabled: true, fee: 1000, areas: ['Bosso', 'Chanchaga', 'Paikoro', 'Shiroro'] }
+  },
+  // Online payments only.
+  acceptsCash: false
 },
 {
   id: 'zainab-dispatch',
