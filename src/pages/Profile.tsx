@@ -1,4 +1,3 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
 import { BellIcon, BriefcaseIcon, ChevronRightIcon } from 'lucide-react';
 import { REMINDER_ROUTES } from '../features/reminders/constants';

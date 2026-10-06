@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { addDays, addWeeks, endOfDay, format, isWithinInterval, startOfDay, startOfWeek } from 'date-fns';
 import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react';
 import { PageHeader } from '../../components/PageHeader';

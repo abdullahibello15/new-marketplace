@@ -1,4 +1,3 @@
-import React from 'react';
 import { jobStages } from '../data/jobStages';
 import type { JobStage } from '../types/marketplace';
 

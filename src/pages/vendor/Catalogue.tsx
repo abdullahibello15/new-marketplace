@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { PlusIcon, SquarePenIcon, Trash2Icon, WrenchIcon } from 'lucide-react';
 import { PageHeader } from '../../components/PageHeader';
@@ -7,6 +7,9 @@ import { CatalogueTabs } from '../../components/vendor/CatalogueTabs';
 import { useVendors } from '../../contexts/VendorsContext';
 import { vendorAccount } from '../../data/vendorPortal';
 import { formatPriceRange } from '../../utils/format';
+import { PLAN_LIMIT } from '../../features/vendor-dashboard/constants';
+import { UpgradePrompt } from '../../features/vendor-dashboard/components/subscription/UpgradePrompt';
+import { usePlanLimits } from '../../features/vendor-dashboard/hooks/usePlanLimits';
 import type { NewServiceInput, ServiceItem } from '../../types/vendorPortal';
 
 export function Catalogue() {
@@ -15,6 +18,8 @@ export function Catalogue() {
   const services = vendor?.services ?? [];
   const [adding, setAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const limits = usePlanLimits();
+  const atLimit = limits.reached(PLAN_LIMIT.Services, services.length);
 
   function saveServices(next: ServiceItem[]) {
     if (vendor) updateVendorProfile(vendor.id, { services: next });
@@ -50,7 +55,7 @@ export function Catalogue() {
           <h2 className="order-2 text-xs font-bold uppercase tracking-wider text-muted sm:order-1">
             {services.length} {services.length === 1 ? 'service' : 'services'} listed
           </h2>
-          {!adding &&
+          {!adding && !atLimit &&
           <button
             type="button"
             onClick={() => {
@@ -65,8 +70,14 @@ export function Catalogue() {
           }
         </div>
 
+        {atLimit && limits.plan &&
+        <div className="mt-4">
+            <UpgradePrompt limitKey={PLAN_LIMIT.Services} plan={limits.plan} />
+          </div>
+        }
+
         <AnimatePresence initial={false}>
-          {adding &&
+          {adding && !atLimit &&
           <motion.div
             key="form"
             initial={{ opacity: 0, y: -6 }}

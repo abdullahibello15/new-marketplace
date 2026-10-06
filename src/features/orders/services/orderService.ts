@@ -1,6 +1,7 @@
 import { user } from '../../../data/user';
 import { ApiError, mockResponse } from '../../../services/mockApi';
 import { adjustProductStock, getAllVendors } from '../../../services/vendorStore';
+import { withListingRestrictions } from '../../vendor-dashboard/services/subscriptionService';
 import { CURRENT_CUSTOMER_ID } from '../../jobs/constants';
 import { CART_CHANGE_KIND, FULFILMENT_METHOD, ORDER_ACTOR, ORDER_AUTO_COMPLETE_HOURS, ORDER_STATUS } from '../constants';
 import { applyOrderEscrowChange } from '../../payments/services/escrowService';
@@ -47,8 +48,10 @@ function findOrder(id: string): Order {
   return found;
 }
 
+/** The vendor as customers see them (unavailable while their subscription has lapsed past grace). */
 function findVendor(id: string): Vendor | undefined {
-  return getAllVendors().find((v) => v.id === id);
+  const vendor = getAllVendors().find((v) => v.id === id);
+  return vendor && withListingRestrictions(vendor);
 }
 
 function save(updated: Order): Order {

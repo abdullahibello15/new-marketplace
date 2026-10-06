@@ -43,7 +43,9 @@ export const PAYMENT_METHOD_ORDER: readonly PaymentMethod[] = [PAYMENT_METHOD.Ca
 
 export const PAYMENT_SUBJECT = {
   Job: 'job',
-  Order: 'order'
+  Order: 'order',
+  /** A vendor's subscription invoice. Online only: no cash, no escrow. */
+  Subscription: 'subscription'
 } as const;
 
 /* ---------- Routes ---------- */

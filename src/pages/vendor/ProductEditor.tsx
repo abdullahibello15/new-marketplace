@@ -3,6 +3,9 @@ import { PageHeader } from '../../components/PageHeader';
 import { ProductForm } from '../../components/vendor/ProductForm';
 import { useVendors } from '../../contexts/VendorsContext';
 import { vendorAccount } from '../../data/vendorPortal';
+import { PLAN_LIMIT } from '../../features/vendor-dashboard/constants';
+import { UpgradePrompt } from '../../features/vendor-dashboard/components/subscription/UpgradePrompt';
+import { usePlanLimits } from '../../features/vendor-dashboard/hooks/usePlanLimits';
 import { NotFound } from '../NotFound';
 
 const LIST = '/pro/catalogue/products';
@@ -14,6 +17,7 @@ export function ProductEditor() {
   const { getVendor, updateVendorProfile } = useVendors();
   const vendor = getVendor(vendorAccount.vendorId);
   const product = productId ? vendor?.products.find((p) => p.id === productId) : undefined;
+  const limits = usePlanLimits();
 
   if (!vendor) return <NotFound message="We couldn't find your vendor profile." />;
   if (productId && !product) return <NotFound message="We couldn't find that product. It may have been deleted." />;
@@ -28,6 +32,9 @@ export function ProductEditor() {
         backTo={{ to: LIST, label: 'My products' }} />
 
       <div className="mx-auto max-w-3xl px-5 py-6 lg:px-10 lg:py-8">
+        {!product && limits.plan && limits.reached(PLAN_LIMIT.Products, vendor.products.length) ?
+        <UpgradePrompt limitKey={PLAN_LIMIT.Products} plan={limits.plan} /> :
+
         <ProductForm
           key={product?.id ?? 'new'}
           initial={product}
@@ -49,7 +56,7 @@ export function ProductEditor() {
           } :
           undefined
           } />
-
+        }
       </div>
     </>);
 

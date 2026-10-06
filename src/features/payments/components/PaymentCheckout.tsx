@@ -7,7 +7,8 @@ import { EmptyState } from '../../../components/ui/EmptyState';
 import { ErrorState } from '../../../components/ui/ErrorState';
 import { LoadingState } from '../../../components/ui/LoadingState';
 import { PageContainer } from '../../../components/ui/PageContainer';
-import { PAYMENT_METHOD, PAYMENT_ROUTES, PAYMENT_STATUS } from '../constants';
+import { PAYMENT_METHOD, PAYMENT_STATUS, PAYMENT_SUBJECT } from '../constants';
+import { receiptPathFor } from '../utils/subject';
 import { usePaymentCheckout } from '../hooks/usePaymentCheckout';
 import { CardPaymentPanel } from './card/CardPaymentPanel';
 import { CashPaymentPanel } from './cash/CashPaymentPanel';
@@ -23,7 +24,7 @@ export function PaymentCheckout({ kind, id }: {kind: PaymentSubjectKind;id: stri
   const c = usePaymentCheckout({ kind, id });
   const navigate = useNavigate();
   // Only ever called with a payment the server has verified as Paid.
-  const onPaid = useCallback((p: Payment) => navigate(PAYMENT_ROUTES.receipt(p.reference), { replace: true }), [navigate]);
+  const onPaid = useCallback((p: Payment) => navigate(receiptPathFor(p), { replace: true }), [navigate]);
   const data = c.overview.data;
   const title = data?.payable.title ?? 'Payment';
   const back = data ? { to: data.payable.returnPath, label: data.payable.title } : undefined;
@@ -41,7 +42,7 @@ export function PaymentCheckout({ kind, id }: {kind: PaymentSubjectKind;id: stri
           title="Already paid"
           description={`${payable.title} is paid. Reference ${c.payment.reference}.`}
           action={
-          <Link to={PAYMENT_ROUTES.receipt(c.payment.reference)} className={buttonClasses({ variant: 'secondary', size: 'sm' })}>
+          <Link to={receiptPathFor(c.payment)} className={buttonClasses({ variant: 'secondary', size: 'sm' })}>
                 View receipt
               </Link>
           } />);
@@ -85,7 +86,7 @@ export function PaymentCheckout({ kind, id }: {kind: PaymentSubjectKind;id: stri
         </section>
         <aside className="space-y-4 lg:sticky lg:top-6 lg:self-start" aria-label="Order summary">
           <PayableSummary payable={payable} />
-          <SecurePaymentNote />
+          <SecurePaymentNote escrow={kind !== PAYMENT_SUBJECT.Subscription} />
         </aside>
       </div>);
 

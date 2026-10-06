@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { format } from 'date-fns';
 import { CheckCircle2Icon, Loader2Icon } from 'lucide-react';
 import { vendorAccount } from '../../data/vendorPortal';

@@ -7,7 +7,11 @@ import { JOB_ROUTES, JOB_STATUS } from '../../jobs/constants';
 import { getJob } from '../../jobs/services/jobService';
 import { FULFILMENT_METHOD, ORDER_ROUTES, ORDER_STATUS } from '../../orders/constants';
 import { getOrder } from '../../orders/services/orderService';
-import { MOCK_PSP, PAYMENT_CONFIG } from '../config';
+import { DASHBOARD_ROUTES, INVOICE_KIND_LABELS } from '../../vendor-dashboard/constants';
+import { planById } from '../../vendor-dashboard/plans';
+import { getInvoice, markInvoicePaid } from '../../vendor-dashboard/services/subscriptionService';
+import type { Invoice } from '../../vendor-dashboard/types';
+import { GWANI_PAYEE, MOCK_PSP, PAYMENT_CONFIG } from '../config';
 import { ESCROW_EVENT, ESCROW_STATUS, FINAL_PAYMENT_STATUSES, PAYMENT_METHOD, PAYMENT_METHOD_ORDER, PAYMENT_STATUS, PAYMENT_SUBJECT } from '../constants';
 import { mockPayments } from '../mock/payments';
 import { escrowForPayment, holdFunds } from './escrowService';
@@ -113,8 +117,45 @@ function orderPayable(order: Order): Payable {
   };
 }
 
+const INVOICE_BLOCKED: Partial<Record<Invoice['status'], string>> = {
+  paid: 'This invoice is already paid.',
+  void: 'This invoice was replaced by a newer one. Start again from your subscription page.'
+};
+
+/** A vendor's subscription invoice: paid to Gwani, online methods only, never escrowed. */
+function invoicePayable(invoice: Invoice): Payable {
+  const plan = planById(invoice.planId);
+  const vendor = getAllVendors().find((v) => v.id === invoice.vendorId);
+  return {
+    subject: { kind: PAYMENT_SUBJECT.Subscription, id: invoice.id },
+    title: `${plan.name} plan · ${INVOICE_KIND_LABELS[invoice.kind]}`,
+    vendorId: GWANI_PAYEE.id,
+    vendorName: GWANI_PAYEE.name,
+    customerId: invoice.vendorId,
+    customerName: vendor?.name ?? invoice.vendorId,
+    lines: invoice.lines,
+    total: invoice.amount,
+    blockedReason: INVOICE_BLOCKED[invoice.status] ?? null,
+    methods: PAYMENT_METHOD_ORDER.filter((m) => m !== PAYMENT_METHOD.Cash),
+    cashUnavailableReason: 'Subscriptions are paid online.',
+    cashConfirmable: false,
+    fulfilled: false,
+    returnPath: DASHBOARD_ROUTES.subscription
+  };
+}
+
 async function loadPayable(subject: PaymentSubjectRef): Promise<Payable> {
+  if (subject.kind === PAYMENT_SUBJECT.Subscription) return invoicePayable(await getInvoice(subject.id));
   return subject.kind === PAYMENT_SUBJECT.Job ? jobPayable(await getJob(subject.id)) : orderPayable(await getOrder(subject.id));
+}
+
+/**
+ * A verified payment lands: subscription invoices take effect; job and order payments go into escrow
+ * (released at once if the work is already confirmed). Both are idempotent.
+ */
+function settlePaid(p: Payment, payable: Payable, at: string): void {
+  if (p.subject.kind === PAYMENT_SUBJECT.Subscription) markInvoicePaid(p.subject.id, { reference: p.reference, method: p.method, paidAt: p.paidAt ?? at });else
+  holdFunds(p, payable.fulfilled, at);
 }
 
 /* ---------- Reconciling with the provider ---------- */
@@ -132,8 +173,8 @@ function reconcile(p: Payment, payable: Payable, now = new Date()): Payment {
       const note = [...escrow.ledger].reverse().find((e) => e.type === ESCROW_EVENT.Refunded)?.note ?? 'Refunded';
       return save({ ...p, status: PAYMENT_STATUS.Refunded, updatedAt: at, outcome: `${note}. ${formatNaira(p.amount)} returned to you (mock).` });
     }
-    // Paid before escrow existed for it (e.g. seeded data): hold it now.
-    if (!escrow) holdFunds(p, payable.fulfilled, at);
+    // Paid before escrow existed for it (e.g. seeded data): settle it now.
+    if (!escrow) settlePaid(p, payable, at);
     return p;
   }
   if (isFinal(p) || p.method === PAYMENT_METHOD.Cash) return p;
@@ -150,8 +191,7 @@ function reconcile(p: Payment, payable: Payable, now = new Date()): Payment {
       amountReceived: psp.amountReceived,
       outcome: extra > 0 ? `You sent ${formatNaira(extra)} more than needed. The extra will be refunded to your account within 24 hours (mock).` : null
     });
-    // Escrow: held until the job or order is complete (released at once if it already is).
-    holdFunds(paid, payable.fulfilled, at);
+    settlePaid(paid, payable, at);
     return paid;
   }
   if (psp?.state === 'failed') return save({ ...p, status: PAYMENT_STATUS.Failed, updatedAt: at, outcome: psp.failureReason });

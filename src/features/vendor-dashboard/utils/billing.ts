@@ -9,10 +9,15 @@ import type { InvoiceKind, InvoiceQuote, PlanId, Subscription } from '../types';
  * Subscription billing rules. Pure: every function takes `now`. Tested in billing.test.ts.
  */
 
+/** Average month length, to count how many monthly periods a paid span covers. */
+const DAYS_PER_MONTH = 30.44;
+
 export interface Proration {
-  /** Days left in the current period, counting today. */
+  /** Days left in the paid span, counting today. */
   remainingDays: number;
   totalDays: number;
+  /** Monthly periods paid for in the span (more than 1 after renewing early). */
+  months: number;
   /** Unused value of the current plan, returned as credit. */
   credit: number;
   /** The new plan's price for the remaining days. */
@@ -23,14 +28,16 @@ export interface Proration {
 
 /**
  * Upgrade mid-period: pay the new plan's price for the days left, minus what's unused on the current
- * plan. Both are pro rata by calendar day (today counts as remaining) and rounded to whole Naira.
+ * plan. Both are pro rata by calendar day (today counts as remaining) and rounded to whole Naira. If the
+ * vendor renewed early, the paid span covers several months, and both prices are scaled to match.
  */
 export function prorateUpgrade(fromPrice: number, toPrice: number, periodStart: string, periodEnd: string, now: Date): Proration {
   const totalDays = Math.max(1, differenceInCalendarDays(new Date(periodEnd), new Date(periodStart)) + 1);
   const remainingDays = Math.min(totalDays, Math.max(0, differenceInCalendarDays(new Date(periodEnd), now) + 1));
-  const credit = Math.round(fromPrice * remainingDays / totalDays);
-  const charge = Math.round(toPrice * remainingDays / totalDays);
-  return { remainingDays, totalDays, credit, charge, due: Math.max(0, charge - credit) };
+  const months = Math.max(1, Math.round(totalDays / DAYS_PER_MONTH));
+  const credit = Math.round(fromPrice * months * remainingDays / totalDays);
+  const charge = Math.round(toPrice * months * remainingDays / totalDays);
+  return { remainingDays, totalDays, months, credit, charge, due: Math.max(0, charge - credit) };
 }
 
 /** Is choosing `target` a renewal, an upgrade, a downgrade, or (after the profile is limited) a fresh subscription? */
@@ -62,13 +69,14 @@ export function quoteChange(sub: Subscription, target: PlanId, now: Date): Invoi
   }
   if (kind === INVOICE_KIND.Upgrade && inPeriod) {
     const p = prorateUpgrade(from.price, to.price, sub.periodStart, sub.renewsOn, now);
+    const span = p.months > 1 ? ` × ${p.months} months` : '';
     return {
       ...base,
       kind,
       amount: p.due,
       lines: [
-      { label: `${to.name}: ${formatNaira(to.price)} × ${p.remainingDays}/${p.totalDays} days left`, amount: p.charge },
-      { label: `Credit for unused ${from.name}: ${formatNaira(from.price)} × ${p.remainingDays}/${p.totalDays} days`, amount: -p.credit }],
+      { label: `${to.name}: ${formatNaira(to.price)}${span} × ${p.remainingDays}/${p.totalDays} days left`, amount: p.charge },
+      { label: `Credit for unused ${from.name}: ${formatNaira(from.price)}${span} × ${p.remainingDays}/${p.totalDays} days`, amount: -p.credit }],
 
       periodStart: startOfDay(now).toISOString(),
       periodEnd: sub.renewsOn,

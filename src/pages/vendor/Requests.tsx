@@ -1,4 +1,3 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeftRightIcon, ArrowRightIcon, CheckCircle2Icon, MapPinIcon, StarIcon, TimerIcon } from 'lucide-react';
 import { PageHeader } from '../../components/PageHeader';

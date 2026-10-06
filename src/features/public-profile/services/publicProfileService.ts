@@ -1,6 +1,7 @@
 import { findTradeCategory } from '../../../data/tradeCategories';
 import { ApiError, mockResponse } from '../../../services/mockApi';
 import { getAllVendors } from '../../../services/vendorStore';
+import { withListingRestrictions } from '../../vendor-dashboard/services/subscriptionService';
 import { computeReviewStats } from '../../vendor-dashboard/utils/reviews';
 import { REVIEW_SORT, REVIEWS_PAGE_SIZE } from '../constants';
 import { reviewsForVendor } from '../../jobs/services/jobService';
@@ -50,7 +51,7 @@ function allReviewsFor(vendor: Vendor): PublicReview[] {
 function findVendor(vendorId: string): Vendor {
   const vendor = getAllVendors().find((v) => v.id === vendorId);
   if (!vendor) throw new ApiError('We couldn’t find that vendor.', 404);
-  return vendor;
+  return withListingRestrictions(vendor);
 }
 
 /** GET /vendors/:id */

@@ -39,7 +39,13 @@ describe('upgrade proration', () => {
   it('charges the new plan for the days left, minus credit for the old plan', () => {
     // 30-day period, upgrading on day 21 (10 days left counting today).
     const p = prorateUpgrade(7000, 15000, at(2026, 10, 1, 0).toISOString(), endOf(2026, 10, 30), at(2026, 10, 21));
-    expect(p).toEqual({ remainingDays: 10, totalDays: 30, credit: 2333, charge: 5000, due: 2667 });
+    expect(p).toEqual({ remainingDays: 10, totalDays: 30, months: 1, credit: 2333, charge: 5000, due: 2667 });
+  });
+
+  it('after renewing early, credits what was paid for every prepaid month (not one month spread thin)', () => {
+    // Two months paid (Oct + Nov, 61 days), upgrading with 31 days left: about one month's difference.
+    const p = prorateUpgrade(7000, 15000, at(2026, 10, 1, 0).toISOString(), endOf(2026, 11, 30), at(2026, 10, 31));
+    expect(p).toMatchObject({ months: 2, remainingDays: 31, totalDays: 61, credit: 7115, charge: 15246, due: 8131 });
   });
 
   it('on the first day it costs the full difference', () => {

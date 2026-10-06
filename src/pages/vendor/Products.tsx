@@ -12,6 +12,9 @@ import { stockFilters } from '../../data/stockFilters';
 import { vendorAccount } from '../../data/vendorPortal';
 import { useStockFilter } from '../../hooks/useStockFilter';
 import { categoryLabel, matchesStockFilter } from '../../utils/products';
+import { PLAN_LIMIT } from '../../features/vendor-dashboard/constants';
+import { UpgradePrompt } from '../../features/vendor-dashboard/components/subscription/UpgradePrompt';
+import { usePlanLimits } from '../../features/vendor-dashboard/hooks/usePlanLimits';
 import { NotFound } from '../NotFound';
 import type { Product, ProductCategory } from '../../types/marketplace';
 
@@ -24,6 +27,8 @@ export function Products() {
   const [deleted, setDeleted] = useState<{product: Product;index: number;} | null>(null);
 
   const products = useMemo(() => vendor?.products ?? [], [vendor]);
+  const limits = usePlanLimits();
+  const atLimit = limits.reached(PLAN_LIMIT.Products, products.length);
   const { stockFilter, setStockFilter, summary, counts } = useStockFilter(products);
 
   const results = useMemo(() => {
@@ -119,6 +124,7 @@ export function Products() {
               )}
             </select>
           </label>
+          {!atLimit &&
           <div className="grid grid-cols-2 gap-3 sm:flex">
             <Link
               to="/pro/catalogue/products/import"
@@ -135,7 +141,13 @@ export function Products() {
               Add product
             </Link>
           </div>
+          }
         </div>
+        {atLimit && limits.plan &&
+        <div className="mt-4">
+            <UpgradePrompt limitKey={PLAN_LIMIT.Products} plan={limits.plan} />
+          </div>
+        }
 
         {products.length > 0 &&
         <div className="mt-4">

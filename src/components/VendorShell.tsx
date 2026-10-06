@@ -1,4 +1,3 @@
-import React from 'react';
 import { AppShell } from './AppShell';
 import { vendorNav } from '../data/navigation';
 import { vendorAccount } from '../data/vendorPortal';

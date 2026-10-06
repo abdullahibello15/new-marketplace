@@ -34,7 +34,8 @@ export function escrowForPayment(reference: string): Escrow | null {
  * Idempotent: a payment is only ever held once. Cash skips escrow.
  */
 export function holdFunds(payment: Payment, fulfilled: boolean, at = new Date().toISOString()): Escrow | null {
-  if (!ESCROW_CONFIG.heldMethods.includes(payment.method)) return null;
+  // Only customer payments for jobs and orders are escrowed; subscriptions go straight to Gwani.
+  if (payment.subject.kind === PAYMENT_SUBJECT.Subscription || !ESCROW_CONFIG.heldMethods.includes(payment.method)) return null;
   const existing = escrowForPayment(payment.reference);
   if (existing) return existing;
   const opened = applyEscrowDecision(openEscrow(payment, at), holdDecision(fulfilled), at);

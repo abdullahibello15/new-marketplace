@@ -7,6 +7,9 @@ import { useVendors } from '../../contexts/VendorsContext';
 import { vendorAccount } from '../../data/vendorPortal';
 import { rowsFromTable, type ImportRow } from '../../utils/productImport';
 import { SpreadsheetError, readSpreadsheet } from '../../utils/spreadsheet';
+import { PLAN_LIMIT } from '../../features/vendor-dashboard/constants';
+import { UpgradePrompt } from '../../features/vendor-dashboard/components/subscription/UpgradePrompt';
+import { usePlanLimits } from '../../features/vendor-dashboard/hooks/usePlanLimits';
 import { NotFound } from '../NotFound';
 import type { NewProductInput } from '../../types/marketplace';
 
@@ -25,6 +28,8 @@ export function ProductImport() {
   const [loaded, setLoaded] = useState<LoadedFile | null>(null);
   const [reading, setReading] = useState(false);
   const [error, setError] = useState('');
+  const limits = usePlanLimits();
+  const [overLimit, setOverLimit] = useState<string | null>(null);
 
   const existingNames = useMemo(() => new Set((vendor?.products ?? []).map((p) => p.name.trim().toLowerCase())), [vendor]);
 
@@ -46,6 +51,13 @@ export function ProductImport() {
 
   function handleImport(products: NewProductInput[]) {
     if (!vendor) return;
+    const limit = limits.limitOf(PLAN_LIMIT.Products);
+    if (limit !== null && vendor.products.length + products.length > limit) {
+      const room = Math.max(0, limit - vendor.products.length);
+      setOverLimit(`Your plan allows ${limit} products and you have ${vendor.products.length}. Remove rows so no more than ${room} are imported, or upgrade.`);
+      return;
+    }
+    setOverLimit(null);
     const stamp = Date.now();
     const created = products.map((p, i) => ({ ...p, id: `p${stamp}-${i}` }));
     updateVendorProfile(vendor.id, { products: [...created, ...vendor.products] });
@@ -67,6 +79,12 @@ export function ProductImport() {
         backTo={{ to: LIST, label: 'My products' }} />
 
       <div className="mx-auto max-w-6xl px-5 py-6 lg:px-10 lg:py-8">
+        {overLimit && limits.plan &&
+        <div className="mb-4 space-y-2">
+            <p role="alert" className="text-sm font-semibold text-clay-dark">{overLimit}</p>
+            <UpgradePrompt limitKey={PLAN_LIMIT.Products} plan={limits.plan} />
+          </div>
+        }
         {loaded ?
         <ImportPreview
           fileName={loaded.name}

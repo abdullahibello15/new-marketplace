@@ -3,7 +3,7 @@ import { formatNaira } from '../../../utils/format';
 import { PAYMENT_METHOD_META, PAYMENT_STATUS_META } from '../constants';
 import type { Receipt } from '../types';
 
-const escapeHtml = (s: string) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c] ?? c);
+export const escapeHtml = (s: string) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c] ?? c);
 
 /** How the money moved, for the receipt. Bank and code only; never card or account details of the payer. */
 export function methodDetail(r: Receipt): string {

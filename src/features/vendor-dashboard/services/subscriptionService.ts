@@ -99,6 +99,26 @@ export function createInvoice(planId: PlanId): Promise<Invoice> {
 }
 
 /**
+ * POST /vendor/subscription/renew — the invoice for renewing the current plan for another period.
+ * Renewal is manual for now (auto-billing needs a backend and a saved PSP authorization): the vendor
+ * pays this invoice on the shared payment screen, and the end date moves once the payment is verified.
+ */
+export function renewSubscription(): Promise<Invoice> {
+  return createInvoice(ownSubscription().planId);
+}
+
+/**
+ * POST /vendor/subscription/plan { planId } — the invoice for switching plan: a prorated upgrade that
+ * applies as soon as it's paid, or a downgrade that's paid now and starts when the current period ends.
+ */
+export function changePlan(planId: PlanId): Promise<Invoice> {
+  const sub = ownSubscription();
+  // After the grace period any plan, including the old one, is a fresh subscription.
+  if (planId === sub.planId && !isProfileLimited(sub.renewsOn)) return Promise.reject(new ApiError('You’re already on this plan. Use Renew to extend it.', 409));
+  return createInvoice(planId);
+}
+
+/**
  * Called by the payment service once a subscription payment is verified as Paid. Idempotent.
  * - Upgrade / subscribe: the new plan applies now.
  * - Renew / downgrade: the end date moves out; a different plan is scheduled for the period start.

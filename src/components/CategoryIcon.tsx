@@ -1,4 +1,3 @@
-import React from 'react';
 import { BikeIcon, ScissorsIcon, WrenchIcon, ZapIcon } from 'lucide-react';
 import type { Category } from '../types/marketplace';
 

@@ -1,6 +1,7 @@
 import { findTradeCategory } from '../../../data/tradeCategories';
 import { ApiError, mockResponse } from '../../../services/mockApi';
 import { getAllVendors, incrementVendorCancellations } from '../../../services/vendorStore';
+import { withListingRestrictions } from '../../vendor-dashboard/services/subscriptionService';
 import { user } from '../../../data/user';
 import { CURRENT_CUSTOMER_ID, DISPUTE_OUTCOME, DISPUTE_OUTCOME_LABELS, JOB_ACTOR, JOB_STATUS, RESCHEDULE_CUTOFF_HOURS, RESCHEDULE_STATUS } from '../constants';
 import { CANCELLATION_POLICY, getCancellationTerms } from '../cancellationPolicy';
@@ -126,7 +127,8 @@ export function reviewsForVendor(vendorId: string) {
 /** POST /jobs — a customer asks a service vendor for a quote. Starts as Requested. */
 export function createJobRequest(input: NewJobRequest): Promise<Job> {
   return mockResponse(() => {
-    const vendor = getAllVendors().find((v) => v.id === input.vendorId);
+    const found = getAllVendors().find((v) => v.id === input.vendorId);
+    const vendor = found && withListingRestrictions(found);
     if (!vendor) throw new ApiError('We couldn’t find that vendor.', 404);
     if (findTradeCategory(vendor.tradeCategory)?.kind === 'retail') throw new ApiError('This vendor takes product requests, not job bookings.', 400);
     if (vendor.unavailable) throw new ApiError(`${vendor.name} isn’t taking new bookings right now.`, 409);

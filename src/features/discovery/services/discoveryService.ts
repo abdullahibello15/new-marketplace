@@ -4,6 +4,10 @@ import { normalizeSearch } from '../../../lib/sanitize';
 import { matchesWordPrefixes } from '../../../lib/textMatch';
 import { mockResponse } from '../../../services/mockApi';
 import { getAllVendors } from '../../../services/vendorStore';
+import { isVendorLimited } from '../../vendor-dashboard/services/subscriptionService';
+
+/** Vendors customers can discover: everyone except those whose subscription grace period has run out. */
+const listedVendors = () => getAllVendors().filter((v) => !isVendorLimited(v.id));
 import { formatTrade } from '../../../utils/format';
 import { AREA_MODE, FEED_PAGE_SIZE, NEARBY_RADIUS_KM, SORT_OPTION, SUGGESTIONS_PER_GROUP } from '../constants';
 import type { Vendor } from '../../../types/marketplace';
@@ -31,7 +35,7 @@ interface Located {
 const byDistance = (a: number | null, b: number | null) => (a ?? Infinity) - (b ?? Infinity);
 
 function withDistance(place: Place): Located[] {
-  return getAllVendors().map((vendor) => ({
+  return listedVendors().map((vendor) => ({
     vendor,
     distance: vendor.coordinates ? distanceKm(place.coordinates, vendor.coordinates) : null
   }));
@@ -166,7 +170,7 @@ export function getSuggestions(query: string, place: Place): Promise<SuggestionR
     map((c) => ({ id: c.id, label: c.browseLabel }));
 
     // Nearby vendors first, so local services and names rank above far-away ones.
-    const ranked = [...nearbyVendors(place).map((n) => n.vendor), ...getAllVendors()];
+    const ranked = [...nearbyVendors(place).map((n) => n.vendor), ...listedVendors()];
 
     const seen = new Set<string>();
     const services: SuggestionResults['services'] = [];

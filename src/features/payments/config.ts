@@ -1,3 +1,6 @@
+/** Who subscription payments go to (the platform, not a vendor). */
+export const GWANI_PAYEE = { id: 'gwani', name: 'Gwani' } as const;
+
 /** Payment timings and limits. Change them here only. */
 export const PAYMENT_CONFIG = {
   /** A one-time transfer account stays open this long. */

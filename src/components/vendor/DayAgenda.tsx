@@ -1,4 +1,3 @@
-import React from 'react';
 import { format, isSameDay, isToday } from 'date-fns';
 import { CalendarCheck2Icon, MapPinIcon } from 'lucide-react';
 import { appointmentStatuses, vendorAccount } from '../../data/vendorPortal';

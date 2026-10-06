@@ -1,4 +1,4 @@
-import React, { lazy } from 'react';
+import { lazy } from 'react';
 import { Navigate, Route, RouterProvider, createBrowserRouter, createRoutesFromElements } from 'react-router-dom';
 import { ToastProvider } from './components/ui/ToastProvider';
 import { RequestsProvider } from './features/vendor-dashboard/context/RequestsProvider';
@@ -60,6 +60,12 @@ import('./features/reminders/sections/NotificationPreferencesSection').then((m) 
 const ReminderDevSection = import.meta.env.DEV ?
 lazy(() => import('./features/reminders/sections/ReminderDevSection').then((m) => ({ default: m.ReminderDevSection }))) :
 null;
+const BillingHistorySection = lazy(() =>
+import('./features/vendor-dashboard/sections/BillingHistorySection').then((m) => ({ default: m.BillingHistorySection }))
+);
+const InvoiceReceiptSection = lazy(() =>
+import('./features/vendor-dashboard/sections/InvoiceReceiptSection').then((m) => ({ default: m.InvoiceReceiptSection }))
+);
 const EditProfileSection = lazy(() =>
 import('./features/vendor-profile/sections/EditProfileSection').then((m) => ({ default: m.EditProfileSection }))
 );
@@ -121,6 +127,10 @@ const router = createBrowserRouter(
         <Route path="earnings" element={<EarningsSection />} />
         <Route path="reviews" element={<ReviewsSection />} />
         <Route path="subscription" element={<SubscriptionSection />} />
+        <Route path="subscription/billing" element={<BillingHistorySection />} />
+        <Route path="subscription/billing/:invoiceId" element={<InvoiceReceiptSection />} />
+        {/* The shared payment screen, inside the vendor portal (subscription invoices). */}
+        <Route path="pay/:kind/:id" element={<PaymentCheckoutSection />} />
         <Route path="profile" element={<EditProfileSection />} />
         <Route path="notifications" element={<NotificationPreferencesSection party="vendor" />} />
       </Route>

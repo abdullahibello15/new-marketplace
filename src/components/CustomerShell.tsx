@@ -1,4 +1,3 @@
-import React from 'react';
 import { AppShell } from './AppShell';
 import { customerNav } from '../data/navigation';
 import { messageThreads } from '../data/messages';

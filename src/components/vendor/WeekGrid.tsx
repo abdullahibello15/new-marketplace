@@ -1,4 +1,3 @@
-import React from 'react';
 import { format, isSameDay, isToday } from 'date-fns';
 import { appointmentStatuses } from '../../data/vendorPortal';
 import { formatTime } from '../../utils/format';

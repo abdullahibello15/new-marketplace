@@ -19,8 +19,8 @@ function at(dayOffset: number, hour: number, minute = 0): string {
 export const vendorAccount: VendorAccount = {
   vendorId: 'bala-plumbing',
   businessName: 'Bala Plumbing',
-  tier: 'Trade tier',
-  subscriptionPrice: 2500,
+  tier: 'Standard plan',
+  subscriptionPrice: 7000,
   renewsOn: startOfMonth(addMonths(new Date(), 1)).toISOString(),
   payoutAccount: 'GTBank ••4521',
   availableBalance: 32700,

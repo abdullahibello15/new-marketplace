@@ -1,4 +1,3 @@
-import React from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { MapPinIcon, MapPinnedIcon, StarIcon } from 'lucide-react';
 import { PageHeader } from '../components/PageHeader';
