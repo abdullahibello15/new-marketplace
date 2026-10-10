@@ -14,6 +14,7 @@ import {
   simulateSubscriptionState,
   type DemoSubscriptionState } from
 '../services/subscriptionService';
+import { memberReminderKey, vendorReminderKey } from '../services/subscriptionReminders';
 import { daysUntil, getSubscriptionStatus, graceEndsAt } from '../utils/subscription';
 import type { InvoiceQuote, SubscriptionPlan } from '../types';
 
@@ -48,6 +49,11 @@ export function useSubscription() {
   const subscriptionStatus = subscription ? getSubscriptionStatus(subscription.renewsOn) : null;
   const daysLeft = subscription ? daysUntil(subscription.renewsOn) : 0;
   const graceEnds = subscription ? graceEndsAt(subscription.renewsOn) : null;
+  const coveredBy = subscription?.coveredBy && !subscription.coveredBy.removed ? subscription.coveredBy : null;
+  /** Which renewal reminders apply: the bundle's while covered, otherwise the vendor's own. */
+  const reminderKey = subscription ?
+  coveredBy ? memberReminderKey(coveredBy.associationId, subscription.vendorId) : vendorReminderKey(subscription.vendorId) :
+  null;
 
   async function ask(kind: PendingPlanAction['kind'], plan: SubscriptionPlan) {
     setPending({ kind, plan, quote: null });
@@ -99,6 +105,8 @@ export function useSubscription() {
     subscriptionStatus,
     daysLeft,
     graceEnds,
+    coveredBy,
+    reminderKey,
     pending,
     saving,
     simulating,

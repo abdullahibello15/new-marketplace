@@ -1,3 +1,6 @@
+import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
+import { tradeBrowseLabel } from '../../../i18n/labels';
 import { useState } from 'react';
 import { MapPinIcon } from 'lucide-react';
 import { PageHeader } from '../../../components/PageHeader';
@@ -21,13 +24,14 @@ import { useSearchResults } from '../hooks/useSearchResults';
 import { useVendorMapPins } from '../hooks/useVendorMapPins';
 import type { SearchFilters } from '../types';
 
-function pageTitle(f: SearchFilters): string {
+function pageTitle(f: SearchFilters, t: TFunction): string {
   if (f.query) return `“${f.query}”`;
-  if (f.categories.length === 1) return browseCategories.find((c) => c.id === f.categories[0])?.browseLabel ?? 'Search results';
-  return 'Search results';
+  if (f.categories.length === 1 && browseCategories.some((c) => c.id === f.categories[0])) return tradeBrowseLabel(f.categories[0]);
+  return t('search.title');
 }
 
 export function SearchResultsSection() {
+  const { t } = useTranslation('discovery');
   const s = useSearchResults();
   const { place, openPicker } = usePlace();
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -43,11 +47,11 @@ export function SearchResultsSection() {
   <div className="flex flex-wrap justify-center gap-2">
       {hasFilters &&
     <Button variant="secondary" size="sm" onClick={s.clearAll}>
-          Clear filters
+          {t('results.clearFilters')}
         </Button>
     }
       <Button variant="secondary" size="sm" icon={MapPinIcon} onClick={openPicker}>
-        Change location
+        {t('place.change')}
       </Button>
     </div>;
 
@@ -59,7 +63,7 @@ export function SearchResultsSection() {
           {/* The left filter column only exists in list view on desktop; otherwise filters open in a dialog. */}
           <div className={isMap ? '' : 'lg:hidden'}>{filtersButton}</div>
           <h2 className="text-sm font-bold text-ink" aria-live="polite">
-            {list.status === 'loading' ? 'Searching…' : `${list.total} ${list.total === 1 ? 'vendor' : 'vendors'}`}
+            {list.status === 'loading' ? t('results.searching') : t('results.count', { count: list.total })}
           </h2>
         </div>
         <div className="flex flex-wrap items-center gap-3">
@@ -80,8 +84,8 @@ export function SearchResultsSection() {
     hasMore={list.hasMore}
     onLoadMore={list.loadMore}
     onRetry={list.retry}
-    emptyTitle="No vendors match your filters"
-    emptyDescription={`Try removing a filter, widening the area or changing your location from ${placeLabel(place)}.`}
+    emptyTitle={t('results.emptyFiltersTitle')}
+    emptyDescription={t('results.emptyFiltersText', { place: placeLabel(place) })}
     emptyAction={emptyAction}
     singleColumn={isMap}
     highlightedId={isMap ? selection.selectedId : null}
@@ -91,7 +95,7 @@ export function SearchResultsSection() {
 
   return (
     <>
-      <PageHeader title={pageTitle(filters)} subtitle={`Near ${placeLabel(place)}`} backTo={{ to: '/', label: 'Home' }}>
+      <PageHeader title={pageTitle(filters, t)} subtitle={t('search.near', { place: placeLabel(place) })} backTo={{ to: '/', label: t('search.home') }}>
         <div className="space-y-3 lg:max-w-xl">
           <PlaceChip />
           {/* Keyed by the query so the box shows the new search after navigating from a suggestion. */}

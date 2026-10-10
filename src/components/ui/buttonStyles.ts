@@ -2,7 +2,7 @@ export type ButtonVariant = 'primary' | 'accent' | 'secondary' | 'outline' | 'da
 export type ButtonSize = 'sm' | 'md';
 
 const BASE =
-'inline-flex items-center justify-center gap-2 whitespace-nowrap font-bold transition-[background-color,border-color,color,filter,transform] duration-150 ease-out active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100';
+'inline-flex items-center justify-center gap-2 text-center font-bold transition-[background-color,border-color,color,filter,transform] duration-150 ease-out active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100';
 
 // Each variant sets its own ring offset colour to match the surface it sits on.
 const ON_LIGHT = 'focus-visible:ring-offset-cream';

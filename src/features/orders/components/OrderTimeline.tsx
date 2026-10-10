@@ -1,4 +1,6 @@
+import { useTranslation } from 'react-i18next';
 import { StatusSteps, type StatusStep } from '../../../components/ui/StatusSteps';
+import { orderStatusLabel } from '../../../i18n/labels';
 import { ORDER_SIDE_BRANCHES, ORDER_STATUS_META } from '../constants';
 import { lastOrderPathStatus, orderPath, orderReachedAt } from '../stateMachine';
 import type { Order } from '../types';
@@ -11,14 +13,14 @@ function buildSteps(order: Pick<Order, 'status' | 'history' | 'method'>): Status
 
   const steps: StatusStep[] = path.map((status, i) => ({
     key: status,
-    label: ORDER_STATUS_META[status].label,
+    label: orderStatusLabel(status, ORDER_STATUS_META[status].label),
     at: i <= lastIndex ? orderReachedAt(order, status) : null,
     state: i < lastIndex || i === lastIndex && branched ? 'done' : i === lastIndex ? 'current' : 'upcoming'
   }));
   if (!branched) return steps;
   return [
   ...steps.slice(0, lastIndex + 1),
-  { key: order.status, label: ORDER_STATUS_META[order.status].label, state: 'stopped', at: orderReachedAt(order, order.status) }];
+  { key: order.status, label: orderStatusLabel(order.status, ORDER_STATUS_META[order.status].label), state: 'stopped', at: orderReachedAt(order, order.status) }];
 
 }
 
@@ -27,5 +29,6 @@ function buildSteps(order: Pick<Order, 'status' | 'history' | 'method'>): Status
  * pickup orders show Ready for pickup → Collected.
  */
 export function OrderTimeline({ order }: {order: Pick<Order, 'status' | 'history' | 'method'>;}) {
-  return <StatusSteps steps={buildSteps(order)} label="Order progress" stoppedText="order ended here" />;
+  const { t } = useTranslation('jobs');
+  return <StatusSteps steps={buildSteps(order)} label={t('order.timeline.label')} stoppedText={t('order.timeline.stopped')} />;
 }

@@ -18,7 +18,7 @@ export function DeliveryLogList({ log }: {log: DeliveryLogEntry[];}) {
             </Badge>
             <span className="font-bold text-ink">{REMINDER_CHANNEL_LABELS[e.channel]}</span>
             <span className="text-muted">
-              → {e.recipient} {e.recipientId} · job #{e.jobId} · {e.detail}
+              → {e.recipient} {e.recipientId} · {e.subscriptionKey ?? `job #${e.jobId}`} · {e.detail}
             </span>
             <time dateTime={e.at} className="ml-auto font-mono text-xs text-muted">
               {format(new Date(e.at), 'd MMM HH:mm:ss')}

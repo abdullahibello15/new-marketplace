@@ -1,13 +1,13 @@
 import React, { useCallback, useMemo } from 'react';
-import { vendorAccount } from '../../../data/vendorPortal';
 import { useAsyncData } from '../../../hooks/useAsyncData';
 import { JOB_STATUS } from '../../jobs/constants';
 import { listVendorJobs } from '../../jobs/services/jobService';
 import { RequestsContext, type RequestsContextValue } from './requestsContext';
 import type { Job } from '../../jobs/types';
+import { currentVendorId } from '../../auth/session';
 
 const EMPTY: Job[] = [];
-const loadVendorJobs = () => listVendorJobs(vendorAccount.vendorId);
+const loadVendorJobs = () => listVendorJobs(currentVendorId());
 
 /**
  * The vendor's jobs, shared by the requests list, request details, the calendar and the nav badge.

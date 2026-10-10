@@ -1,8 +1,11 @@
+import { useTranslation } from 'react-i18next';
+import { tradeBrowseLabel } from '../../../../i18n/labels';
 import { Link } from 'react-router-dom';
 import { buildSearchUrl } from '../../utils/searchUrl';
 import type { TradeCategoryOption } from '../../../../types/marketplace';
 
 export function CategoryTile({ category }: {category: TradeCategoryOption;}) {
+  useTranslation();
   const Icon = category.icon;
   return (
     <Link
@@ -12,7 +15,7 @@ export function CategoryTile({ category }: {category: TradeCategoryOption;}) {
       <span className={`flex h-10 w-10 items-center justify-center rounded-xl ${category.tintClass}`} aria-hidden="true">
         <Icon className="h-5 w-5" strokeWidth={2.2} />
       </span>
-      <span className="text-[12px] font-semibold leading-tight text-ink sm:text-[13px]">{category.browseLabel}</span>
+      <span className="text-[12px] font-semibold leading-tight text-ink sm:text-[13px]">{tradeBrowseLabel(category.id)}</span>
     </Link>);
 
 }

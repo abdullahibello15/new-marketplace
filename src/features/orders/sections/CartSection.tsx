@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ShoppingCartIcon } from 'lucide-react';
@@ -16,6 +17,7 @@ import type { CartItem } from '../types';
 
 /** The multi-vendor cart, grouped by vendor, with an overall total and a link to checkout. */
 export function CartSection() {
+  const { t } = useTranslation('jobs');
   const cart = useCart();
   const [removing, setRemoving] = useState<CartItem | null>(null);
   const vendorCount = cart.groups.length;
@@ -23,22 +25,22 @@ export function CartSection() {
   return (
     <>
       <PageHeader
-        title="Cart"
+        title={t('order.cart.title')}
         subtitle={
         cart.count ?
-        `${cart.count} ${cart.count === 1 ? 'item' : 'items'} from ${vendorCount} ${vendorCount === 1 ? 'vendor' : 'vendors'}` :
-        'Products you add from vendor shops'
+        t('order.cart.subtitle', { items: t('order.items', { count: cart.count }), vendors: t('order.cart.vendors', { count: vendorCount }) }) :
+        t('order.cart.subtitleEmpty')
         } />
 
       <PageContainer>
         {cart.items.length === 0 ?
         <EmptyState
           icon={ShoppingCartIcon}
-          title="Your cart is empty"
-          description="Open a vendor’s profile and tap Add to cart on any product in their shop."
+          title={t('order.cart.emptyTitle')}
+          description={t('order.cart.emptyText')}
           action={
           <Link to={SEARCH_ROUTE} className={buttonClasses({ variant: 'secondary', size: 'sm' })}>
-                Browse vendors
+                {t('order.cart.browse')}
               </Link>
           } /> :
 
@@ -57,7 +59,7 @@ export function CartSection() {
             <aside aria-labelledby="cart-summary-heading" className="space-y-4 lg:sticky lg:top-6 lg:self-start">
               <section className="rounded-2xl border border-line bg-white p-4 lg:p-5">
                 <h2 id="cart-summary-heading" className="text-base font-bold text-ink">
-                  Summary
+                  {t('order.cart.summary')}
                 </h2>
                 <dl className="mt-3 space-y-2 text-sm">
                   {cart.groups.map((g) =>
@@ -69,15 +71,15 @@ export function CartSection() {
                     </div>
                 )}
                   <div className="flex justify-between gap-3 border-t border-line pt-2">
-                    <dt className="font-bold text-ink">Items total</dt>
+                    <dt className="font-bold text-ink">{t('order.cart.itemsTotal')}</dt>
                     <dd>
                       <Price amount={cart.total} className="text-lg font-extrabold text-ink" />
                     </dd>
                   </div>
                 </dl>
-                <p className="mt-2 text-xs text-muted">Delivery fees, if any, are added at checkout when you choose pickup or delivery.</p>
+                <p className="mt-2 text-xs text-muted">{t('order.cart.feesNote')}</p>
                 <Link to={ORDER_ROUTES.checkout} className={`${buttonClasses({ fullWidth: true })} mt-4`}>
-                  Go to checkout
+                  {t('order.cart.checkout')}
                 </Link>
               </section>
               <SeparateFulfilmentNote vendorCount={vendorCount} />
@@ -88,10 +90,10 @@ export function CartSection() {
 
       <ConfirmDialog
         open={removing !== null}
-        title="Remove from cart?"
-        description={removing ? `${removing.name} from ${removing.vendorName} will be removed from your cart.` : undefined}
-        confirmLabel="Remove"
-        cancelLabel="Keep it"
+        title={t('order.cart.removeTitle')}
+        description={removing ? t('order.cart.removeText', { name: removing.name, vendor: removing.vendorName }) : undefined}
+        confirmLabel={t('order.cart.remove')}
+        cancelLabel={t('order.cart.keep')}
         destructive
         onConfirm={() => {
           if (removing) cart.remove(removing.vendorId, removing.productId);

@@ -4,10 +4,14 @@ import { normalizeSearch } from '../../../lib/sanitize';
 import { matchesWordPrefixes } from '../../../lib/textMatch';
 import { mockResponse } from '../../../services/mockApi';
 import { getAllVendors } from '../../../services/vendorStore';
-import { isVendorLimited } from '../../vendor-dashboard/services/subscriptionService';
+import { isVendorSuspended } from '../../vendor-dashboard/services/subscriptionService';
 
-/** Vendors customers can discover: everyone except those whose subscription grace period has run out. */
-const listedVendors = () => getAllVendors().filter((v) => !isVendorLimited(v.id));
+/** Every vendor is listed; a suspended subscription only lowers ranking (see rankAvailableFirst). */
+const listedVendors = () => getAllVendors();
+
+/** Soft suspension: suspended vendors go after everyone else, keeping the chosen order within each group. */
+const rankAvailableFirst = (a: {temporarilyUnavailable: boolean;}, b: {temporarilyUnavailable: boolean;}) =>
+Number(a.temporarilyUnavailable) - Number(b.temporarilyUnavailable);
 import { formatTrade } from '../../../utils/format';
 import { AREA_MODE, FEED_PAGE_SIZE, NEARBY_RADIUS_KM, SORT_OPTION, SUGGESTIONS_PER_GROUP } from '../constants';
 import type { Vendor } from '../../../types/marketplace';
@@ -48,7 +52,11 @@ function withDistance(place: Place): Located[] {
 function nearbyVendors(place: Place): Located[] {
   return withDistance(place).
   filter(({ vendor, distance }) => distance !== null && distance <= NEARBY_RADIUS_KM || vendor.serviceAreas.includes(place.lga)).
-  sort((a, b) => byDistance(a.distance, b.distance) || b.vendor.rating - a.vendor.rating);
+  sort((a, b) =>
+  Number(isVendorSuspended(a.vendor.id)) - Number(isVendorSuspended(b.vendor.id)) ||
+  byDistance(a.distance, b.distance) ||
+  b.vendor.rating - a.vendor.rating
+  );
 }
 
 function matchesQuery(vendor: Vendor, q: string): boolean {
@@ -72,7 +80,8 @@ function toListing({ vendor, distance }: Located): VendorListing {
     coordinates: vendor.coordinates,
     priceFrom: prices.length ? Math.min(...prices.map((s) => s.minPrice)) : null,
     priceTo: prices.length ? Math.max(...prices.map((s) => s.maxPrice)) : null,
-    distanceKm: distance
+    distanceKm: distance,
+    temporarilyUnavailable: isVendorSuspended(vendor.id)
   };
 }
 
@@ -124,7 +133,7 @@ function matchingListings({
   filter(({ vendor }) => !q || matchesQuery(vendor, q)).
   map(toListing).
   filter((listing) => overlapsPrice(listing, price.min, price.max)).
-  sort(SORTERS[sort]);
+  sort((a, b) => rankAvailableFirst(a, b) || SORTERS[sort](a, b));
 }
 
 /**

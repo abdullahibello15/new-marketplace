@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { EarningsChart } from '../../../../components/vendor/EarningsChart';
 import { formatNaira } from '../../../../utils/format';
 import { EARNINGS_CHART_MONTHS } from '../../constants';
@@ -5,9 +6,10 @@ import type { ChartPoint } from '../../../../utils/earnings';
 
 /** Reuses the shared bar chart, with a text version of the same numbers for screen readers. */
 export function MonthlyEarningsChart({ data }: {data: ChartPoint[];}) {
+  const { t } = useTranslation('vendor');
   return (
     <figure className="rounded-2xl border border-line bg-white p-4 lg:p-6">
-      <figcaption className="text-sm font-semibold text-muted">Earnings, last {EARNINGS_CHART_MONTHS} months</figcaption>
+      <figcaption className="text-sm font-semibold text-muted">{t('earnings.chart', { count: EARNINGS_CHART_MONTHS })}</figcaption>
       <div className="mt-4" aria-hidden="true">
         <EarningsChart data={data} />
       </div>

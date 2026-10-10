@@ -10,8 +10,8 @@ import type { PlanFeature, PlanId, PlanLimitKey, SubscriptionPlan } from './type
  */
 
 export const BILLING_RULES = {
-  /** Days after the end date before the profile is limited (hidden from search, no new requests). */
-  graceDays: 3,
+  /** Days after the end date that the profile stays fully working, before soft suspension. */
+  graceDays: 7,
   /** Show the "ends soon" warning when this many days or fewer remain. */
   expiryWarningDays: 7,
   /** MOCK: show the demo controls that move the subscription's dates (to try expiry and grace). False in production. */
@@ -58,15 +58,16 @@ const limitText = (n: number | null) => n === null ? 'Unlimited' : String(n);
 /** Comparison rows: the enforced limits first (from PLANS, so they can't disagree), then the other features. */
 export const PLAN_FEATURES: readonly PlanFeature[] = [
 ...Object.values(PLAN_LIMIT).map((key): PlanFeature => ({
+  id: key,
   label: PLAN_LIMIT_LABELS[key].label,
   values: Object.fromEntries(PLANS.map((p) => [p.id, limitText(p.limits[key])])) as Record<PlanId, string>
 })),
 // PLACEHOLDER rows: replace with the features from the build spec.
-{ label: 'Public profile & search listing', values: { starter: true, standard: true, premium: true } },
-{ label: 'Verified trade badge', values: { starter: false, standard: true, premium: true } },
-{ label: 'Priority in search results', values: { starter: false, standard: false, premium: true } },
-{ label: 'Earnings reports', values: { starter: 'Basic', standard: 'Full', premium: 'Full + export' } },
-{ label: 'Support', values: { starter: 'Email', standard: 'Phone', premium: 'Dedicated manager' } }];
+{ id: 'listing', label: 'Public profile & search listing', values: { starter: true, standard: true, premium: true } },
+{ id: 'badge', label: 'Verified trade badge', values: { starter: false, standard: true, premium: true } },
+{ id: 'priority', label: 'Priority in search results', values: { starter: false, standard: false, premium: true } },
+{ id: 'reports', label: 'Earnings reports', values: { starter: 'Basic', standard: 'Full', premium: 'Full + export' } },
+{ id: 'support', label: 'Support', values: { starter: 'Email', standard: 'Phone', premium: 'Dedicated manager' } }];
 
 
 export function planById(id: PlanId): SubscriptionPlan {

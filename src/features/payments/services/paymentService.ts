@@ -2,6 +2,8 @@ import { addMinutes } from 'date-fns';
 import { ApiError, mockResponse } from '../../../services/mockApi';
 import { getAllVendors } from '../../../services/vendorStore';
 import { findBank } from '../../../data/nigerianBanks';
+import i18n from '../../../i18n';
+import { invoiceKindLabel, planName } from '../../../i18n/labels';
 import { formatNaira } from '../../../utils/format';
 import { JOB_ROUTES, JOB_STATUS } from '../../jobs/constants';
 import { getJob } from '../../jobs/services/jobService';
@@ -9,6 +11,7 @@ import { FULFILMENT_METHOD, ORDER_ROUTES, ORDER_STATUS } from '../../orders/cons
 import { getOrder } from '../../orders/services/orderService';
 import { DASHBOARD_ROUTES, INVOICE_KIND_LABELS } from '../../vendor-dashboard/constants';
 import { planById } from '../../vendor-dashboard/plans';
+import { findAssociation } from '../../vendor-dashboard/services/associationService';
 import { getInvoice, markInvoicePaid } from '../../vendor-dashboard/services/subscriptionService';
 import type { Invoice } from '../../vendor-dashboard/types';
 import { GWANI_PAYEE, MOCK_PSP, PAYMENT_CONFIG } from '../config';
@@ -24,8 +27,7 @@ import type {
   PaymentInitiation,
   PaymentMethodChoice,
   PaymentOverview,
-  PaymentSubjectRef,
-  Receipt } from
+  PaymentSubjectRef } from
 '../types';
 
 /*
@@ -54,18 +56,21 @@ function save(updated: Payment): Payment {
 
 /* ---------- What's being paid for ---------- */
 
+/** Why a job can't be paid for now, as translation keys (resolved when the payable is built). */
 const JOB_ENDED: Partial<Record<Job['status'], string>> = {
-  declined: 'The vendor declined this job.',
-  quote_rejected: 'You turned down the quote.',
-  cancelled: 'This job was cancelled.'
+  declined: 'payments:payable.jobDeclined',
+  quote_rejected: 'payments:payable.jobQuoteRejected',
+  cancelled: 'payments:payable.jobCancelled'
 };
-const JOB_ON_HOLD = 'Payment is on hold while Gwani reviews the problem you reported.';
+const JOB_ON_HOLD = 'payments:payable.jobOnHold';
 const JOB_CASH_CONFIRMABLE: Job['status'][] = [JOB_STATUS.AwaitingConfirmation, JOB_STATUS.Completed, JOB_STATUS.Closed];
 const ORDER_ENDED: Partial<Record<Order['status'], string>> = {
-  declined: 'The vendor declined this order.',
-  cancelled: 'This order was cancelled.',
-  out_of_stock: 'This order ended because nothing was in stock.'
+  declined: 'payments:payable.orderDeclined',
+  cancelled: 'payments:payable.orderCancelled',
+  out_of_stock: 'payments:payable.orderOutOfStock'
 };
+/** Resolves one of the reason keys above, or null. */
+const reason = (key: string | null | undefined) => key ? i18n.t(key) : null;
 const ORDER_CASH_CONFIRMABLE: Order['status'][] = [ORDER_STATUS.Collected, ORDER_STATUS.Completed];
 const JOB_FULFILLED: Job['status'][] = [JOB_STATUS.Completed, JOB_STATUS.Closed];
 
@@ -77,18 +82,18 @@ function jobPayable(job: Job): Payable {
   const cashOk = acceptsCash(job.vendorId);
   return {
     subject: { kind: PAYMENT_SUBJECT.Job, id: job.id },
-    title: `Job #${job.id}${job.serviceName ? ` · ${job.serviceName}` : ''}`,
+    title: job.serviceName ? i18n.t('payments:payable.jobTitleService', { id: job.id, service: job.serviceName }) : i18n.t('payments:payable.jobTitle', { id: job.id }),
     vendorId: job.vendorId,
     vendorName: job.vendorName,
     customerId: job.customerId,
     customerName: job.customerName,
-    lines: job.agreedPrice ? [{ label: `${job.serviceName ?? 'Job'} (agreed price)`, amount: job.agreedPrice }] : [],
+    lines: job.agreedPrice ? [{ label: i18n.t('payments:payable.agreedPrice', { service: job.serviceName ?? i18n.t('payments:payable.job') }), amount: job.agreedPrice }] : [],
     total: job.agreedPrice ?? 0,
     blockedReason:
-    JOB_ENDED[job.status] ?? (
-    job.status === JOB_STATUS.Disputed ? JOB_ON_HOLD : job.agreedPrice === null ? 'You can pay once you’ve accepted a quote.' : null),
+    reason(JOB_ENDED[job.status]) ?? (
+    job.status === JOB_STATUS.Disputed ? reason(JOB_ON_HOLD) : job.agreedPrice === null ? i18n.t('payments:payable.acceptQuoteFirst') : null),
     methods: PAYMENT_METHOD_ORDER.filter((m) => m !== PAYMENT_METHOD.Cash || cashOk),
-    cashUnavailableReason: cashOk ? null : `${job.vendorName} doesn’t accept cash.`,
+    cashUnavailableReason: cashOk ? null : i18n.t('payments:payable.noCash', { name: job.vendorName }),
     cashConfirmable: JOB_CASH_CONFIRMABLE.includes(job.status),
     fulfilled: JOB_FULFILLED.includes(job.status),
     returnPath: JOB_ROUTES.job(job.id)
@@ -101,16 +106,16 @@ function orderPayable(order: Order): Payable {
   const lines = order.items.filter((i) => !i.outOfStock).map((i) => ({ label: `${i.quantity} × ${i.name}`, amount: i.unitPrice * i.quantity }));
   return {
     subject: { kind: PAYMENT_SUBJECT.Order, id: order.id },
-    title: `Order #${order.id}`,
+    title: i18n.t('payments:payable.orderTitle', { id: order.id }),
     vendorId: order.vendorId,
     vendorName: order.vendorName,
     customerId: order.customerId,
     customerName: order.customerName,
-    lines: order.deliveryFee ? [...lines, { label: 'Delivery', amount: order.deliveryFee }] : lines,
+    lines: order.deliveryFee ? [...lines, { label: i18n.t('payments:payable.delivery'), amount: order.deliveryFee }] : lines,
     total: order.total,
-    blockedReason: ORDER_ENDED[order.status] ?? null,
+    blockedReason: reason(ORDER_ENDED[order.status]),
     methods: PAYMENT_METHOD_ORDER.filter((m) => m !== PAYMENT_METHOD.Cash || cashOk),
-    cashUnavailableReason: cashOk ? null : pickup ? `${order.vendorName} doesn’t accept cash.` : 'Cash is only for pickup orders.',
+    cashUnavailableReason: cashOk ? null : pickup ? i18n.t('payments:payable.noCash', { name: order.vendorName }) : i18n.t('payments:payable.cashPickupOnly'),
     cashConfirmable: ORDER_CASH_CONFIRMABLE.includes(order.status),
     fulfilled: order.status === ORDER_STATUS.Completed,
     returnPath: ORDER_ROUTES.order(order.id)
@@ -118,29 +123,30 @@ function orderPayable(order: Order): Payable {
 }
 
 const INVOICE_BLOCKED: Partial<Record<Invoice['status'], string>> = {
-  paid: 'This invoice is already paid.',
-  void: 'This invoice was replaced by a newer one. Start again from your subscription page.'
+  paid: 'payments:payable.invoicePaid',
+  void: 'payments:payable.invoiceVoid'
 };
 
 /** A vendor's subscription invoice: paid to Gwani, online methods only, never escrowed. */
 function invoicePayable(invoice: Invoice): Payable {
   const plan = planById(invoice.planId);
+  const association = invoice.associationId ? findAssociation(invoice.associationId) : null;
   const vendor = getAllVendors().find((v) => v.id === invoice.vendorId);
   return {
     subject: { kind: PAYMENT_SUBJECT.Subscription, id: invoice.id },
-    title: `${plan.name} plan · ${INVOICE_KIND_LABELS[invoice.kind]}`,
+    title: i18n.t('payments:payable.planTitle', { plan: planName(plan.id, plan.name), kind: invoiceKindLabel(invoice.kind, INVOICE_KIND_LABELS[invoice.kind]) }),
     vendorId: GWANI_PAYEE.id,
     vendorName: GWANI_PAYEE.name,
     customerId: invoice.vendorId,
-    customerName: vendor?.name ?? invoice.vendorId,
+    customerName: association?.name ?? vendor?.name ?? invoice.vendorId,
     lines: invoice.lines,
     total: invoice.amount,
-    blockedReason: INVOICE_BLOCKED[invoice.status] ?? null,
+    blockedReason: reason(INVOICE_BLOCKED[invoice.status]),
     methods: PAYMENT_METHOD_ORDER.filter((m) => m !== PAYMENT_METHOD.Cash),
-    cashUnavailableReason: 'Subscriptions are paid online.',
+    cashUnavailableReason: i18n.t('payments:payable.subscriptionsOnline'),
     cashConfirmable: false,
     fulfilled: false,
-    returnPath: DASHBOARD_ROUTES.subscription
+    returnPath: association ? DASHBOARD_ROUTES.association : DASHBOARD_ROUTES.subscription
   };
 }
 
@@ -170,8 +176,8 @@ function reconcile(p: Payment, payable: Payable, now = new Date()): Payment {
   if (p.status === PAYMENT_STATUS.Paid) {
     const escrow = escrowForPayment(p.reference);
     if (escrow?.status === ESCROW_STATUS.Refunded) {
-      const note = [...escrow.ledger].reverse().find((e) => e.type === ESCROW_EVENT.Refunded)?.note ?? 'Refunded';
-      return save({ ...p, status: PAYMENT_STATUS.Refunded, updatedAt: at, outcome: `${note}. ${formatNaira(p.amount)} returned to you (mock).` });
+      const note = [...escrow.ledger].reverse().find((e) => e.type === ESCROW_EVENT.Refunded)?.note ?? i18n.t('payments:outcome.refundedFallback');
+      return save({ ...p, status: PAYMENT_STATUS.Refunded, updatedAt: at, outcome: i18n.t('payments:outcome.refunded', { note, amount: formatNaira(p.amount) }) });
     }
     // Paid before escrow existed for it (e.g. seeded data): settle it now.
     if (!escrow) settlePaid(p, payable, at);
@@ -189,7 +195,7 @@ function reconcile(p: Payment, payable: Payable, now = new Date()): Payment {
       paidAt: at,
       updatedAt: at,
       amountReceived: psp.amountReceived,
-      outcome: extra > 0 ? `You sent ${formatNaira(extra)} more than needed. The extra will be refunded to your account within 24 hours (mock).` : null
+      outcome: extra > 0 ? i18n.t('payments:outcome.extra', { amount: formatNaira(extra) }) : null
     });
     settlePaid(paid, payable, at);
     return paid;
@@ -204,8 +210,8 @@ function reconcile(p: Payment, payable: Payable, now = new Date()): Payment {
       updatedAt: at,
       amountReceived: received,
       outcome: received > 0 ?
-      `Only ${formatNaira(received)} of ${formatNaira(p.amount)} arrived before this expired. It will be refunded within 24 hours (mock). Start a new payment to try again.` :
-      'This payment expired before any money arrived. Start a new one to try again.'
+      i18n.t('payments:outcome.partialExpired', { received: formatNaira(received), amount: formatNaira(p.amount) }) :
+      i18n.t('payments:outcome.expired')
     });
   }
   const short = received > 0 && received < p.amount ? p.amount - received : 0;
@@ -213,13 +219,13 @@ function reconcile(p: Payment, payable: Payable, now = new Date()): Payment {
     ...p,
     status: psp?.settling ? PAYMENT_STATUS.Processing : PAYMENT_STATUS.Pending,
     amountReceived: received,
-    outcome: short ? `We received ${formatNaira(received)}, which is ${formatNaira(short)} short. Send ${formatNaira(short)} more to the same account before it expires.` : null
+    outcome: short ? i18n.t('payments:outcome.short', { received: formatNaira(received), short: formatNaira(short) }) : null
   });
 }
 
 function findPayment(reference: string): Payment {
   const p = payments.find((x) => x.reference === reference);
-  if (!p) throw new ApiError('We couldn’t find that payment.', 404);
+  if (!p) throw new ApiError(i18n.t('payments:error.notFound'), 404);
   return p;
 }
 
@@ -248,24 +254,24 @@ export async function initiatePayment(order: PaymentSubjectRef, choice: PaymentM
   const payable = await loadPayable(order);
   return mockResponse(() => {
     if (payable.blockedReason) throw new ApiError(payable.blockedReason, 409);
-    if (!payable.methods.includes(choice.method)) throw new ApiError(payable.cashUnavailableReason ?? 'That payment method isn’t available here.', 400);
+    if (!payable.methods.includes(choice.method)) throw new ApiError(payable.cashUnavailableReason ?? i18n.t('payments:error.methodUnavailable'), 400);
     const bank = choice.method === PAYMENT_METHOD.Ussd ? findBank(choice.bankId) : undefined;
-    if (choice.method === PAYMENT_METHOD.Ussd && !bank) throw new ApiError('Choose your bank.', 400);
+    if (choice.method === PAYMENT_METHOD.Ussd && !bank) throw new ApiError(i18n.t('payments:error.chooseBank'), 400);
 
     const now = new Date();
     const existing = latestFor(order).map((p) => reconcile(p, payable, now));
-    if (existing.some((p) => p.status === PAYMENT_STATUS.Paid)) throw new ApiError('This has already been paid.', 409);
+    if (existing.some((p) => p.status === PAYMENT_STATUS.Paid)) throw new ApiError(i18n.t('payments:error.alreadyPaid'), 409);
 
     const open = existing.filter((p) => !isFinal(p));
     const reusable = open.find((p) => p.method === choice.method && p.amount === payable.total && (!bank || p.ussd?.bankId === bank.id));
     if (reusable) return { payment: reusable, authorizationUrl: reusable.method === PAYMENT_METHOD.Card ? hostedCheckoutUrl(reusable.reference) : null };
     // Abandoned attempts are closed so only one payment is ever open. A part-paid transfer must be finished first.
     for (const p of open) {
-      if (p.amountReceived > 0) throw new ApiError('Part of a transfer has already arrived. Finish that payment or wait for it to expire.', 409);
+      if (p.amountReceived > 0) throw new ApiError(i18n.t('payments:error.partTransfer'), 409);
       if (p.cash && (p.cash.vendorAmount !== null || p.cash.customerAmount !== null)) {
-        throw new ApiError('Cash has already been confirmed for this, so the payment method can’t change.', 409);
+        throw new ApiError(i18n.t('payments:error.cashConfirmed'), 409);
       }
-      save({ ...p, status: PAYMENT_STATUS.Expired, updatedAt: now.toISOString(), outcome: 'Replaced by a new payment.' });
+      save({ ...p, status: PAYMENT_STATUS.Expired, updatedAt: now.toISOString(), outcome: i18n.t('payments:outcome.replaced') });
     }
 
     const reference = newReference();
@@ -330,7 +336,7 @@ function settleCash(p: Payment, at: string): Payment {
     ...p,
     status: PAYMENT_STATUS.Processing,
     updatedAt: at,
-    reviewFlag: `The amounts don’t match: ${p.vendorName} says ${formatNaira(c.vendorAmount)} was received, the customer says ${formatNaira(c.customerAmount)} was paid. Gwani’s team will review it and contact you both.`
+    reviewFlag: i18n.t('payments:outcome.mismatch', { vendor: p.vendorName, vendorAmount: formatNaira(c.vendorAmount), customerAmount: formatNaira(c.customerAmount) })
   };
 }
 
@@ -339,10 +345,10 @@ async function confirmCash(reference: string, party: 'vendor' | 'customer', amou
   const payable = await loadPayable(current.subject);
   return mockResponse(() => {
     const p = findPayment(reference);
-    if (p.method !== PAYMENT_METHOD.Cash || !p.cash) throw new ApiError('This isn’t a cash payment.', 400);
-    if (p.status === PAYMENT_STATUS.Paid) throw new ApiError('This cash payment is already confirmed.', 409);
-    if (!payable.cashConfirmable) throw new ApiError('Cash can be confirmed once the work is marked done.', 409);
-    if (!Number.isInteger(amount) || amount <= 0 || amount > p.amount * CASH_LIMIT_MULTIPLIER) throw new ApiError('Enter the amount in whole Naira.', 400);
+    if (p.method !== PAYMENT_METHOD.Cash || !p.cash) throw new ApiError(i18n.t('payments:error.notCash'), 400);
+    if (p.status === PAYMENT_STATUS.Paid) throw new ApiError(i18n.t('payments:error.cashAlready'), 409);
+    if (!payable.cashConfirmable) throw new ApiError(i18n.t('payments:error.cashNotYet'), 409);
+    if (!Number.isInteger(amount) || amount <= 0 || amount > p.amount * CASH_LIMIT_MULTIPLIER) throw new ApiError(i18n.t('payments:error.wholeNaira'), 400);
     const at = new Date().toISOString();
     const cash = party === 'vendor' ? { ...p.cash, vendorAmount: amount, vendorConfirmedAt: at } : { ...p.cash, customerAmount: amount, customerConfirmedAt: at };
     return save(settleCash({ ...p, cash }, at));
@@ -355,15 +361,7 @@ export const confirmCashReceived = (reference: string, amount: number) => confir
 /** POST /payments/:reference/cash/customer — "I paid ₦amount". */
 export const confirmCashPaid = (reference: string, amount: number) => confirmCash(reference, 'customer', amount);
 
-/* ---------- Receipts ---------- */
+/* ---------- Reads for the transaction history ---------- */
 
-/** GET /payments/:reference/receipt — only for money that actually moved. */
-export async function getReceipt(reference: string): Promise<Receipt> {
-  const current = findPayment(reference);
-  const payable = await loadPayable(current.subject);
-  return mockResponse(() => {
-    const p = reconcile(findPayment(reference), payable);
-    if (p.status !== PAYMENT_STATUS.Paid && p.status !== PAYMENT_STATUS.Refunded) throw new ApiError('There’s no receipt until the payment goes through.', 409);
-    return { payment: p, lines: payable.lines, issuedAt: p.paidAt ?? p.updatedAt };
-  }, 300);
-}
+/** Every payment as stored right now (read-only), for transactionService. Receipts are built there too. */
+export const paymentsSnapshot = (): readonly Payment[] => payments;

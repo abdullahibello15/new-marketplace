@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { CalendarClockIcon, MapPinIcon } from 'lucide-react';
 import { Price } from '../../../components/ui/Price';
@@ -20,6 +21,7 @@ interface JobListItemProps {
 
 /** One job in a list. Same card in My Jobs (customer) and Requests (vendor). */
 export function JobListItem({ job, to, title, actionHint, highlighted = false }: JobListItemProps) {
+  useTranslation();
   const price = job.agreedPrice ?? (job.quote && !isQuoteExpired(job.quote) && job.status === JOB_STATUS.Quoted ? job.quote.amount : null);
   return (
     <Link

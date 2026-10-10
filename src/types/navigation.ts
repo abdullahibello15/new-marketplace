@@ -11,8 +11,11 @@ export type MobileNavPlacement = 'bar' | 'more';
 export interface NavItem {
   to: string;
   label: string;
+  /** Translation key for the label (common namespace); `label` is the English fallback. */
+  labelKey?: string;
   /** Used in the mobile bottom bar, where space is tight. Falls back to `label`. */
   shortLabel?: string;
+  shortLabelKey?: string;
   icon: LucideIcon;
   match: (path: string) => boolean;
   badge?: number;

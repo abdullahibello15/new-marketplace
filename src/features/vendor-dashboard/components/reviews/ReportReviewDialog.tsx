@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useEffect, useId } from 'react';
 import { useForm, type DefaultValues } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -5,6 +6,7 @@ import { Button } from '../../../../components/ui/Button';
 import { Dialog } from '../../../../components/ui/Dialog';
 import { FormField } from '../../../../components/ui/FormField';
 import { bad, errorText, field, ok } from '../../../../components/vendor/formStyles';
+import { reportReasonLabel } from '../../../../i18n/labels';
 import { REPORT_DETAILS_MAX, REPORT_REASON, REPORT_REASON_LABELS } from '../../constants';
 import { reportReviewSchema, type ReportReviewData, type ReportReviewFormValues } from '../../schemas';
 import type { ReportReason, ReportReviewInput, Review } from '../../types';
@@ -22,6 +24,7 @@ const REASONS = Object.entries(REPORT_REASON_LABELS) as [ReportReason, string][]
 const BLANK: DefaultValues<ReportReviewFormValues> = { details: '' };
 
 export function ReportReviewDialog({ review, onSubmit, onClose }: ReportReviewDialogProps) {
+  const { t } = useTranslation('vendor');
   const uid = useId();
   const detailsId = `${uid}-details`;
   const reasonErrorId = `${uid}-reason-error`;
@@ -49,13 +52,10 @@ export function ReportReviewDialog({ review, onSubmit, onClose }: ReportReviewDi
       open={review !== null}
       onClose={onClose}
       dismissible={!isSubmitting}
-      title="Report this review?"
+      title={t('reviews.reportTitle')}
       description={
       review &&
-      <>
-            Our team checks reported reviews and removes ones that break the rules. {review.customerName}’s review stays visible
-            until then.
-          </>
+      t('reviews.reportText', { name: review.customerName })
 
       }>
 
@@ -67,7 +67,7 @@ export function ReportReviewDialog({ review, onSubmit, onClose }: ReportReviewDi
         className="space-y-4">
 
         <fieldset aria-describedby={errors.reason ? reasonErrorId : undefined}>
-          <legend className="mb-2 text-sm font-bold text-muted">What’s wrong with it?</legend>
+          <legend className="mb-2 text-sm font-bold text-muted">{t('reviews.reportWhat')}</legend>
           <div className="space-y-2">
             {REASONS.map(([value, label]) =>
             <label
@@ -75,7 +75,7 @@ export function ReportReviewDialog({ review, onSubmit, onClose }: ReportReviewDi
               className="flex cursor-pointer items-center gap-3 rounded-xl border border-line px-3 py-2.5 text-[15px] font-semibold text-ink has-[:checked]:border-pine has-[:checked]:bg-[#E3EEEC] has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-pine/40">
 
                 <input type="radio" value={value} {...register('reason')} className="h-4 w-4 accent-pine" />
-                {label}
+                {reportReasonLabel(value, label)}
               </label>
             )}
           </div>
@@ -84,7 +84,7 @@ export function ReportReviewDialog({ review, onSubmit, onClose }: ReportReviewDi
 
         <FormField
           id={detailsId}
-          label={needsDetails ? 'Details' : 'Details (optional)'}
+          label={needsDetails ? t('reviews.details') : t('reviews.detailsOptional')}
           error={errors.details?.message}>
 
           {(describedBy) =>
@@ -102,10 +102,10 @@ export function ReportReviewDialog({ review, onSubmit, onClose }: ReportReviewDi
 
         <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
           <Button variant="secondary" onClick={onClose} disabled={isSubmitting}>
-            Cancel
+            {t('common:action.cancel')}
           </Button>
           <Button type="submit" loading={isSubmitting}>
-            Report review
+            {t('reviews.reportSubmit')}
           </Button>
         </div>
       </form>

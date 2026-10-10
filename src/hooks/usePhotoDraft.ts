@@ -1,3 +1,4 @@
+import i18n from '../i18n';
 import { useEffect, useRef, useState } from 'react';
 
 const MAX_FILE_BYTES = 5 * 1024 * 1024;
@@ -15,9 +16,9 @@ export function checkFiles(files: File[], slotsLeft: number, max: number): {urls
   let overflow = 0;
   for (const file of files) {
     if (!ACCEPTED_TYPES.includes(file.type)) {
-      problems.push(`${file.name} isn't a JPG or PNG.`);
+      problems.push(i18n.t('common:photos.notImage', { name: file.name }));
     } else if (file.size > MAX_FILE_BYTES) {
-      problems.push(`${file.name} is ${(file.size / 1024 / 1024).toFixed(1)} MB. Photos must be 5 MB or smaller.`);
+      problems.push(i18n.t('common:photos.tooBig', { name: file.name, size: (file.size / 1024 / 1024).toFixed(1) }));
     } else if (urls.length >= slotsLeft) {
       overflow += 1;
     } else {
@@ -25,7 +26,7 @@ export function checkFiles(files: File[], slotsLeft: number, max: number): {urls
     }
   }
   if (overflow) {
-    problems.push(`You can add up to ${max} photos, so ${overflow} ${overflow === 1 ? 'photo was' : 'photos were'} not added.`);
+    problems.push(i18n.t('common:photos.overflow', { max, count: overflow }));
   }
   return { urls, problems };
 }

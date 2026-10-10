@@ -1,8 +1,10 @@
 import { useMemo, useRef } from 'react';
 import { useForm, useWatch, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { user } from '../../../data/user';
+import { formatLocalPhone } from '../../../utils/phone';
+import { useAuth } from '../../auth/hooks/useAuth';
 import { useToast } from '../../../hooks/useToast';
+import i18n from '../../../i18n';
 import { errorMessage } from '../../../lib/errors';
 import { placeLabel } from '../../discovery/constants';
 import { usePlace } from '../../discovery/hooks/usePlace';
@@ -25,6 +27,7 @@ interface Options {
 /** Checkout form (RHF + Zod): pickup or delivery per vendor, the shared delivery details, live totals and submit. */
 export function useCheckoutForm({ check, places, onChanged, onPlaced }: Options) {
   const toast = useToast();
+  const { user } = useAuth();
   const { place } = usePlace();
   const groups = useMemo(() => groupCart(check.items), [check.items]);
 
@@ -45,9 +48,9 @@ export function useCheckoutForm({ check, places, onChanged, onPlaced }: Options)
         return { vendorId: g.vendorId, method: vendor ? enabledMethods(vendor.fulfilment)[0] ?? FULFILMENT_METHOD.Pickup : FULFILMENT_METHOD.Pickup };
       }),
       // Start from the customer's profile and chosen area; they can change both.
-      landmark: user.address,
+      landmark: user?.address ?? '',
       placeId: places.some((p) => p.id === place.id) ? place.id : '',
-      phone: user.phone
+      phone: user ? formatLocalPhone(user.phone) : ''
     }
   });
 
@@ -84,14 +87,14 @@ export function useCheckoutForm({ check, places, onChanged, onPlaced }: Options)
           { landmark: data.landmark, placeId: chosenPlace.id, placeLabel: placeLabel(chosenPlace), lga: chosenPlace.lga, phone: data.phone } :
           null
         });
-        toast.success(placed.orders.length === 1 ? 'Order placed.' : `${placed.orders.length} orders placed, one per vendor.`);
+        toast.success(placed.orders.length === 1 ? i18n.t('jobs:order.checkout.placedOne') : i18n.t('jobs:order.checkout.placedMany', { count: placed.orders.length }));
         onPlaced(placed);
       } catch (e) {
         toast.error(errorMessage(e));
         if (e instanceof CheckoutChangedError) onChanged();
       }
     },
-    () => toast.error('Some details need fixing before you can place your order.')
+    () => toast.error(i18n.t('jobs:order.checkout.fixDetails'))
   );
 
   return { form, groups, totals, anyDelivery, deliveryLga, submit };

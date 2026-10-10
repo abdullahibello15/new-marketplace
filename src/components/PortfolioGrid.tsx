@@ -1,3 +1,4 @@
+import i18n from '../i18n';
 import { useState } from 'react';
 import { Lightbox } from './Lightbox';
 
@@ -17,7 +18,7 @@ export function PortfolioGrid({ photos, vendorName, labelledBy }: PortfolioGridP
 
   return (
     <section aria-labelledby={labelledBy ?? 'portfolio-heading'}>
-      {!labelledBy && <h2 id="portfolio-heading" className="sr-only">Portfolio</h2>}
+      {!labelledBy && <h2 id="portfolio-heading" className="sr-only">{i18n.t('common:photos.portfolio')}</h2>}
       <ul className={`grid gap-2 sm:gap-3 ${cols}`}>
         {photos.map((src, i) => {
           const featured = i === 0 && photos.length >= 3;
@@ -26,7 +27,7 @@ export function PortfolioGrid({ photos, vendorName, labelledBy }: PortfolioGridP
               <button
                 type="button"
                 onClick={() => setOpen(i)}
-                aria-label={`Open photo ${i + 1} of ${photos.length}`}
+                aria-label={i18n.t('common:photos.open', { n: i + 1, total: photos.length })}
                 className="block h-full w-full overflow-hidden rounded-2xl ring-offset-2 ring-offset-cream focus:outline-none focus-visible:ring-2 focus-visible:ring-pine">
 
                 <img

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useId } from 'react';
 import { Controller, useFormContext, useWatch } from 'react-hook-form';
 import { DualRangeSlider } from '../../../../components/ui/DualRangeSlider';
@@ -23,6 +24,7 @@ function stopIndex(value: number | null, side: 'min' | 'max'): number {
 
 /** Min/max inputs in ₦ plus a two-thumb slider. Vendors match if any of their prices fall in the range. */
 export function PriceFilterField() {
+  const { t } = useTranslation('discovery');
   const uid = useId();
   const {
     control,
@@ -40,12 +42,12 @@ export function PriceFilterField() {
   }
 
   const inputs = [
-  { name: 'priceMin', label: 'Min (₦)', placeholder: 'No min', error: errors.priceMin?.message },
-  { name: 'priceMax', label: 'Max (₦)', placeholder: 'No max', error: errors.priceMax?.message }] as
+  { name: 'priceMin', label: t('filters.min'), placeholder: t('filters.noMin'), error: errors.priceMin?.message },
+  { name: 'priceMax', label: t('filters.max'), placeholder: t('filters.noMax'), error: errors.priceMax?.message }] as
   const;
 
   return (
-    <FilterSection title="Price">
+    <FilterSection title={t('filters.price')}>
       <div className="grid grid-cols-2 gap-3">
         {inputs.map((input) =>
         <div key={input.name}>
@@ -87,9 +89,9 @@ export function PriceFilterField() {
           low={low}
           high={high}
           onChange={onSlide}
-          lowLabel="Minimum price"
-          highLabel="Maximum price"
-          formatValue={(i, thumb) => thumb === 'low' && i === 0 ? 'No minimum' : thumb === 'high' && i === LAST ? 'No maximum' : formatNaira(PRICE_STOPS[i])} />
+          lowLabel={t('filters.minPrice')}
+          highLabel={t('filters.maxPrice')}
+          formatValue={(i, thumb) => thumb === 'low' && i === 0 ? t('filters.noMinimum') : thumb === 'high' && i === LAST ? t('filters.noMaximum') : formatNaira(PRICE_STOPS[i])} />
 
         <div className="mt-1 flex justify-between text-xs font-semibold text-muted" aria-hidden="true">
           <span>{formatNaira(PRICE_STOPS[0])}</span>

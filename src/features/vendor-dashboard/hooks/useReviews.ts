@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useAsyncData } from '../../../hooks/useAsyncData';
 import { useToast } from '../../../hooks/useToast';
+import i18n from '../../../i18n';
 import { errorMessage } from '../../../lib/errors';
 import { listReviews, replyToReview, reportReview } from '../services/reviewService';
 import { computeReviewStats } from '../utils/reviews';
@@ -33,7 +34,7 @@ export function useReviews() {
     try {
       replace(await replyToReview(id, body));
       setReplyingId(null);
-      toast.success('Reply posted. It’s now public on your profile.');
+      toast.success(i18n.t('vendor:reviews.toastReplied'));
       return true;
     } catch (e) {
       toast.error(errorMessage(e));
@@ -46,7 +47,7 @@ export function useReviews() {
     try {
       replace(await reportReview(reportTarget.id, input));
       setReportTarget(null);
-      toast.success('Thanks for reporting it. Our team will check it within 2 working days.');
+      toast.success(i18n.t('vendor:reviews.toastReported'));
       return true;
     } catch (e) {
       toast.error(errorMessage(e));

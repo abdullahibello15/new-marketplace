@@ -25,9 +25,9 @@ ref)
       {...rest}>
 
       {loading ?
-      <Loader2Icon className="h-4 w-4 animate-spin" aria-hidden="true" /> :
+      <Loader2Icon className="h-4 w-4 shrink-0 animate-spin" aria-hidden="true" /> :
       Icon ?
-      <Icon className="h-4 w-4" aria-hidden="true" /> :
+      <Icon className="h-4 w-4 shrink-0" aria-hidden="true" /> :
       null}
       {children}
     </button>);

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
 import { FormProvider } from 'react-hook-form';
 import { UserXIcon } from 'lucide-react';
@@ -21,9 +22,10 @@ import { ServicesField } from '../components/ServicesField';
 import { WorkingHoursField } from '../components/WorkingHoursField';
 import { useProfileEditor } from '../hooks/useProfileEditor';
 
-const TITLE = 'Edit Profile';
 
 export function EditProfileSection() {
+  const { t } = useTranslation('vendor');
+  const TITLE = t('profile.title');
   const editor = useProfileEditor();
   const guard = useUnsavedChangesGuard(editor.isDirty);
   const [confirmDiscard, setConfirmDiscard] = useState(false);
@@ -34,7 +36,7 @@ export function EditProfileSection() {
       <>
         <PageHeader title={TITLE} />
         <PageContainer width="narrow">
-          <EmptyState icon={UserXIcon} title="We couldn’t find your vendor profile" description="Please sign out and back in. If it keeps happening, contact support." />
+          <EmptyState icon={UserXIcon} title={t('profile.notFoundTitle')} description={t('profile.notFoundText')} />
         </PageContainer>
       </>);
 
@@ -44,10 +46,10 @@ export function EditProfileSection() {
 
   return (
     <>
-      <PageHeader title={TITLE} subtitle="Everything customers see on your public profile" />
+      <PageHeader title={TITLE} subtitle={t('profile.subtitle')} />
       <PageContainer>
         <FormProvider {...editor.form}>
-          <form onSubmit={editor.save} noValidate aria-label="Edit profile" className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-10">
+          <form onSubmit={editor.save} noValidate aria-label={t('profile.title')} className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-10">
             <div className="min-w-0 space-y-6">
               <ProfileSectionNav withErrors={errs} />
               <ProfileSectionCard section={PROFILE_SECTION.About} hasError={errs.has(PROFILE_SECTION.About)}>
@@ -80,20 +82,20 @@ export function EditProfileSection() {
 
       <ConfirmDialog
         open={guard.isBlocked}
-        title="Leave without saving?"
-        description="You have unsaved changes to your profile. If you leave now, they’ll be lost."
-        confirmLabel="Leave without saving"
-        cancelLabel="Keep editing"
+        title={t('profile.leaveTitle')}
+        description={t('profile.leaveText')}
+        confirmLabel={t('profile.leaveConfirm')}
+        cancelLabel={t('jobs:request.keepEditing')}
         destructive
         onConfirm={guard.leave}
         onCancel={guard.stay} />
 
       <ConfirmDialog
         open={confirmDiscard}
-        title="Discard your changes?"
-        description="Your profile goes back to how it was when you last saved."
-        confirmLabel="Discard changes"
-        cancelLabel="Keep editing"
+        title={t('profile.discardTitle')}
+        description={t('profile.discardText')}
+        confirmLabel={t('profile.discardConfirm')}
+        cancelLabel={t('jobs:request.keepEditing')}
         destructive
         onConfirm={() => {
           editor.discard();

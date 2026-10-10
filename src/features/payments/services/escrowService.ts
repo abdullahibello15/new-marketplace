@@ -1,3 +1,4 @@
+import i18n from '../../../i18n';
 import { ApiError, mockResponse } from '../../../services/mockApi';
 import { PAYMENT_SUBJECT } from '../constants';
 import { ESCROW_CONFIG } from '../escrow/escrowConfig';
@@ -63,15 +64,18 @@ export function applyJobEscrowChange(job: Job, from: JobStatus, at = job.updated
   );
 }
 
-/** An order changed status: release on completion, refund if it ended or items were dropped. */
+/** An order changed status: release on completion, refund if it ended or items were dropped, hold for a dispute. */
 export function applyOrderEscrowChange(order: Order, from: OrderStatus, at = order.updatedAt): void {
-  applyToSubject({ kind: PAYMENT_SUBJECT.Order, id: order.id }, (held) => orderEscrowDecision({ from, to: order.status, orderTotal: order.total }, held), at);
+  applyToSubject({ kind: PAYMENT_SUBJECT.Order, id: order.id }, (held) => orderEscrowDecision({ from, to: order.status, orderTotal: order.total, disputeRefund: order.dispute?.resolution?.refundAmount ?? null }, held), at);
 }
 
 /** Everything a vendor has in escrow (for the earnings dashboard). */
 export function vendorEscrows(vendorId: string): Escrow[] {
   return escrows.filter((e) => e.vendorId === vendorId);
 }
+
+/** Every escrow, read-only, for Gwani's admin analytics (commission earned on releases). */
+export const escrowsSnapshot = (): readonly Escrow[] => escrows;
 
 /* ---------- API ---------- */
 
@@ -98,7 +102,7 @@ export function payOutVendorEscrow(vendorId: string, at = new Date().toISOString
 export function getEscrow(reference: string): Promise<Escrow> {
   return mockResponse(() => {
     const e = escrowForPayment(reference);
-    if (!e) throw new ApiError('No escrow for that payment.', 404);
+    if (!e) throw new ApiError(i18n.t('payments:error.noEscrow'), 404);
     return e;
   }, 200);
 }

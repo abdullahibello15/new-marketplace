@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { FormProvider } from 'react-hook-form';
 import { Button } from '../../../../components/ui/Button';
 import { ConfirmDialog } from '../../../../components/ui/ConfirmDialog';
@@ -14,6 +15,7 @@ import type { Vendor } from '../../../../types/marketplace';
 
 /** Task 50: description, photos, preferred date/time window and address → a Requested job. */
 export function JobRequestForm({ vendor }: {vendor: Vendor;}) {
+  const { t } = useTranslation('jobs');
   const r = useJobRequestForm(vendor);
   const { isDirty, isSubmitting } = r.form.formState;
   const guard = useUnsavedChangesGuard(isDirty && !r.created);
@@ -22,12 +24,12 @@ export function JobRequestForm({ vendor }: {vendor: Vendor;}) {
 
   return (
     <FormProvider {...r.form}>
-      <form onSubmit={r.submit} noValidate aria-label={`Request a job from ${vendor.name}`} className="space-y-5">
-        <RequestFormSection id="job-what" title="What do you need?">
+      <form onSubmit={r.submit} noValidate aria-label={t('request.formLabel', { name: vendor.name })} className="space-y-5">
+        <RequestFormSection id="job-what" title={t('request.what')}>
           <JobDescriptionFields services={vendor.services} />
         </RequestFormSection>
 
-        <RequestFormSection id="job-photos-section" title="Photos" hint="Add 1 to 5 photos of the problem. Clear photos get you a more accurate quote.">
+        <RequestFormSection id="job-photos-section" title={t('request.photos')} hint={t('request.photosHint')}>
           <JobPhotosField
             photos={r.form.watch('photos')}
             problems={r.photos.problems}
@@ -36,11 +38,11 @@ export function JobRequestForm({ vendor }: {vendor: Vendor;}) {
             error={r.form.formState.errors.photos?.message} />
         </RequestFormSection>
 
-        <RequestFormSection id="job-when" title="When">
+        <RequestFormSection id="job-when" title={t('request.when')}>
           <JobWhenFields workingHours={vendor.workingHours} />
         </RequestFormSection>
 
-        <RequestFormSection id="job-where" title="Where">
+        <RequestFormSection id="job-where" title={t('request.where')}>
           <JobAddressFields
             places={r.places.data ?? []}
             placesStatus={r.places.status}
@@ -53,19 +55,19 @@ export function JobRequestForm({ vendor }: {vendor: Vendor;}) {
         <CancellationPolicySummary />
 
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-sm text-muted">You’ll get a quote first. Nothing is booked or paid until you accept it.</p>
+          <p className="text-sm text-muted">{t('request.quoteFirst')}</p>
           <Button type="submit" variant="accent" loading={isSubmitting} className="sm:min-w-[12rem]">
-            Send request
+            {t('request.send')}
           </Button>
         </div>
       </form>
 
       <ConfirmDialog
         open={guard.isBlocked}
-        title="Leave without sending?"
-        description="Your job request hasn’t been sent. If you leave now, what you’ve entered will be lost."
-        confirmLabel="Leave"
-        cancelLabel="Keep editing"
+        title={t('request.leaveTitle')}
+        description={t('request.leaveText')}
+        confirmLabel={t('request.leave')}
+        cancelLabel={t('request.keepEditing')}
         destructive
         onConfirm={guard.leave}
         onCancel={guard.stay} />

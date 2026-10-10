@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { XIcon } from 'lucide-react';
 import { TradeBadge } from '../../../../components/TradeBadge';
@@ -14,9 +15,10 @@ interface MapPreviewCardProps {
 
 /** Floats over the map for the selected marker: bottom of the screen on phones, bottom-left on desktop. */
 export function MapPreviewCard({ listing: v, onClose }: MapPreviewCardProps) {
+  const { t } = useTranslation('discovery');
   return (
     <section
-      aria-label={`Selected vendor: ${v.name}`}
+      aria-label={t('map.selected', { name: v.name })}
       aria-live="polite"
       className="absolute inset-x-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-[1000] rounded-2xl border border-line bg-white p-3 shadow-xl lg:inset-x-auto lg:bottom-4 lg:left-4 lg:w-80">
 
@@ -28,7 +30,7 @@ export function MapPreviewCard({ listing: v, onClose }: MapPreviewCardProps) {
             <button
               type="button"
               onClick={onClose}
-              aria-label="Close preview"
+              aria-label={t('map.closePreview')}
               className="-mr-1 -mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-muted hover:bg-sand hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-pine/40">
 
               <XIcon className="h-4 w-4" aria-hidden="true" />
@@ -44,7 +46,7 @@ export function MapPreviewCard({ listing: v, onClose }: MapPreviewCardProps) {
         </div>
       </div>
       <Link to={vendorProfilePath(v.id)} className={`${buttonClasses({ size: 'sm', fullWidth: true })} mt-3`}>
-        View profile
+        {t('map.viewProfile')}
       </Link>
     </section>);
 

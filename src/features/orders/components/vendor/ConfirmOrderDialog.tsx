@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Button } from '../../../../components/ui/Button';
 import { Dialog } from '../../../../components/ui/Dialog';
 import { Price } from '../../../../components/ui/Price';
@@ -19,20 +20,25 @@ interface ConfirmOrderDialogProps {
  * (partial decline). Unticking everything marks the whole order Out of stock. Stock is taken on confirm.
  */
 export function ConfirmOrderDialog({ open, order, busy, onConfirm, onClose }: ConfirmOrderDialogProps) {
+  const { t } = useTranslation('vendor');
   const s = useConfirmOrderSelection(order, open);
   const partial = !s.noneAvailable && s.outOfStock.length > 0;
-  const label = s.noneAvailable ? 'Mark order out of stock' : partial ? `Confirm ${s.supplied.length} of ${order.items.length} items` : 'Confirm order';
+  const label = s.noneAvailable ?
+  t('orders.dialog.markOutOfStock') :
+  partial ?
+  t('orders.dialog.confirmPartial', { n: s.supplied.length, total: order.items.length }) :
+  t('orders.confirm');
 
   return (
     <Dialog
       open={open}
       onClose={onClose}
       dismissible={!busy}
-      title={`Confirm order #${order.id}`}
-      description="Tick the items you can supply. Confirming takes them out of your stock.">
+      title={t('orders.dialog.title', { id: order.id })}
+      description={t('orders.dialog.text')}>
 
       <fieldset>
-        <legend className="sr-only">Items you can supply</legend>
+        <legend className="sr-only">{t('orders.dialog.legend')}</legend>
         <ul className="space-y-2">
           {order.items.map((i) => {
             const stock = s.stockFor(i.productId);
@@ -48,7 +54,7 @@ export function ConfirmOrderDialog({ open, order, busy, onConfirm, onClose }: Co
                       {i.quantity} × {i.name}
                     </span>
                     <span className={`block ${short ? 'font-semibold text-clay-dark' : 'text-muted'}`}>
-                      {stock} in stock{short ? ' – not enough' : ''}
+                      {short ? t('orders.dialog.notEnough', { count: stock }) : t('orders.dialog.inStock', { count: stock })}
                     </span>
                   </span>
                   <Price amount={i.unitPrice * i.quantity} className="shrink-0 text-sm font-semibold text-ink" />
@@ -61,18 +67,18 @@ export function ConfirmOrderDialog({ open, order, busy, onConfirm, onClose }: Co
 
       <p aria-live="polite" className="mt-3 text-sm text-muted">
         {s.noneAvailable ?
-        'Nothing ticked: the customer is told the order is out of stock and it ends here.' :
+        t('orders.dialog.none') :
         partial ?
         <>
-              Unticked items are removed and not charged. New items total: <Price amount={s.suppliedTotal} className="font-bold text-ink" />.
+              {t('orders.dialog.partial')}<Price amount={s.suppliedTotal} className="font-bold text-ink" />.
             </> :
 
-        'Everything is in stock.'}
+        t('orders.dialog.all')}
       </p>
 
       <div className="mt-5 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
         <Button variant="secondary" onClick={onClose} disabled={busy}>
-          Back
+          {t('common:action.back')}
         </Button>
         <Button
           variant={s.noneAvailable ? 'danger' : 'primary'}

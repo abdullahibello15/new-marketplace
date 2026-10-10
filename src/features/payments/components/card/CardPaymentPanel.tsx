@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useEffect } from 'react';
 import { CreditCardIcon, Loader2Icon, RotateCwIcon } from 'lucide-react';
 import { Button } from '../../../../components/ui/Button';
@@ -15,13 +16,10 @@ interface CardPaymentPanelProps {
   onPaid: (p: Payment) => void;
 }
 
-const MESSAGES = {
-  closed: 'You closed the payment window before finishing. No money was taken.',
-  timeout: 'We didn’t hear back from the payment page. If you finished paying, check again; otherwise try again.'
-};
 
 /** "Pay with card" → the PSP's hosted page → verify by reference → success only if the server says Paid. */
 export function CardPaymentPanel({ amount, initiate, onPayment, onPaid }: CardPaymentPanelProps) {
+  const { t } = useTranslation('payments');
   const card = useCardPayment(initiate, (p) => {
     onPayment(p);
     if (p.status === PAYMENT_STATUS.Paid) onPaid(p);
@@ -38,11 +36,11 @@ export function CardPaymentPanel({ amount, initiate, onPayment, onPaid }: CardPa
       {card.stage === 'verifying' ?
       <p role="status" className="flex items-center gap-2 rounded-xl bg-sand px-3 py-3 text-sm font-semibold text-ink">
           <Loader2Icon className="h-4 w-4 animate-spin" aria-hidden="true" />
-          Confirming your payment with the bank…
+          {t('cardPanel.verifying')}
         </p> :
 
       <Button fullWidth icon={CreditCardIcon} loading={card.stage === 'starting'} disabled={card.busy} onClick={() => void card.pay()}>
-          {retryable ? 'Try again' : 'Pay'} <Price amount={amount} /> with card
+          {retryable ? t('cardPanel.retry') : t('cardPanel.pay')} <Price amount={amount} /> {t('cardPanel.withCard')}
         </Button>
       }
 
@@ -50,12 +48,12 @@ export function CardPaymentPanel({ amount, initiate, onPayment, onPaid }: CardPa
       <div id="card-result" tabIndex={-1} role="alert" className="space-y-2 rounded-xl border border-clay/40 bg-clay-soft px-3 py-2.5 text-sm text-ink focus:outline-none">
           <p>
             {card.stage === 'closed' || card.stage === 'timeout' ?
-            MESSAGES[card.stage] :
-            card.message ?? 'The payment didn’t go through. No money was taken.'}
+            t(`cardPanel.${card.stage}`) :
+            card.message ?? t('cardPanel.failed')}
           </p>
           {card.stage !== 'failed' &&
         <Button variant="outline" size="sm" icon={RotateCwIcon} onClick={card.checkAgain}>
-              Check again
+              {t('cardPanel.checkAgain')}
             </Button>
         }
         </div>

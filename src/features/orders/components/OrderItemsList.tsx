@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Badge } from '../../../components/ui/Badge';
 import { Price } from '../../../components/ui/Price';
 import { FULFILMENT_METHOD } from '../constants';
@@ -6,10 +7,11 @@ import type { Order } from '../types';
 
 /** The order's lines and totals. Lines the vendor marked out of stock are struck through and not charged. */
 export function OrderItemsList({ order }: {order: Order;}) {
+  const { t } = useTranslation('jobs');
   return (
     <section aria-labelledby="order-items-heading" className="rounded-2xl border border-line bg-white p-4 lg:p-5">
       <h2 id="order-items-heading" className="text-base font-bold text-ink">
-        Items
+        {t('order.list.items')}
       </h2>
       <ul className="mt-3 divide-y divide-line">
         {order.items.map((i) =>
@@ -22,7 +24,7 @@ export function OrderItemsList({ order }: {order: Order;}) {
               </p>
               {i.outOfStock &&
             <Badge tone="danger" className="mt-1">
-                  Out of stock · not charged
+                  {t('order.list.outOfStock')}
                 </Badge>
             }
             </div>
@@ -32,19 +34,19 @@ export function OrderItemsList({ order }: {order: Order;}) {
       </ul>
       <dl className="mt-2 space-y-1 border-t border-line pt-3 text-sm">
         <div className="flex justify-between gap-3">
-          <dt className="text-muted">Items</dt>
+          <dt className="text-muted">{t('order.list.items')}</dt>
           <dd>
             <Price amount={order.itemsTotal} className="text-ink" />
           </dd>
         </div>
         {order.method === FULFILMENT_METHOD.Delivery &&
         <div className="flex justify-between gap-3">
-            <dt className="text-muted">Delivery</dt>
-            <dd className="text-ink">{order.deliveryFee ? <Price amount={order.deliveryFee} /> : 'Free'}</dd>
+            <dt className="text-muted">{t('order.list.delivery')}</dt>
+            <dd className="text-ink">{order.deliveryFee ? <Price amount={order.deliveryFee} /> : t('order.list.free')}</dd>
           </div>
         }
         <div className="flex justify-between gap-3">
-          <dt className="font-bold text-ink">Total</dt>
+          <dt className="font-bold text-ink">{t('order.list.total')}</dt>
           <dd>
             <Price amount={order.total} className="text-lg font-extrabold text-ink" />
           </dd>

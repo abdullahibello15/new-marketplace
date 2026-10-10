@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { CheckCircle2Icon, SearchXIcon } from 'lucide-react';
@@ -21,29 +22,30 @@ import type { Payment, PaymentSubjectKind } from '../types';
 
 /** One payment screen for jobs and orders: summary, the methods that apply, the total, and the method's own steps. */
 export function PaymentCheckout({ kind, id }: {kind: PaymentSubjectKind;id: string;}) {
+  const { t } = useTranslation('payments');
   const c = usePaymentCheckout({ kind, id });
   const navigate = useNavigate();
   // Only ever called with a payment the server has verified as Paid.
   const onPaid = useCallback((p: Payment) => navigate(receiptPathFor(p), { replace: true }), [navigate]);
   const data = c.overview.data;
-  const title = data?.payable.title ?? 'Payment';
+  const title = data?.payable.title ?? t('checkout.payment');
   const back = data ? { to: data.payable.returnPath, label: data.payable.title } : undefined;
 
   function body() {
     if (c.overview.status === 'error') return <ErrorState message={c.overview.error ?? ''} onRetry={c.overview.reload} />;
-    if (c.notFound) return <EmptyState icon={SearchXIcon} title="We couldn’t find what you’re paying for" />;
-    if (!data) return <LoadingState label="Loading payment" rows={2} rowClassName="h-48" />;
+    if (c.notFound) return <EmptyState icon={SearchXIcon} title={t('checkout.notFound')} />;
+    if (!data) return <LoadingState label={t('checkout.loading')} rows={2} rowClassName="h-48" />;
     const { payable } = data;
 
     if (c.payment?.status === PAYMENT_STATUS.Paid) {
       return (
         <EmptyState
           icon={CheckCircle2Icon}
-          title="Already paid"
-          description={`${payable.title} is paid. Reference ${c.payment.reference}.`}
+          title={t('checkout.alreadyPaid')}
+          description={t('checkout.alreadyPaidText', { title: payable.title, reference: c.payment.reference })}
           action={
           <Link to={receiptPathFor(c.payment)} className={buttonClasses({ variant: 'secondary', size: 'sm' })}>
-                View receipt
+                {t('card.viewReceipt')}
               </Link>
           } />);
 
@@ -53,11 +55,11 @@ export function PaymentCheckout({ kind, id }: {kind: PaymentSubjectKind;id: stri
       return (
         <EmptyState
           icon={SearchXIcon}
-          title="Nothing to pay right now"
+          title={t('checkout.nothing')}
           description={payable.blockedReason}
           action={
           <Link to={payable.returnPath} className={buttonClasses({ variant: 'secondary', size: 'sm' })}>
-                Back to {payable.title}
+                {t('checkout.backTo', { title: payable.title })}
               </Link>
           } />);
 
@@ -71,20 +73,20 @@ export function PaymentCheckout({ kind, id }: {kind: PaymentSubjectKind;id: stri
 
     return (
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_340px]">
-        <section aria-label="Payment method" className="min-w-0 space-y-4 rounded-2xl border border-line bg-white p-4 lg:p-5">
+        <section aria-label={t('checkout.method')} className="min-w-0 space-y-4 rounded-2xl border border-line bg-white p-4 lg:p-5">
           <PaymentMethodSelector
             methods={payable.methods}
             value={c.method}
             onChange={c.chooseMethod}
             disabled={locked}
-            note={payable.cashUnavailableReason && `Cash isn’t available: ${payable.cashUnavailableReason}`} />
+            note={payable.cashUnavailableReason && t('checkout.cashUnavailable', { reason: payable.cashUnavailableReason })} />
 
           {c.method === PAYMENT_METHOD.Card && <CardPaymentPanel amount={payable.total} initiate={c.initiate} onPayment={c.updatePayment} onPaid={onPaid} />}
           {c.method === PAYMENT_METHOD.Transfer && <TransferPaymentPanel {...panelProps} />}
           {c.method === PAYMENT_METHOD.Ussd && <UssdPaymentPanel amount={payable.total} {...panelProps} />}
           {c.method === PAYMENT_METHOD.Cash && <CashPaymentPanel payable={payable} payment={forMethod} starting={c.starting} initiate={c.initiate} />}
         </section>
-        <aside className="space-y-4 lg:sticky lg:top-6 lg:self-start" aria-label="Order summary">
+        <aside className="space-y-4 lg:sticky lg:top-6 lg:self-start" aria-label={t('checkout.summary')}>
           <PayableSummary payable={payable} />
           <SecurePaymentNote escrow={kind !== PAYMENT_SUBJECT.Subscription} />
         </aside>
@@ -94,7 +96,7 @@ export function PaymentCheckout({ kind, id }: {kind: PaymentSubjectKind;id: stri
 
   return (
     <>
-      <PageHeader title={`Pay for ${title}`} subtitle={data?.payable.vendorName} backTo={back} />
+      <PageHeader title={t('checkout.title', { title })} subtitle={data?.payable.vendorName} backTo={back} />
       <PageContainer>{body()}</PageContainer>
     </>);
 

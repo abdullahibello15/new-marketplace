@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { FormProvider } from 'react-hook-form';
 import { useFilterForm } from '../../hooks/useFilterForm';
 import { FilterFields } from './FilterFields';
@@ -13,6 +14,7 @@ interface DesktopFilterPanelProps {
 /** Left column on large screens. Changes apply on their own after a short pause; invalid input waits. */
 export function DesktopFilterPanel({ filters, activeCount, onApply, onClearAll }: DesktopFilterPanelProps) {
   const { form, apply } = useFilterForm({ filters, onApply, autoApply: true });
+  const { t } = useTranslation('discovery');
 
   return (
     <section
@@ -21,7 +23,7 @@ export function DesktopFilterPanel({ filters, activeCount, onApply, onClearAll }
 
       <div className="mb-4 flex items-baseline justify-between gap-3">
         <h2 id="desktop-filters-heading" className="text-base font-extrabold text-ink">
-          Filters
+          {t('filters.title')}
         </h2>
         {activeCount > 0 &&
         <button
@@ -29,14 +31,14 @@ export function DesktopFilterPanel({ filters, activeCount, onApply, onClearAll }
           onClick={onClearAll}
           className="rounded text-sm font-semibold text-clay-dark hover:text-clay focus:outline-none focus-visible:ring-2 focus-visible:ring-clay/40">
 
-            Clear all
+            {t('filters.clearAll')}
           </button>
         }
       </div>
       <FormProvider {...form}>
-        <form onSubmit={apply} noValidate aria-label="Filter results">
+        <form onSubmit={apply} noValidate aria-label={t('filters.formLabel')}>
           <FilterFields />
-          <p className="sr-only">Results update as you change filters.</p>
+          <p className="sr-only">{t('filters.autoApplyNote')}</p>
         </form>
       </FormProvider>
     </section>);

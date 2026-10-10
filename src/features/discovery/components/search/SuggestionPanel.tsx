@@ -1,5 +1,5 @@
+import { useTranslation } from 'react-i18next';
 import { Loader2Icon } from 'lucide-react';
-import { SUGGESTION_GROUP_LABELS } from '../../constants';
 import { SuggestionRow } from './SuggestionRow';
 import type { TypeaheadStatus } from '../../hooks/useTypeahead';
 import type { SuggestionGroupId, SuggestionOption } from '../../types';
@@ -17,6 +17,7 @@ interface SuggestionPanelProps {
 
 /** The dropdown under the search box. Mouse-down is cancelled so tapping a row doesn't blur the input first. */
 export function SuggestionPanel({ listboxId, optionDomId, options, activeIndex, status, term, onSelect, onClearRecent }: SuggestionPanelProps) {
+  const { t } = useTranslation('discovery');
   // Options arrive flattened in group order; regroup them for headings while keeping their indexes.
   const groups = options.reduce<{group: SuggestionGroupId;rows: {option: SuggestionOption;index: number;}[];}[]>((acc, option, index) => {
     const last = acc[acc.length - 1];
@@ -26,9 +27,9 @@ export function SuggestionPanel({ listboxId, optionDomId, options, activeIndex, 
   }, []);
 
   let message = '';
-  if (status === 'loading') message = 'Searching…';else
-  if (status === 'error') message = 'Couldn’t load suggestions. Press Enter to search anyway.';else
-  if (status === 'ready' && options.length === 0) message = `No suggestions for “${term}”. Press Enter to search.`;
+  if (status === 'loading') message = t('results.searching');else
+  if (status === 'error') message = t('search.suggestionsFailed');else
+  if (status === 'ready' && options.length === 0) message = t('search.noSuggestions', { term });
 
   return (
     <div
@@ -36,7 +37,7 @@ export function SuggestionPanel({ listboxId, optionDomId, options, activeIndex, 
       className="absolute inset-x-0 top-full z-30 mt-2 max-h-[60vh] overflow-y-auto rounded-2xl border border-line bg-white p-2 text-ink shadow-xl">
 
       <p className="sr-only" role="status">
-        {status === 'loading' ? 'Searching' : `${options.length} suggestions available`}
+        {status === 'loading' ? t('search.searchingSr') : t('search.suggestionsCount', { count: options.length })}
       </p>
       {message &&
       <p className="flex items-center gap-2 px-3 py-2.5 text-sm text-muted">
@@ -52,16 +53,16 @@ export function SuggestionPanel({ listboxId, optionDomId, options, activeIndex, 
         onClick={onClearRecent}
         className="absolute right-5 top-[1.15rem] z-10 rounded text-xs font-bold text-clay-dark hover:text-clay focus:outline-none focus-visible:ring-2 focus-visible:ring-clay/40">
 
-          Clear
+          {t('search.clearRecent')}
         </button>
       }
 
       {options.length > 0 &&
-      <ul id={listboxId} role="listbox" aria-label="Search suggestions">
+      <ul id={listboxId} role="listbox" aria-label={t('search.suggestions')}>
           {groups.map(({ group, rows }) =>
         <li key={group} role="presentation" className="py-1">
               <div id={`${listboxId}-${group}`} className="px-3 pb-1 pt-1.5 text-xs font-bold uppercase tracking-wider text-muted">
-                {SUGGESTION_GROUP_LABELS[group]}
+                {t(`search.group.${group}`)}
               </div>
               <ul role="group" aria-labelledby={`${listboxId}-${group}`}>
                 {rows.map(({ option, index }) =>

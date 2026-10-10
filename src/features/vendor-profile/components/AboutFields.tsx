@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+import { tradeLabel } from '../../../i18n/labels';
 import { useFormContext, useWatch } from 'react-hook-form';
 import { FormField } from '../../../components/ui/FormField';
 import { bad, field, ok } from '../../../components/vendor/formStyles';
@@ -6,6 +8,7 @@ import { NAME_MAX } from '../constants';
 import type { ProfileFormData, ProfileFormValues } from '../types';
 
 export function AboutFields() {
+  const { t } = useTranslation('vendor');
   const {
     register,
     control,
@@ -16,7 +19,7 @@ export function AboutFields() {
 
   return (
     <div className="grid gap-4">
-      <FormField id="profile-name" label="Business name" hint="Shown at the top of your profile and in search results." error={errors.name?.message}>
+      <FormField id="profile-name" label={t('profile.about.name')} hint={t('profile.about.nameHint')} error={errors.name?.message}>
         {(describedBy) =>
         <input
           id="profile-name"
@@ -31,7 +34,7 @@ export function AboutFields() {
         }
       </FormField>
 
-      <FormField id="profile-trade" label="Trade category" error={errors.tradeCategory?.message}>
+      <FormField id="profile-trade" label={t('profile.about.trade')} error={errors.tradeCategory?.message}>
         {(describedBy) =>
         <select
           id="profile-trade"
@@ -42,11 +45,11 @@ export function AboutFields() {
           className={`${field} ${errors.tradeCategory ? bad : ok}`}>
 
             <option value="" disabled>
-              Choose your trade
+              {t('profile.about.chooseTrade')}
             </option>
-            {tradeCategories.map((t) =>
-          <option key={t.id} value={t.id}>
-                {t.label}
+            {tradeCategories.map((tc) =>
+          <option key={tc.id} value={tc.id}>
+                {tradeLabel(tc.id)}
               </option>
           )}
           </select>
@@ -54,12 +57,12 @@ export function AboutFields() {
       </FormField>
 
       {trade === 'other' &&
-      <FormField id="profile-trade-other" label="Your trade" error={errors.tradeCategoryOther?.message}>
+      <FormField id="profile-trade-other" label={t('profile.about.yourTrade')} error={errors.tradeCategoryOther?.message}>
           {(describedBy) =>
         <input
           id="profile-trade-other"
           {...register('tradeCategoryOther')}
-          placeholder="e.g. Welder, AC technician"
+          placeholder={t('profile.about.tradePlaceholder')}
           aria-invalid={Boolean(errors.tradeCategoryOther)}
           aria-required="true"
           aria-describedby={describedBy}
@@ -71,7 +74,7 @@ export function AboutFields() {
 
       <FormField
         id="profile-bio"
-        label="Bio (optional)"
+        label={t('profile.about.bio')}
         error={errors.bio?.message}
         aside={
         <span className={`text-xs font-semibold tabular-nums ${bioLength > BIO_MAX_LENGTH ? 'text-clay-dark' : 'text-muted'}`}>
@@ -84,7 +87,7 @@ export function AboutFields() {
           id="profile-bio"
           rows={5}
           {...register('bio')}
-          placeholder="Tell customers about your experience, the areas you cover and what makes your work stand out."
+          placeholder={t('profile.about.bioPlaceholder')}
           aria-invalid={Boolean(errors.bio)}
           aria-describedby={describedBy}
           className={`${field} resize-y ${errors.bio ? bad : ok}`} />

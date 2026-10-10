@@ -1,8 +1,8 @@
-import { format } from 'date-fns';
+import { useTranslation } from 'react-i18next';
 import { CheckIcon, XIcon } from 'lucide-react';
 import { Button } from '../../../../components/ui/Button';
 import { ConfirmDialog } from '../../../../components/ui/ConfirmDialog';
-import { formatNaira } from '../../../../utils/format';
+import { formatDate, formatNaira } from '../../../../utils/format';
 import { JOB_STATUS } from '../../constants';
 import { useQuoteResponse } from '../../hooks/useQuoteResponse';
 import { isQuoteExpired } from '../../utils/quote';
@@ -12,6 +12,7 @@ import type { Job } from '../../types';
 
 /** The customer's view of the quote: Accept / Reject while it's open, then the agreed booking. */
 export function QuoteResponse({ job, onUpdated }: {job: Job;onUpdated: (job: Job) => void;}) {
+  const { t } = useTranslation('jobs');
   const r = useQuoteResponse(job, onUpdated);
   const quote = job.quote;
   if (!quote) return null;
@@ -31,7 +32,7 @@ export function QuoteResponse({ job, onUpdated }: {job: Job;onUpdated: (job: Job
         <div>
               {expired &&
           <p className="mb-3 text-sm font-semibold text-clay-dark" id={`quote-${job.id}-expired`}>
-                  This quote has expired, so it can’t be accepted. Message {job.vendorName} to ask for a new one.
+                  {t('quoteResponse.expired', { name: job.vendorName })}
                 </p>
           }
               <div className="grid grid-cols-2 gap-3">
@@ -42,10 +43,10 @@ export function QuoteResponse({ job, onUpdated }: {job: Job;onUpdated: (job: Job
               disabled={expired}
               aria-describedby={expired ? `quote-${job.id}-expired` : undefined}>
 
-                  Reject
+                  {t('quoteResponse.reject')}
                 </Button>
                 <Button icon={CheckIcon} onClick={r.askAccept} disabled={expired} aria-describedby={expired ? `quote-${job.id}-expired` : undefined}>
-                  Accept
+                  {t('quoteResponse.accept')}
                 </Button>
               </div>
             </div> :
@@ -55,12 +56,14 @@ export function QuoteResponse({ job, onUpdated }: {job: Job;onUpdated: (job: Job
 
       <ConfirmDialog
         open={r.pending === 'accept'}
-        title="Accept this quote?"
-        description={`You’re booking ${job.vendorName} for ${formatNaira(quote.amount)} on ${format(new Date(quote.proposedStart), 'EEE d MMM')} at ${format(
-          new Date(quote.proposedStart),
-          'h:mm a'
-        )}. The price and time will be locked in.`}
-        confirmLabel="Accept and book"
+        title={t('quoteResponse.acceptTitle')}
+        description={t('quoteResponse.acceptText', {
+          name: job.vendorName,
+          amount: formatNaira(quote.amount),
+          date: formatDate(quote.proposedStart, 'EEE d MMM'),
+          time: formatDate(quote.proposedStart, 'h:mm a')
+        })}
+        confirmLabel={t('quoteResponse.acceptConfirm')}
         loading={r.accepting}
         onConfirm={r.confirmAccept}
         onCancel={r.cancel} />
@@ -68,11 +71,11 @@ export function QuoteResponse({ job, onUpdated }: {job: Job;onUpdated: (job: Job
 
       <ReasonDialog
         open={r.pending === 'reject'}
-        title="Reject this quote?"
-        description={`${job.vendorName} will be told you’ve turned it down. You can’t undo this.`}
-        reasonLabel="Reason for the vendor"
-        placeholder="e.g. Over my budget, found someone closer"
-        confirmLabel="Reject quote"
+        title={t('quoteResponse.rejectTitle')}
+        description={t('quoteResponse.rejectText', { name: job.vendorName })}
+        reasonLabel={t('quoteResponse.rejectReason')}
+        placeholder={t('quoteResponse.rejectPlaceholder')}
+        confirmLabel={t('quoteResponse.rejectConfirm')}
         onConfirm={r.confirmReject}
         onCancel={r.cancel} />
 

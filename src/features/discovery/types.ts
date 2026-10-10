@@ -30,6 +30,8 @@ export interface VendorListing extends Pick<
   priceTo: number | null;
   /** From the customer's selected place; null when the vendor has no location yet. */
   distanceKm: number | null;
+  /** Subscription soft-suspended: still listed, ranked last, and can't take new requests. */
+  temporarilyUnavailable: boolean;
 }
 
 /** A listing that can go on the map. */

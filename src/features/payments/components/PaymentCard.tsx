@@ -1,9 +1,11 @@
 import { Link } from 'react-router-dom';
-import { format } from 'date-fns';
+import { useTranslation } from 'react-i18next';
+import i18n from '../../../i18n';
+import { paymentMethodLabel } from '../../../i18n/labels';
 import { WalletIcon } from 'lucide-react';
 import { buttonClasses } from '../../../components/ui/buttonStyles';
 import { Price } from '../../../components/ui/Price';
-import { formatNaira } from '../../../utils/format';
+import { formatDate, formatNaira } from '../../../utils/format';
 import { JOB_ACTOR } from '../../jobs/constants';
 import { FINAL_PAYMENT_STATUSES, PAYMENT_METHOD, PAYMENT_METHOD_META, PAYMENT_ROUTES, PAYMENT_STATUS, PAYMENT_SUBJECT } from '../constants';
 import { useSubjectPayment } from '../hooks/useSubjectPayment';
@@ -26,15 +28,15 @@ interface PaymentCardProps {
   otherName: string;
 }
 
-const when = (iso: string) => format(new Date(iso), 'd MMM, h:mm a');
+const when = (iso: string) => formatDate(iso, 'd MMM, h:mm a');
 
 /** One side's cash confirmation, in words. */
 function cashLine(cash: CashConfirmation, side: JobParty, viewer: JobParty, otherName: string): string {
   const amount = side === JOB_ACTOR.Vendor ? cash.vendorAmount : cash.customerAmount;
   const at = side === JOB_ACTOR.Vendor ? cash.vendorConfirmedAt : cash.customerConfirmedAt;
-  const who = side === viewer ? 'You' : otherName;
-  if (amount === null || !at) return `${who}: not confirmed yet`;
-  return `${who}: ${side === JOB_ACTOR.Vendor ? 'received' : 'paid'} ${formatNaira(amount)} (${when(at)})`;
+  const who = side === viewer ? i18n.t('payments:card.you') : otherName;
+  if (amount === null || !at) return i18n.t('payments:card.notConfirmed', { who });
+  return i18n.t(side === JOB_ACTOR.Vendor ? 'payments:card.received' : 'payments:card.paid', { who, amount: formatNaira(amount), date: when(at) });
 }
 
 /**
@@ -43,21 +45,22 @@ function cashLine(cash: CashConfirmation, side: JobParty, viewer: JobParty, othe
  * work is done, and a receipt link when it's paid.
  */
 export function PaymentCard({ kind, id, refreshKey, viewer, otherName }: PaymentCardProps) {
+  const { t } = useTranslation('payments');
   const { data, status, error, reload, replacePayment } = useSubjectPayment(kind, id, refreshKey);
   const isCustomer = viewer === JOB_ACTOR.Customer;
 
   if (status === 'error') {
     return (
       <p role="alert" className="rounded-2xl border border-clay/40 bg-clay-soft px-4 py-3 text-sm text-ink">
-        Couldn’t load the payment.{' '}
+        {t('card.failedLoad')}{' '}
         <button type="button" onClick={reload} className="rounded font-semibold text-clay-dark hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-clay/40">
-          Try again
+          {t('common:action.retry')}
         </button>
         <span className="sr-only">{error}</span>
       </p>);
 
   }
-  if (!data) return <div role="status" aria-label="Loading payment" className="h-24 animate-pulse rounded-2xl bg-sand" />;
+  if (!data) return <div role="status" aria-label={t('card.loading')} className="h-24 animate-pulse rounded-2xl bg-sand" />;
 
   const { payable, payment, escrow } = data;
   // Nothing to show before there's anything to pay (e.g. no accepted quote yet).
@@ -73,14 +76,14 @@ export function PaymentCard({ kind, id, refreshKey, viewer, otherName }: Payment
       <div className="flex items-start justify-between gap-3">
         <h2 id={`payment-${kind}-${id}`} className="flex items-center gap-2 text-base font-bold text-ink">
           <WalletIcon className="h-4 w-4 text-muted" aria-hidden="true" />
-          Payment
+          {t('card.title')}
         </h2>
-        {payment ? <PaymentStatusBadge status={payment.status} /> : <span className="text-sm font-semibold text-muted">Not paid yet</span>}
+        {payment ? <PaymentStatusBadge status={payment.status} /> : <span className="text-sm font-semibold text-muted">{t('card.notPaid')}</span>}
       </div>
       <p className="text-sm text-muted">
         <Price amount={payment?.amount ?? payable.total} className="text-base font-bold text-ink" />
-        {payment && ` · ${PAYMENT_METHOD_META[payment.method].label}`}
-        {payment?.paidAt && payment.status === PAYMENT_STATUS.Paid && ` · paid ${when(payment.paidAt)}`}
+        {payment && ` · ${paymentMethodLabel(payment.method, PAYMENT_METHOD_META[payment.method].label)}`}
+        {payment?.paidAt && payment.status === PAYMENT_STATUS.Paid && ` · ${t('card.paidAt', { date: when(payment.paidAt) })}`}
       </p>
 
       {escrow && <EscrowBanner escrow={escrow} viewer={viewer} />}
@@ -97,8 +100,8 @@ export function PaymentCard({ kind, id, refreshKey, viewer, otherName }: Payment
         <CashConfirmationForm payment={payment} party={viewer} otherName={otherName} onUpdated={replacePayment} /> :
         <p className="text-sm text-muted">
                 {isCustomer ?
-          `Pay ${formatNaira(payment.amount)} in cash once ${kind === PAYMENT_SUBJECT.Job ? 'the work is done' : 'you have your order'}, then confirm it here.` :
-          `Confirm the cash here once ${kind === PAYMENT_SUBJECT.Job ? 'you’ve marked the work done' : 'the order is collected'} and you’ve been paid.`}
+          t(kind === PAYMENT_SUBJECT.Job ? 'card.payCashJob' : 'card.payCashOrder', { amount: formatNaira(payment.amount) }) :
+          t(kind === PAYMENT_SUBJECT.Job ? 'card.confirmCashJob' : 'card.confirmCashOrder')}
               </p>)
         }
           {isCustomer && payment.status !== PAYMENT_STATUS.Paid && <CashNote />}
@@ -107,21 +110,21 @@ export function PaymentCard({ kind, id, refreshKey, viewer, otherName }: Payment
 
       {isCustomer && open && !cash && payment &&
       <Link to={PAYMENT_ROUTES.checkout(kind, id)} className={buttonClasses({ fullWidth: true })}>
-          Continue payment
+          {t('card.continue')}
         </Link>
       }
-      {!isCustomer && open && !cash && <p className="text-sm text-muted">{otherName} has started paying online. You’ll see it here once it’s confirmed.</p>}
-      {!isCustomer && !payment && <p className="text-sm text-muted">{otherName} hasn’t paid yet.</p>}
+      {!isCustomer && open && !cash && <p className="text-sm text-muted">{t('card.startedOnline', { name: otherName })}</p>}
+      {!isCustomer && !payment && <p className="text-sm text-muted">{t('card.notPaidYet', { name: otherName })}</p>}
 
       {canPayAgain &&
       <Link to={PAYMENT_ROUTES.checkout(kind, id)} className={buttonClasses({ fullWidth: true })}>
-          Pay <Price amount={payable.total} />
+          {t('card.pay')} <Price amount={payable.total} />
         </Link>
       }
       {escrow && <EscrowLedger escrow={escrow} showCommission={!isCustomer} />}
       {payment && (payment.status === PAYMENT_STATUS.Paid || payment.status === PAYMENT_STATUS.Refunded) &&
       <Link to={PAYMENT_ROUTES.receipt(payment.reference)} className={buttonClasses({ variant: 'secondary', fullWidth: true })}>
-          View receipt
+          {t('card.viewReceipt')}
         </Link>
       }
     </section>);

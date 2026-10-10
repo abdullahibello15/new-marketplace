@@ -1,7 +1,9 @@
+import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
 import { XCircleIcon } from 'lucide-react';
 import { Button } from '../../../../components/ui/Button';
 import { ConfirmDialog } from '../../../../components/ui/ConfirmDialog';
+import { cancelReasonLabel } from '../../../../i18n/labels';
 import { formatNaira } from '../../../../utils/format';
 import { CANCEL_REASONS, getCancellationTerms, type CancellationTerms } from '../../cancellationPolicy';
 import { JOB_ACTOR } from '../../constants';
@@ -22,6 +24,7 @@ interface CancelJobActionProps {
  * then a final confirmation. Renders nothing when the policy doesn't allow this person to cancel now.
  */
 export function CancelJobAction({ job, actor, busy, onCancel }: CancelJobActionProps) {
+  const { t } = useTranslation('jobs');
   const [step, setStep] = useState<'reason' | 'confirm' | null>(null);
   // Terms are worked out when the dialog opens, so a late-cancellation fee reflects the time it's used.
   const [terms, setTerms] = useState<CancellationTerms>(() => getCancellationTerms(job, actor));
@@ -43,18 +46,18 @@ export function CancelJobAction({ job, actor, busy, onCancel }: CancelJobActionP
         }}
         className="text-clay-dark hover:bg-clay-soft hover:text-clay-dark">
 
-        Cancel job
+        {t('cancel.button')}
       </Button>
 
       <ReasonDialog
         open={step === 'reason'}
-        title={`Cancel job #${job.id}?`}
-        description={`${otherParty} will be told it’s cancelled and why.`}
-        reasonLabel="Why are you cancelling?"
-        placeholder="Add any detail that helps"
-        presets={CANCEL_REASONS[actor]}
+        title={t('cancel.title', { id: job.id })}
+        description={t('cancel.text', { name: otherParty })}
+        reasonLabel={t('cancel.reasonLabel')}
+        placeholder={t('cancel.placeholder')}
+        presets={CANCEL_REASONS[actor].map((p) => ({ id: p.id, label: cancelReasonLabel(actor, p.id, p.label) }))}
         required={terms.reasonRequired}
-        confirmLabel="Continue"
+        confirmLabel={t('cancel.continue')}
         onConfirm={async (r) => {
           setReason(r);
           setStep('confirm');
@@ -68,15 +71,15 @@ export function CancelJobAction({ job, actor, busy, onCancel }: CancelJobActionP
 
       <ConfirmDialog
         open={step === 'confirm'}
-        title="Cancel this job for good?"
+        title={t('cancel.confirmTitle')}
         description={
         <>
-            Job #{job.id} will be cancelled{terms.fee > 0 ? ` with a ${formatNaira(terms.fee)} late-cancellation fee (demo only, not charged)` : ' at no cost'}.
-            {reason && <> Reason: “{reason}”.</>} You can’t undo this.
+            {terms.fee > 0 ? t('cancel.confirmFee', { id: job.id, fee: formatNaira(terms.fee) }) : t('cancel.confirmFree', { id: job.id })}
+            {reason && <> {t('cancel.reasonLine', { reason })}</>} {t('cancel.noUndo')}
           </>
         }
-        confirmLabel="Yes, cancel job"
-        cancelLabel="Keep job"
+        confirmLabel={t('cancel.confirm')}
+        cancelLabel={t('cancel.keep')}
         destructive
         loading={busy}
         onConfirm={async () => {

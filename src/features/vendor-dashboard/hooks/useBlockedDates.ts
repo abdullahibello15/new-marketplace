@@ -1,13 +1,14 @@
 import { useMemo, useState } from 'react';
-import { format } from 'date-fns';
 import { useAsyncData } from '../../../hooks/useAsyncData';
 import { useToast } from '../../../hooks/useToast';
+import i18n from '../../../i18n';
+import { formatDate } from '../../../utils/format';
 import { fromDateKey } from '../../../lib/dates';
 import { errorMessage } from '../../../lib/errors';
 import { blockDate, listBlockedDates, unblockDate } from '../services/scheduleService';
 import type { CalendarDay } from '../types';
 
-const dayLabel = (key: string) => format(fromDateKey(key), 'EEE d MMM');
+const dayLabel = (key: string) => formatDate(fromDateKey(key), 'EEE d MMM');
 
 /**
  * The vendor's days off. Blocking a day that already has bookings asks for confirmation first,
@@ -26,7 +27,7 @@ export function useBlockedDates() {
     try {
       const created = await blockDate(key);
       setData((prev) => prev.some((b) => b.date === key) ? prev : [...prev, created]);
-      toast.success(`${dayLabel(key)} is now a day off. Customers can’t book you that day.`);
+      toast.success(i18n.t('vendor:calendar.toastBlocked', { day: dayLabel(key) }));
     } catch (e) {
       toast.error(errorMessage(e));
     } finally {
@@ -40,7 +41,7 @@ export function useBlockedDates() {
     try {
       await unblockDate(key);
       setData((prev) => prev.filter((b) => b.date !== key));
-      toast.success(`${dayLabel(key)} is open for bookings again.`);
+      toast.success(i18n.t('vendor:calendar.toastOpen', { day: dayLabel(key) }));
     } catch (e) {
       toast.error(errorMessage(e));
     } finally {

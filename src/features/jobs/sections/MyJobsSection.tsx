@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { ClipboardListIcon, SearchXIcon } from 'lucide-react';
 import { PageHeader } from '../../../components/PageHeader';
@@ -7,7 +8,8 @@ import { EmptyState } from '../../../components/ui/EmptyState';
 import { ErrorState } from '../../../components/ui/ErrorState';
 import { LoadingState } from '../../../components/ui/LoadingState';
 import { PageContainer } from '../../../components/ui/PageContainer';
-import { CURRENT_CUSTOMER_ID, JOB_ACTOR, JOB_ROUTES } from '../constants';
+import { JOB_ACTOR, JOB_ROUTES } from '../constants';
+import { useAuth } from '../../auth/hooks/useAuth';
 import { JobListItem } from '../components/JobListItem';
 import { JobStatusFilter } from '../components/customer/JobStatusFilter';
 import { useMyJobs } from '../hooks/useMyJobs';
@@ -19,21 +21,23 @@ import type { Job } from '../types';
 const hintFor = (job: Job) => actionHint(job, JOB_ACTOR.Customer);
 
 export function MyJobsSection() {
+  const { t } = useTranslation('jobs');
+  const { user } = useAuth();
   const m = useMyJobs();
   const waiting = m.jobs.filter((j) => hintFor(j) !== null).length;
 
   function renderList() {
     if (m.status === 'error') return <ErrorState message={m.error ?? ''} onRetry={m.reload} />;
-    if (m.status === 'loading' && m.jobs.length === 0) return <LoadingState label="Loading your jobs" rows={3} rowClassName="h-32" />;
+    if (m.status === 'loading' && m.jobs.length === 0) return <LoadingState label={t('myJobs.loading')} rows={3} rowClassName="h-32" />;
     if (m.jobs.length === 0) {
       return (
         <EmptyState
           icon={ClipboardListIcon}
-          title="No jobs yet"
-          description="Find a vendor and send a job request. It’ll show up here so you can track it."
+          title={t('myJobs.emptyTitle')}
+          description={t('myJobs.emptyText')}
           action={
           <Link to="/" className={buttonClasses({ variant: 'secondary', size: 'sm' })}>
-              Find a vendor
+              {t('myJobs.findVendor')}
             </Link>
           } />);
 
@@ -43,10 +47,10 @@ export function MyJobsSection() {
       return (
         <EmptyState
           icon={SearchXIcon}
-          title="No jobs with this status"
+          title={t('myJobs.noneWithStatus')}
           action={
           <Button variant="secondary" size="sm" onClick={() => m.setFilter('all')}>
-              Show all jobs
+              {t('myJobs.showAll')}
             </Button>
           } />);
 
@@ -71,9 +75,9 @@ export function MyJobsSection() {
 
   return (
     <>
-      <PageHeader title="My Jobs" subtitle={waiting ? `${waiting} ${waiting === 1 ? 'job needs' : 'jobs need'} your attention` : 'Track your job requests and bookings'} />
+      <PageHeader title={t('myJobs.title')} subtitle={waiting ? t('myJobs.waiting', { count: waiting }) : t('myJobs.subtitle')} />
       <PageContainer className="space-y-4">
-        <NotificationList recipient={JOB_ACTOR.Customer} recipientId={CURRENT_CUSTOMER_ID} linkFor={JOB_ROUTES.job} />
+        <NotificationList recipient={JOB_ACTOR.Customer} recipientId={user?.id ?? ''} linkFor={JOB_ROUTES.job} />
         {m.jobs.length > 0 && <JobStatusFilter value={m.filter} onChange={m.setFilter} counts={m.counts} total={m.jobs.length} />}
         {renderList()}
       </PageContainer>

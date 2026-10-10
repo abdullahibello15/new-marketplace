@@ -1,9 +1,10 @@
 import { useCallback } from 'react';
 import { useAsyncData } from '../../../hooks/useAsyncData';
-import { getReceipt } from '../services/paymentService';
+import { getReceiptDocument } from '../services/transactionService';
+import type { ReceiptViewer } from '../types';
 
-/** The receipt for one payment reference. */
-export function useReceipt(reference: string) {
-  const load = useCallback(() => getReceipt(reference), [reference]);
+/** The receipt for one payment reference: the customer's copy, or the vendor's (with commission). */
+export function useReceipt(reference: string, viewer: ReceiptViewer = 'customer') {
+  const load = useCallback(() => getReceiptDocument(reference, viewer), [reference, viewer]);
   return useAsyncData(load);
 }

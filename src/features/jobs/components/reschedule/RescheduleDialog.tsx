@@ -2,6 +2,8 @@ import { useEffect, useId } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { addDays, format, parseISO } from 'date-fns';
+import { useTranslation } from 'react-i18next';
+import { formatDate } from '../../../../utils/format';
 import { Button } from '../../../../components/ui/Button';
 import { Dialog } from '../../../../components/ui/Dialog';
 import { FormField } from '../../../../components/ui/FormField';
@@ -25,6 +27,7 @@ interface RescheduleDialogProps {
 const blank = (): RescheduleFormValues => ({ date: '', time: '', reason: '' });
 
 export function RescheduleDialog({ open, otherParty, currentStart, workingHours, remaining, onSubmit, onClose }: RescheduleDialogProps) {
+  const { t } = useTranslation('jobs');
   const uid = useId();
   const id = (n: string) => `${uid}-${n}`;
   const {
@@ -51,9 +54,9 @@ export function RescheduleDialog({ open, otherParty, currentStart, workingHours,
       open={open}
       onClose={onClose}
       dismissible={!isSubmitting}
-      title="Request a new time"
-      description={`${otherParty} can accept or decline. Until they reply, the current time stands. ${
-      remaining === 1 ? 'This is the last reschedule allowed for this job.' : `${remaining} reschedules left for this job.`}`}>
+      title={t('reschedule.dialogTitle')}
+      description={`${t('reschedule.dialogText', { name: otherParty })} ${
+      remaining === 1 ? t('reschedule.lastOne') : t('reschedule.left', { count: remaining })}`}>
 
       <form
         onSubmit={handleSubmit(async (data) => {
@@ -63,9 +66,9 @@ export function RescheduleDialog({ open, otherParty, currentStart, workingHours,
         noValidate
         className="space-y-4">
 
-        {currentStart && <p className="rounded-xl bg-sand px-3 py-2 text-sm text-ink">Currently booked: {format(new Date(currentStart), 'EEE d MMM, h:mm a')}</p>}
+        {currentStart && <p className="rounded-xl bg-sand px-3 py-2 text-sm text-ink">{t('reschedule.current', { date: formatDate(currentStart, 'EEE d MMM, h:mm a') })}</p>}
         <div className="grid grid-cols-2 gap-3">
-          <FormField id={id('date')} label="New date" error={errors.date?.message}>
+          <FormField id={id('date')} label={t('reschedule.newDate')} error={errors.date?.message}>
             {(describedBy) =>
             <input
               id={id('date')}
@@ -81,8 +84,8 @@ export function RescheduleDialog({ open, otherParty, currentStart, workingHours,
           </FormField>
           <FormField
             id={id('time')}
-            label="New time"
-            hint={hours ? hours.open ? `Open ${formatDayHours(hours)}` : 'Closed that day' : undefined}
+            label={t('reschedule.newTime')}
+            hint={hours ? hours.open ? t('discovery:booking.openHours', { hours: formatDayHours(hours) }) : t('discovery:booking.closedThatDay') : undefined}
             error={errors.time?.message}>
 
             {(describedBy) =>
@@ -98,13 +101,13 @@ export function RescheduleDialog({ open, otherParty, currentStart, workingHours,
             }
           </FormField>
         </div>
-        <FormField id={id('reason')} label="Reason" error={errors.reason?.message} hint={`Up to ${REASON_MAX} characters.`}>
+        <FormField id={id('reason')} label={t('reschedule.reason')} error={errors.reason?.message} hint={t('reschedule.reasonHint', { max: REASON_MAX })}>
           {(describedBy) =>
           <textarea
             id={id('reason')}
             rows={3}
             {...register('reason')}
-            placeholder="e.g. I’ll be at work that afternoon."
+            placeholder={t('reschedule.placeholder')}
             aria-invalid={Boolean(errors.reason)}
             aria-describedby={describedBy}
             className={`${field} resize-y ${errors.reason ? bad : ok}`} />
@@ -113,10 +116,10 @@ export function RescheduleDialog({ open, otherParty, currentStart, workingHours,
         </FormField>
         <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
           <Button variant="secondary" onClick={onClose} disabled={isSubmitting}>
-            Cancel
+            {t('common:action.cancel')}
           </Button>
           <Button type="submit" loading={isSubmitting}>
-            Send request
+            {t('reschedule.send')}
           </Button>
         </div>
       </form>

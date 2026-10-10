@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+import { productCategoryLabel } from '../../i18n/labels';
 import { Link } from 'react-router-dom';
 import { ImageOffIcon, SquarePenIcon, Trash2Icon } from 'lucide-react';
 import { StockStepper } from './StockStepper';
@@ -15,6 +17,7 @@ interface ProductListItemProps {
 }
 
 export function ProductListItem({ product: p, onToggleAvailable, onStockChange, onDelete }: ProductListItemProps) {
+  const { t } = useTranslation('vendor');
   const needsPhoto = p.images.length === 0;
   const editTo = `/pro/catalogue/products/${p.id}`;
 
@@ -39,7 +42,7 @@ export function ProductListItem({ product: p, onToggleAvailable, onStockChange, 
           </h3>
           <Link
             to={editTo}
-            aria-label={`Edit ${p.name}`}
+            aria-label={t('products.edit', { name: p.name })}
             className="-mr-1 -mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted transition-colors duration-150 hover:bg-sand hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-pine/40">
 
             <SquarePenIcon className="h-4 w-4" aria-hidden="true" />
@@ -47,14 +50,14 @@ export function ProductListItem({ product: p, onToggleAvailable, onStockChange, 
           <button
             type="button"
             onClick={onDelete}
-            aria-label={`Delete ${p.name}`}
+            aria-label={t('products.delete', { name: p.name })}
             className="-mr-1 -mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted transition-colors duration-150 hover:bg-clay-soft hover:text-clay-dark focus:outline-none focus-visible:ring-2 focus-visible:ring-clay/40">
 
             <Trash2Icon className="h-4 w-4" aria-hidden="true" />
           </button>
         </div>
         <p className="mt-0.5 text-sm text-muted">
-          <span className="font-bold text-ink">{formatNaira(p.price)}</span> · {categoryLabel(p.category)}
+          <span className="font-bold text-ink">{formatNaira(p.price)}</span> · {productCategoryLabel(p.category, categoryLabel(p.category))}
         </p>
         <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-2">
           <StockStepper value={p.stock} onChange={onStockChange} productName={p.name} />
@@ -64,14 +67,14 @@ export function ProductListItem({ product: p, onToggleAvailable, onStockChange, 
           <Switch
             checked={p.available}
             onChange={onToggleAvailable}
-            label={`${p.name} available to buy`}
+            label={t('products.availableLabel', { name: p.name })}
             disabled={needsPhoto}
             describedBy={needsPhoto ? `${p.id}-needs-photo` : undefined} />
 
-          <span className="text-sm font-semibold text-ink">{p.available ? 'Available' : 'Hidden'}</span>
+          <span className="text-sm font-semibold text-ink">{p.available ? t('products.available') : t('products.hidden')}</span>
           {needsPhoto &&
           <span id={`${p.id}-needs-photo`} className="rounded-md bg-clay-soft px-2 py-0.5 text-xs font-bold text-clay-dark">
-              Add a photo to show it
+              {t('products.photoToShow')}
             </span>
           }
         </div>

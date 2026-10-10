@@ -1,3 +1,4 @@
+import i18n from '../i18n';
 import { parseCsv } from './csv';
 
 export const MAX_SPREADSHEET_BYTES = 2 * 1024 * 1024;
@@ -11,14 +12,19 @@ function cellToString(cell: unknown): string {
   return String(cell);
 }
 
-/** Reads the first sheet of a .csv or .xlsx file into rows of strings, entirely in the browser. */
-export async function readSpreadsheet(file: File): Promise<string[][]> {
+const sizeText = (bytes: number) => bytes >= 1024 * 1024 ? `${Math.round(bytes / (1024 * 1024) * 10) / 10} MB` : `${Math.round(bytes / 1024)} KB`;
+
+/**
+ * Reads the first sheet of a .csv or .xlsx file into rows of strings, entirely in the browser. The file
+ * itself is never kept or uploaded; callers get the cells only.
+ */
+export async function readSpreadsheet(file: File, { maxBytes = MAX_SPREADSHEET_BYTES }: {maxBytes?: number;} = {}): Promise<string[][]> {
   const ext = file.name.toLowerCase().split('.').pop();
   if (ext === 'xls') {
-    throw new SpreadsheetError('Old .xls files aren’t supported. In Excel, choose File › Save As and pick .xlsx or .csv.');
+    throw new SpreadsheetError(i18n.t('common:spreadsheet.xls'));
   }
-  if (ext !== 'csv' && ext !== 'xlsx') throw new SpreadsheetError('Upload a .csv or .xlsx file.');
-  if (file.size > MAX_SPREADSHEET_BYTES) throw new SpreadsheetError('That file is over 2 MB. Split it into smaller files.');
+  if (ext !== 'csv' && ext !== 'xlsx') throw new SpreadsheetError(i18n.t('common:spreadsheet.type'));
+  if (file.size > maxBytes) throw new SpreadsheetError(i18n.t('common:spreadsheet.size', { size: sizeText(maxBytes) }));
 
   try {
     if (ext === 'csv') return parseCsv(await file.text());
@@ -27,6 +33,6 @@ export async function readSpreadsheet(file: File): Promise<string[][]> {
     const data = await readSheet(file);
     return data.map((row) => row.map(cellToString));
   } catch {
-    throw new SpreadsheetError('We couldn’t read this file. Check that it opens in Excel or Google Sheets, then try again.');
+    throw new SpreadsheetError(i18n.t('common:spreadsheet.unreadable'));
   }
 }

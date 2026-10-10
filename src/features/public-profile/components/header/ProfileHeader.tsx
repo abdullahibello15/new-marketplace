@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+import { formatNumber } from '../../../../utils/format';
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeftIcon } from 'lucide-react';
@@ -16,6 +18,7 @@ interface ProfileHeaderProps {
 }
 
 export function ProfileHeader({ vendor, bookAction }: ProfileHeaderProps) {
+  const { t } = useTranslation('discovery');
   return (
     <header className="bg-pine text-white">
       <div className="mx-auto max-w-6xl px-5 pb-6 pt-6 lg:px-10 lg:pb-9 lg:pt-8">
@@ -24,7 +27,7 @@ export function ProfileHeader({ vendor, bookAction }: ProfileHeaderProps) {
           className="inline-flex items-center gap-1.5 rounded-md text-sm font-semibold text-white/80 transition-colors duration-150 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60">
 
           <ArrowLeftIcon className="h-4 w-4" aria-hidden="true" />
-          Home
+          {t('profile.home')}
         </Link>
 
         <div className="mt-4 flex items-start gap-4 lg:gap-6">
@@ -51,18 +54,18 @@ export function ProfileHeader({ vendor, bookAction }: ProfileHeaderProps) {
                     <StarRating value={vendor.rating} />
                     <span className="font-bold text-white">{vendor.rating.toFixed(1)}</span>
                     <span>
-                      ({vendor.reviews.toLocaleString('en-NG')} {vendor.reviews === 1 ? 'review' : 'reviews'})
+                      ({t('common:reviews.count', { count: vendor.reviews, formattedCount: formatNumber(vendor.reviews) })})
                     </span>
                   </> :
 
-                'No reviews yet'
+                t('profile.noReviews')
                 }
               </a>
               <ResponseTimeIndicator minutes={vendor.responseTimeMinutes} />
             </div>
           </div>
 
-          <div className="hidden w-56 shrink-0 lg:block">{bookAction}</div>
+          <div className="hidden min-w-[14rem] max-w-[18rem] shrink-0 lg:block">{bookAction}</div>
         </div>
       </div>
     </header>);

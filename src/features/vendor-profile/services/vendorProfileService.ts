@@ -1,10 +1,12 @@
+import i18n from '../../../i18n';
+import { planLimitWords, planName } from '../../../i18n/labels';
 import { ApiError, mockResponse } from '../../../services/mockApi';
-import { vendorAccount } from '../../../data/vendorPortal';
 import { isNewService, toProfilePatch } from '../utils/profileForm';
 import { PLAN_LIMIT_LABELS } from '../../vendor-dashboard/plans';
 import { currentPlanFor } from '../../vendor-dashboard/services/subscriptionService';
 import type { VendorProfilePatch } from '../../../types/marketplace';
 import type { ProfileFormData } from '../types';
+import { currentVendorId } from '../../auth/session';
 
 let nextServiceId = 1;
 
@@ -15,7 +17,7 @@ let nextServiceId = 1;
  */
 export function saveVendorProfile(vendorId: string, data: ProfileFormData): Promise<VendorProfilePatch> {
   return mockResponse(() => {
-    if (vendorId !== vendorAccount.vendorId) throw new ApiError('You can only edit your own profile.', 403);
+    if (vendorId !== currentVendorId()) throw new ApiError(i18n.t('vendor:error.ownProfile'), 403);
     const patch = toProfilePatch(data);
     const plan = currentPlanFor(vendorId);
     const over = plan && ([['portfolioPhotos', data.gallery.length], ['services', data.services.length]] as const).find(([key, count]) => {
@@ -23,7 +25,7 @@ export function saveVendorProfile(vendorId: string, data: ProfileFormData): Prom
       return limit !== null && count > limit;
     });
     if (plan && over) {
-      throw new ApiError(`Your ${plan.name} plan allows ${plan.limits[over[0]]} ${PLAN_LIMIT_LABELS[over[0]].many}. Remove some or upgrade your plan.`, 403);
+      throw new ApiError(i18n.t('vendor:error.planLimit', { plan: planName(plan.id, plan.name), what: planLimitWords(over[0], plan.limits[over[0]] ?? 0, PLAN_LIMIT_LABELS[over[0]].many) }), 403);
     }
     return {
       ...patch,

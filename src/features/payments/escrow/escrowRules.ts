@@ -23,7 +23,9 @@ export type EscrowDecision =
 /** Return `refund` to the customer and release the rest to the vendor. */
 {kind: 'settle';refund: number;note: string;} |
 /** Keep holding while a problem is reviewed. */
-{kind: 'dispute';note: string;};
+{kind: 'dispute';note: string;} |
+/** A dispute was dismissed: hold again as normal until the work or order is confirmed. */
+{kind: 'resume';note: string;};
 
 const NONE: EscrowDecision = { kind: 'none' };
 
@@ -61,6 +63,9 @@ export function jobEscrowDecision(change: JobEscrowChange, held: number): Escrow
       }
     case JOB_STATUS.Disputed:
       return { kind: 'dispute', note: 'Problem reported: held until Gwani’s team resolves it' };
+    case JOB_STATUS.InProgress:
+    case JOB_STATUS.AwaitingConfirmation:
+      return change.from === JOB_STATUS.Disputed ? { kind: 'resume', note: 'Dispute dismissed: held until the job is confirmed' } : NONE;
     default:
       return NONE;
   }
@@ -71,15 +76,32 @@ export interface OrderEscrowChange {
   to: OrderStatus;
   /** The order total after this change (it drops when the vendor marks items out of stock). */
   orderTotal: number;
+  /** Set when Gwani resolved a dispute by refunding part of the money. */
+  disputeRefund?: number | null;
 }
 
 const ORDER_ENDED: readonly OrderStatus[] = [ORDER_STATUS.Cancelled, ORDER_STATUS.Declined, ORDER_STATUS.OutOfStock];
 
-/** Order status changes → escrow. Completion releases; ending early refunds; dropped items are refunded at once. */
+/**
+ * Order status changes → escrow. Completion releases; ending early refunds; dropped items are refunded at
+ * once. A reported problem holds the money until Gwani resolves it (same outcomes as jobs).
+ */
 export function orderEscrowDecision(change: OrderEscrowChange, held: number): EscrowDecision {
   if (held <= 0 || change.from === change.to) return NONE;
-  if (change.to === ORDER_STATUS.Completed) return { kind: 'release', note: 'Order received' };
-  if (ORDER_ENDED.includes(change.to)) return { kind: 'refund', amount: held, note: 'Order didn’t go ahead: full refund' };
+  const fromDispute = change.from === ORDER_STATUS.Disputed;
+  if (change.to === ORDER_STATUS.Disputed) return { kind: 'dispute', note: 'Problem reported: held until Gwani’s team resolves it' };
+  if (fromDispute && (change.to === ORDER_STATUS.Delivered || change.to === ORDER_STATUS.Collected)) {
+    return { kind: 'resume', note: 'Dispute dismissed: held until the customer confirms receipt' };
+  }
+  if (change.to === ORDER_STATUS.Completed) {
+    if (fromDispute && change.disputeRefund) {
+      return { kind: 'settle', refund: Math.min(change.disputeRefund, held), note: 'Dispute resolved: part refunded to the customer, the rest released' };
+    }
+    return { kind: 'release', note: fromDispute ? 'Dispute resolved in the vendor’s favour' : 'Order received' };
+  }
+  if (ORDER_ENDED.includes(change.to)) {
+    return { kind: 'refund', amount: held, note: fromDispute ? 'Dispute resolved: full refund to the customer' : 'Order didn’t go ahead: full refund' };
+  }
   if (change.to === ORDER_STATUS.Confirmed && change.orderTotal < held) {
     return { kind: 'refund', amount: held - Math.max(0, change.orderTotal), note: 'Out-of-stock items refunded' };
   }
@@ -104,7 +126,8 @@ export function escrowTotals(escrow: Pick<Escrow, 'gross' | 'ledger'>): EscrowTo
 export function deriveEscrowStatus(escrow: Pick<Escrow, 'gross' | 'ledger'>): EscrowStatus {
   const t = escrowTotals(escrow);
   if (t.held > 0) {
-    const last = [...escrow.ledger].reverse().find((e) => e.type === ESCROW_EVENT.Disputed || e.type === ESCROW_EVENT.Released || e.type === ESCROW_EVENT.Refunded);
+    // A later Held entry (dispute dismissed) means the money is held normally again.
+    const last = [...escrow.ledger].reverse().find((e) => e.type === ESCROW_EVENT.Disputed || e.type === ESCROW_EVENT.Held || e.type === ESCROW_EVENT.Released || e.type === ESCROW_EVENT.Refunded);
     return last?.type === ESCROW_EVENT.Disputed ? ESCROW_STATUS.Disputed : ESCROW_STATUS.Held;
   }
   if (t.refunded >= escrow.gross) return ESCROW_STATUS.Refunded;
@@ -157,6 +180,8 @@ export function applyEscrowDecision(escrow: Escrow, decision: EscrowDecision, at
       }
     case 'dispute':
       return append(escrow, entry(escrow, ESCROW_EVENT.Disputed, held, at, decision.note));
+    case 'resume':
+      return append(escrow, entry(escrow, ESCROW_EVENT.Held, held, at, decision.note));
   }
 }
 

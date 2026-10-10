@@ -1,7 +1,9 @@
+import { useTranslation } from 'react-i18next';
 /** Page-shaped placeholder while the profile loads. */
 export function ProfileSkeleton() {
+  const { t } = useTranslation('discovery');
   return (
-    <div role="status" aria-label="Loading vendor profile">
+    <div role="status" aria-label={t('profile.loading')}>
       <div className="bg-pine">
         <div className="mx-auto flex max-w-6xl gap-4 px-5 pb-8 pt-12 lg:px-10">
           <div className="h-20 w-20 shrink-0 animate-pulse rounded-2xl bg-white/15 lg:h-28 lg:w-28" />

@@ -1,12 +1,14 @@
+import { useTranslation } from 'react-i18next';
 import { PriceRange } from './ui/PriceRange';
 import type { ServiceItem } from '../types/vendorPortal';
 
 export function ServicePriceList({ services }: {services: ServiceItem[];}) {
+  const { t } = useTranslation('discovery');
   if (services.length === 0) return null;
 
   return (
     <section aria-labelledby="services-heading">
-      <h2 id="services-heading" className="text-xs font-bold uppercase tracking-wider text-muted">Services & prices</h2>
+      <h2 id="services-heading" className="text-xs font-bold uppercase tracking-wider text-muted">{t('profile.servicesPrices')}</h2>
       <ul className="mt-3 divide-y divide-line overflow-hidden rounded-2xl border border-line bg-white">
         {services.map((s) =>
         <li key={s.id} className="flex items-start justify-between gap-4 px-4 py-3.5 lg:px-5">

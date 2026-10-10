@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { ChevronDownIcon, MapPinIcon } from 'lucide-react';
 import { placeLabel } from '../../constants';
 import { usePlace } from '../../hooks/usePlace';
@@ -5,6 +6,7 @@ import { usePlace } from '../../hooks/usePlace';
 /** Shows the selected area; tapping it opens the place picker. Styled for the dark page header. */
 export function PlaceChip() {
   const { place, openPicker, isPickerOpen } = usePlace();
+  const { t } = useTranslation('discovery');
   const label = placeLabel(place);
   return (
     <button
@@ -12,7 +14,7 @@ export function PlaceChip() {
       onClick={openPicker}
       aria-haspopup="dialog"
       aria-expanded={isPickerOpen}
-      aria-label={`Location: ${label}. Change location`}
+      aria-label={t('place.chipLabel', { place: label })}
       className="inline-flex max-w-full items-center gap-1.5 rounded-full bg-white/10 py-1.5 pl-3 pr-2.5 text-sm font-semibold text-white transition-colors duration-150 hover:bg-white/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70">
 
       <MapPinIcon className="h-4 w-4 shrink-0 text-mustard" aria-hidden="true" />

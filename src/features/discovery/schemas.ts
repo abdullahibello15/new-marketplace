@@ -1,3 +1,4 @@
+import i18n from '../../i18n';
 import { z } from 'zod';
 import { nigerLgas } from '../../data/nigerLgas';
 import { findTradeCategory } from '../../data/tradeCategories';
@@ -39,11 +40,11 @@ const verification = z.custom<Verification>((v) => typeof v === 'string' && find
 const priceField = z.string().transform((raw, ctx) => {
   const value = parseNumberInput(raw);
   if (Number.isNaN(value)) {
-    ctx.addIssue({ code: 'custom', message: 'Use whole Naira, like 5,000.' });
+    ctx.addIssue({ code: 'custom', message: i18n.t('discovery:filters.error.wholeNaira') });
     return z.NEVER;
   }
   if (value !== null && value > PRICE_INPUT_MAX) {
-    ctx.addIssue({ code: 'custom', message: 'That price looks too high. Check for extra zeros.' });
+    ctx.addIssue({ code: 'custom', message: i18n.t('discovery:filters.error.tooHigh') });
     return z.NEVER;
   }
   return value;
@@ -61,10 +62,10 @@ object({
 }).
 superRefine((v, ctx) => {
   if (v.priceMin !== null && v.priceMax !== null && v.priceMax < v.priceMin) {
-    ctx.addIssue({ code: 'custom', path: ['priceMax'], message: 'Max price can’t be less than min price.' });
+    ctx.addIssue({ code: 'custom', path: ['priceMax'], message: i18n.t('discovery:filters.error.maxBelowMin') });
   }
   if (v.areaMode === AREA_MODE.Lga && v.lgas.length === 0) {
-    ctx.addIssue({ code: 'custom', path: ['lgas'], message: 'Pick at least one LGA, or switch to distance.' });
+    ctx.addIssue({ code: 'custom', path: ['lgas'], message: i18n.t('discovery:filters.error.pickLga') });
   }
 });
 

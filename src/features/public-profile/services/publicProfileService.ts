@@ -1,3 +1,4 @@
+import i18n from '../../../i18n';
 import { findTradeCategory } from '../../../data/tradeCategories';
 import { ApiError, mockResponse } from '../../../services/mockApi';
 import { getAllVendors } from '../../../services/vendorStore';
@@ -7,7 +8,9 @@ import { REVIEW_SORT, REVIEWS_PAGE_SIZE } from '../constants';
 import { reviewsForVendor } from '../../jobs/services/jobService';
 import { orderReviewsForVendor } from '../../orders/services/orderService';
 import { mockReviewsFor } from '../mock/reviews';
+import { flaggedReviewsFor, isReviewRemoved } from './reviewModeration';
 import { bookableItems } from '../utils/bookableItems';
+import { vendorTypicalResponseMinutes } from '../../admin/services/analyticsFacts';
 import type { Vendor } from '../../../types/marketplace';
 import type { Page } from '../../../types/pagination';
 import type {
@@ -25,7 +28,16 @@ const publicName = (fullName: string) => {
   return rest.length ? `${first} ${rest[rest.length - 1][0]}.` : first;
 };
 
-/** Reviews customers left on real jobs and product orders, followed by the generated mock reviews. */
+/**
+ * The vendors as first loaded. Mock reviews are generated from these, so recalculating a vendor's live
+ * rating (after a review is removed) never regenerates their other reviews.
+ */
+const seedVendors = new Map(getAllVendors().map((v) => [v.id, v]));
+
+/**
+ * Reviews customers left on real jobs and product orders, recent flagged ones, then the generated mock
+ * reviews. Reviews removed by Gwani's moderators are left out everywhere, including the rating.
+ */
 function allReviewsFor(vendor: Vendor): PublicReview[] {
   const fromJobs = reviewsForVendor(vendor.id).map((r): PublicReview => ({
     id: `job-${r.jobId}`,
@@ -45,12 +57,12 @@ function allReviewsFor(vendor: Vendor): PublicReview[] {
     createdAt: r.at,
     reply: null
   }));
-  return [...fromJobs, ...fromOrders, ...mockReviewsFor(vendor)];
+  return [...fromJobs, ...fromOrders, ...flaggedReviewsFor(vendor.id), ...mockReviewsFor(seedVendors.get(vendor.id) ?? vendor)].filter((r) => !isReviewRemoved(r.id));
 }
 
 function findVendor(vendorId: string): Vendor {
   const vendor = getAllVendors().find((v) => v.id === vendorId);
-  if (!vendor) throw new ApiError('We couldn’t find that vendor.', 404);
+  if (!vendor) throw new ApiError(i18n.t('discovery:profile.errors.notFound'), 404);
   return withListingRestrictions(vendor);
 }
 
@@ -58,8 +70,27 @@ function findVendor(vendorId: string): Vendor {
 export function getVendorProfile(vendorId: string): Promise<PublicVendorProfile> {
   return mockResponse(() => {
     const vendor = findVendor(vendorId);
-    return { vendor, kind: findTradeCategory(vendor.tradeCategory)?.kind ?? 'service' };
+    // "Usually responds within…": the same working-hours SLA helper the admin dashboard uses.
+    return { vendor: { ...vendor, responseTimeMinutes: vendorTypicalResponseMinutes(vendor.id) }, kind: findTradeCategory(vendor.tradeCategory)?.kind ?? 'service' };
   });
+}
+
+/** Sync read for churn analytics: a vendor's live review ratings with dates, oldest first. */
+export function ratingsTimelineNow(vendorId: string): {at: string;rating: number;}[] {
+  const vendor = getAllVendors().find((v) => v.id === vendorId);
+  if (!vendor) return [];
+  return allReviewsFor(vendor).map((r) => ({ at: r.createdAt, rating: r.rating })).sort((a, b) => a.at.localeCompare(b.at));
+}
+
+/** The rating and count from a vendor's live reviews, right now (used to recalculate after a moderator removes a review). */
+export function reviewStatsNow(vendorId: string): ReviewSummary {
+  return computeReviewStats(allReviewsFor(findVendor(vendorId)));
+}
+
+/** One public review by id, for the moderation queue (null once removed or if it doesn't exist). */
+export function findPublicReview(vendorId: string, reviewId: string): PublicReview | null {
+  const vendor = getAllVendors().find((v) => v.id === vendorId);
+  return vendor ? allReviewsFor(vendor).find((r) => r.id === reviewId) ?? null : null;
 }
 
 /** GET /vendors/:id/reviews/summary — average, total and count per star. */
@@ -98,9 +129,9 @@ vendorId: string,
 export function requestBooking(vendorId: string, input: BookingRequest): Promise<BookingConfirmation> {
   return mockResponse(() => {
     const vendor = findVendor(vendorId);
-    if (vendor.unavailable) throw new ApiError(`${vendor.name} isn’t taking new requests right now.`, 409);
+    if (vendor.unavailable) throw new ApiError(i18n.t('jobs:error.notTakingRequests', { name: vendor.name }), 409);
     const item = bookableItems(vendor).find((i) => i.id === input.itemId);
-    if (!item) throw new ApiError('That service or product is no longer available. Please choose another.', 409);
+    if (!item) throw new ApiError(i18n.t('discovery:profile.errors.itemGone'), 409);
     return {
       reference: `GW-${Math.floor(100000 + Math.random() * 900000)}`,
       itemName: item.name,

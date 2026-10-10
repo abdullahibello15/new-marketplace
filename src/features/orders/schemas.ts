@@ -1,6 +1,9 @@
 import { z } from 'zod';
+import i18n from '../../i18n';
+import { fulfilmentMethodLabel } from '../../i18n/labels';
 import { sanitizeText } from '../../lib/sanitize';
-import { DELIVERY_LANDMARK_MAX, DELIVERY_LANDMARK_MIN, FULFILMENT_METHOD, NIGERIAN_PHONE_PATTERN } from './constants';
+import { isNigerianMobile } from '../../utils/phone';
+import { DELIVERY_LANDMARK_MAX, DELIVERY_LANDMARK_MIN, FULFILMENT_METHOD } from './constants';
 import { deliveryBlockedReason, enabledMethods } from './utils/fulfilment';
 import type { Place } from '../discovery/types';
 import type { CheckoutVendor } from './types';
@@ -31,7 +34,7 @@ export function makeCheckoutSchema({ vendors, places }: {vendors: CheckoutVendor
       const vendor = vendors.find((x) => x.vendorId === g.vendorId);
       if (!vendor) return;
       if (!enabledMethods(vendor.fulfilment).includes(g.method)) {
-        ctx.addIssue({ code: 'custom', path: ['groups', i, 'method'], message: `${vendor.vendorName} doesn’t offer ${g.method}. Choose another option.` });
+        ctx.addIssue({ code: 'custom', path: ['groups', i, 'method'], message: i18n.t('jobs:order.form.methodNotOffered', { name: vendor.vendorName, method: fulfilmentMethodLabel(g.method) }) });
         return;
       }
       if (g.method === FULFILMENT_METHOD.Delivery) {
@@ -42,13 +45,13 @@ export function makeCheckoutSchema({ vendors, places }: {vendors: CheckoutVendor
 
     if (!anyDelivery) return;
     if (v.landmark.length < DELIVERY_LANDMARK_MIN) {
-      ctx.addIssue({ code: 'custom', path: ['landmark'], message: 'Add a street, house number or landmark so the rider can find you.' });
+      ctx.addIssue({ code: 'custom', path: ['landmark'], message: i18n.t('jobs:order.form.landmarkMin') });
     } else if (v.landmark.length > DELIVERY_LANDMARK_MAX) {
-      ctx.addIssue({ code: 'custom', path: ['landmark'], message: `Keep it to ${DELIVERY_LANDMARK_MAX} characters.` });
+      ctx.addIssue({ code: 'custom', path: ['landmark'], message: i18n.t('jobs:form.keepTo', { max: DELIVERY_LANDMARK_MAX }) });
     }
-    if (!place) ctx.addIssue({ code: 'custom', path: ['placeId'], message: 'Choose your town or LGA.' });
-    if (!NIGERIAN_PHONE_PATTERN.test(v.phone)) {
-      ctx.addIssue({ code: 'custom', path: ['phone'], message: 'Enter a Nigerian mobile number, like 0803 555 0142.' });
+    if (!place) ctx.addIssue({ code: 'custom', path: ['placeId'], message: i18n.t('jobs:form.choosePlace') });
+    if (!isNigerianMobile(v.phone)) {
+      ctx.addIssue({ code: 'custom', path: ['phone'], message: i18n.t('jobs:order.form.phone') });
     }
   });
 }

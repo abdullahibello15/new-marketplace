@@ -1,4 +1,5 @@
-import { format } from 'date-fns';
+import { useTranslation } from 'react-i18next';
+import { formatDate } from '../../../utils/format';
 import { RotateCwIcon } from 'lucide-react';
 import { Button } from '../../../components/ui/Button';
 import { PAYMENT_CONFIG } from '../config';
@@ -13,18 +14,19 @@ interface PollingStatusProps {
 
 /** "Checking every few seconds… last checked 10:42:05" plus the manual "Check again". */
 export function PollingStatus({ polling, checking, lastCheckedAt, gaveUp, onCheckNow }: PollingStatusProps) {
+  const { t } = useTranslation('payments');
   return (
     <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-sand px-3 py-2 text-sm">
       <p aria-live="polite" className="text-ink">
         {polling ?
-        'Waiting for your payment. We check every few seconds.' :
+        t('polling.waiting') :
         gaveUp ?
-        `Still nothing after ${PAYMENT_CONFIG.pollMaxMinutes} minutes. Check again when you’ve paid.` :
-        'Not checking automatically right now.'}
-        {lastCheckedAt && <span className="block text-xs text-muted">Last checked {format(lastCheckedAt, 'h:mm:ss a')}</span>}
+        t('polling.gaveUp', { minutes: PAYMENT_CONFIG.pollMaxMinutes }) :
+        t('polling.off')}
+        {lastCheckedAt && <span className="block text-xs text-muted">{t('polling.last', { time: formatDate(lastCheckedAt, 'h:mm:ss a') })}</span>}
       </p>
       <Button variant="outline" size="sm" icon={RotateCwIcon} loading={checking} onClick={onCheckNow}>
-        Check again
+        {t('polling.check')}
       </Button>
     </div>);
 

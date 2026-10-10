@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
 import { TriangleAlertIcon } from 'lucide-react';
 import { Button } from '../../../../components/ui/Button';
@@ -20,6 +21,7 @@ import type { Job } from '../../types';
 
 /** Everything the customer can see or do next, depending on where the job is. */
 export function CustomerJobPanel({ job, onUpdated }: {job: Job;onUpdated: (job: Job) => void;}) {
+  const { t } = useTranslation('jobs');
   const a = useCustomerJobActions(job, onUpdated);
   const [reporting, setReporting] = useState(false);
   // Reschedule times must fit the vendor's working hours.
@@ -33,10 +35,10 @@ export function CustomerJobPanel({ job, onUpdated }: {job: Job;onUpdated: (job: 
 
       {job.status === JOB_STATUS.InProgress &&
       <section aria-labelledby="in-progress-help" className="rounded-2xl border border-line bg-white p-4 text-sm">
-          <h2 id="in-progress-help" className="font-bold text-ink">Something wrong?</h2>
-          <p className="mt-1 text-muted">The job has started, so it can’t be cancelled. If there’s a problem, report it and Gwani will step in.</p>
+          <h2 id="in-progress-help" className="font-bold text-ink">{t('panel.somethingWrong')}</h2>
+          <p className="mt-1 text-muted">{t('panel.startedText')}</p>
           <Button variant="outline" size="sm" icon={TriangleAlertIcon} onClick={() => setReporting(true)} className="mt-3">
-            Report a problem
+            {t('panel.report')}
           </Button>
           <ReportProblemDialog open={reporting} vendorName={job.vendorName} onSubmit={a.report} onClose={() => setReporting(false)} />
         </section>
@@ -54,7 +56,7 @@ export function CustomerJobPanel({ job, onUpdated }: {job: Job;onUpdated: (job: 
       {job.quote ?
       <QuoteResponse job={job} onUpdated={onUpdated} /> :
       !job.cancellation &&
-      <p className="rounded-2xl border border-dashed border-line p-4 text-sm text-muted">No quote yet. {job.vendorName} will send one here.</p>
+      <p className="rounded-2xl border border-dashed border-line p-4 text-sm text-muted">{t('panel.noQuote', { name: job.vendorName })}</p>
 
       }
 

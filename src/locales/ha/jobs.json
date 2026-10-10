@@ -1,0 +1,905 @@
+{
+  "status": {
+    "requested": {
+      "label": "An nema",
+      "description": "Ana jiran mai sana’a ya aiko da farashi."
+    },
+    "quoted": {
+      "label": "An ba da farashi",
+      "description": "Mai sana’a ya aiko da farashi. Abokin ciniki zai iya karɓa ko ƙi."
+    },
+    "scheduled": {
+      "label": "An tsara",
+      "description": "An karɓi farashin. An tabbatar da rana da farashi."
+    },
+    "in_progress": {
+      "label": "Ana aiki",
+      "description": "Mai sana’a ya iso kuma ya fara aikin."
+    },
+    "awaiting_confirmation": {
+      "label": "Ana jiran tabbatarwa",
+      "description": "Mai sana’a ya ce an gama aikin. Ana jiran abokin ciniki ya tabbatar."
+    },
+    "completed": {
+      "label": "An kammala",
+      "description": "Abokin ciniki ya tabbatar an gama aikin."
+    },
+    "closed": {
+      "label": "An rufe",
+      "description": "An gama. Babu sauran abin yi."
+    },
+    "declined": {
+      "label": "An ƙi",
+      "description": "Mai sana’a ba zai iya ɗaukar wannan aikin ba."
+    },
+    "quote_rejected": {
+      "label": "An ƙi farashi",
+      "description": "Abokin ciniki ya ƙi farashin."
+    },
+    "cancelled": {
+      "label": "An soke",
+      "description": "An soke aikin."
+    },
+    "disputed": {
+      "label": "Akwai ƙorafi",
+      "description": "Abokin ciniki ya kai ƙorafi. Ma’aikatan Gwani suna dubawa."
+    }
+  },
+  "rescheduleStatus": {
+    "pending": "Ana jiran amsa",
+    "accepted": "An amince",
+    "declined": "An ƙi"
+  },
+  "disputeReason": {
+    "not_finished": "Ba a gama aikin ba",
+    "poor_quality": "Aikin bai yi kyau ba ko baya aiki",
+    "damage": "An lalata wani abu",
+    "price_changed": "Ya nemi fiye da farashin da aka yarda",
+    "other": "Wani abu daban"
+  },
+  "disputeOutcome": {
+    "release": "An yanke hukunci a madadin mai sana’a",
+    "refund": "An yanke hukunci a madadin abokin ciniki: an mayar da duka kuɗin",
+    "split": "An yanke hukunci da mayar da wani ɓangare na kuɗin",
+    "dismiss": "An yi watsi da ƙorafin: aikin yana ci gaba"
+  },
+  "actor": {
+    "customer": "Abokin ciniki",
+    "vendor": "Mai sana’a",
+    "system": "Gwani",
+    "you": "Kai"
+  },
+  "timeWindow": {
+    "morning": "Safe (8 na safe – 12 na rana)",
+    "afternoon": "Rana (12 – 4 na yamma)",
+    "evening": "Yamma (4 – 7 na yamma)",
+    "anytime": "Kowane lokaci da yake buɗe",
+    "fallback": "Kowane lokaci"
+  },
+  "duration": {
+    "1": "Kusan awa 1",
+    "2": "Kusan awa 2",
+    "3": "Kusan awa 3",
+    "4": "Rabin yini",
+    "8": "Yini guda",
+    "16": "Kwana biyu",
+    "about": "Kusan awa {{count}}"
+  },
+  "expiry": {
+    "24": "Awa 24",
+    "48": "Kwana 2",
+    "72": "Kwana 3",
+    "168": "Mako 1"
+  },
+  "quoteExpiry": {
+    "expiresIn": "Zai ƙare cikin {{time}}",
+    "expiredAgo": "Ya ƙare {{time}} da suka wuce"
+  },
+  "cancelReason": {
+    "customer": {
+      "no_longer_needed": "Ban buƙatar shi kuma",
+      "found_someone_else": "Na sami wani",
+      "time_doesnt_work": "Lokacin bai dace da ni ba kuma",
+      "price_too_high": "Farashin ya yi tsada"
+    },
+    "vendor": {
+      "unavailable": "Ba zan samu a wannan lokacin ba kuma",
+      "emergency": "Gaggawa ta kaina ko ta iyali",
+      "materials": "Ba zan iya samun kayan aiki ba",
+      "out_of_area": "Aikin yana wajen yankina"
+    }
+  },
+  "policy": {
+    "blockedStarted": "An fara aikin, don haka ba za a iya soke shi ba. Yi amfani da “Kai ƙorafi” idan akwai matsala.",
+    "blockedVendorDecline": "Yi amfani da “Ƙi” don ƙin sabuwar buƙata.",
+    "blockedStage": "Ba za a iya soke wannan aikin a wannan matakin ba.",
+    "freeBefore": "Soke kyauta: ba a karɓi farashi ba tukuna.",
+    "vendorRecorded": "Za a rubuta wannan sokewar a shafinka.",
+    "freeWindow": "Soke kyauta: saura fiye da awa {{hours}} kafin farawa.",
+    "lateCustomer": "Soke a makare: saura ƙasa da awa {{hours}} kafin farawa.",
+    "lateCustomerFee": "Soke a makare: saura ƙasa da awa {{hours}} kafin farawa, don haka za a caji {{fee}}.",
+    "lateSummary": "Soke aiki cikin awa {{hours}} kafin farawa ana ɗaukarsa soke a makare.",
+    "lateVendor": "Soke a makare: abokin ciniki yana jiranka cikin awa {{hours}}. Za a rubuta wannan a shafinka.",
+    "line1": "Kyauta ne ka soke har sai ka karɓi farashi.",
+    "line2": "Bayan haka, kyauta ne ka soke har zuwa awa {{hours}} kafin farawa.",
+    "line3": "Cikin awa {{hours}}, za a caji kashi {{percent}}% na farashin (aƙalla {{minimum}}).",
+    "line4": "Da zarar mai sana’a ya fara, ba za ka iya sokewa ba, amma za ka iya kai ƙorafi.",
+    "freeUpTo": "Soke kyauta har zuwa awa {{hours}} kafin farawa",
+    "toggle": "Ƙa’ida",
+    "fee": "Kuɗin sokewa",
+    "feeDemo": "Na gwaji kawai: ba a cire kuɗi ba.",
+    "free": "Kyauta"
+  },
+  "hint": {
+    "reschedule": "Buƙatar canza lokaci: amince ko ƙi",
+    "quoteReady": "Farashi ya shirya: karɓa ko ƙi",
+    "workDone": "An gama aiki: tabbatar ko kai ƙorafi",
+    "review": "Ba da ƙima da ra’ayi kan wannan aikin",
+    "newRequest": "Sabuwar buƙata: aika farashi ko ƙi",
+    "readyToStart": "A shirye don farawa",
+    "inProgress": "Ana aiki: nuna an gama idan ka kammala"
+  },
+  "rescheduleRule": {
+    "onlyScheduled": "Ayyukan da aka tsara ne kawai za a iya canza lokacinsu.",
+    "alreadyWaiting": "Akwai buƙatar canza lokaci da ke jiran amsa tuni.",
+    "maxReached": "Wannan aikin ya riga ya sami buƙatun canza lokaci {{max}}, iyakar da aka yarda.",
+    "tooClose": "Lokacin farawa ya yi kusa. Dole ne a nemi canza lokaci aƙalla awa {{hours}} kafin farawa.",
+    "answered": "An riga an amsa wannan buƙatar canza lokaci.",
+    "ownRequest": "Ba za ka iya amsa buƙatar canza lokaci da kai da kanka ka aika ba.",
+    "noLonger": "Ba za a iya canza lokacin wannan aikin kuma ba."
+  },
+  "details": {
+    "title": "Bayanan aiki",
+    "service": "Aiki: ",
+    "preferred": "Lokacin da aka fi so:",
+    "lga": "{{lga}}",
+    "photos": "Hotuna",
+    "photoLabel": "Hoto daga aiki #{{id}}",
+    "noPhotos": "Ba a saka hotuna ba."
+  },
+  "activity": {
+    "title": "Abubuwan da suka faru",
+    "history": "Tarihin matsayi"
+  },
+  "messages": {
+    "title": "Saƙonni",
+    "comingSoon": "Tattaunawa da {{name}} game da wannan aikin yana nan tafe."
+  },
+  "arrival": "{{name}} ya iso da {{time}}",
+  "filter": {
+    "all": "Duka",
+    "label": "Tace ayyuka ta matsayi"
+  },
+  "timeline": {
+    "label": "Ci gaban aiki",
+    "stopped": "aikin ya tsaya a nan"
+  },
+  "review": {
+    "heading": "Ra’ayi"
+  },
+  "cancelled": {
+    "title": "{{who}} ya soke wannan aikin",
+    "titleYou": "Ka soke wannan aikin",
+    "fee": "Kuɗin soke a makare:",
+    "demo": "(na gwaji kawai, ba a caje ba)"
+  },
+  "dispute": {
+    "customerTitle": "Ka kai ƙorafi",
+    "vendorTitle": "Abokin ciniki ya kai ƙorafi",
+    "refunded": "An mayar wa abokin ciniki {{amount}}.",
+    "reason": "Dalilin Gwani: {{reason}}",
+    "decided": "An yanke hukunci {{date}}.",
+    "reported": "An kai ƙorafi {{date}}. Ma’aikatan Gwani za su tuntuɓe ku duka cikin kwanakin aiki 2."
+  },
+  "rescheduleHistory": {
+    "title": "Tarihin canza lokaci",
+    "to": "zuwa"
+  },
+  "confirm": {
+    "title": "Ana jiran tabbatarwarka",
+    "text": "{{name}} ya ce an gama aikin. Duba shi, sannan ka tabbatar, ko ka kai ƙorafi idan wani abu bai yi daidai ba.",
+    "auto": "Idan ba ka amsa ba, za a tabbatar da shi da kansa a {{date}} (awa {{hours}} bayan an nuna an gama).",
+    "report": "Kai ƙorafi",
+    "confirm": "Tabbatar an gama",
+    "dialogTitle": "Ka tabbatar an gama aikin?",
+    "dialogText": "Kana tabbatar da cewa {{name}} ya gama aiki #{{id}}. Ba za ka iya kai ƙorafi ba bayan haka.",
+    "dialogConfirm": "Eh, an gama"
+  },
+  "quote": {
+    "quote": "Farashi",
+    "agreed": "Farashin da aka yarda",
+    "lockedIn": "An tabbatar",
+    "includes": "Abin da ya ƙunsa",
+    "bookedFor": "Lokacin da aka tsara",
+    "proposedTime": "Lokacin da aka gabatar",
+    "estimated": "Lokacin da zai ɗauka"
+  },
+  "quoteResponse": {
+    "expired": "Wannan farashin ya ƙare, don haka ba za a iya karɓa ba. Aika wa {{name}} saƙo don neman sabo.",
+    "reject": "Ƙi",
+    "accept": "Karɓa",
+    "acceptTitle": "Ka karɓi wannan farashin?",
+    "acceptText": "Kana ɗaukar {{name}} kan {{amount}} a ranar {{date}} da {{time}}. Za a tabbatar da farashi da lokaci.",
+    "acceptConfirm": "Karɓa ka tsara",
+    "rejectTitle": "Ka ƙi wannan farashin?",
+    "rejectText": "Za a sanar da {{name}} cewa ka ƙi. Ba za ka iya janyewa ba.",
+    "rejectReason": "Dalili ga mai sana’a",
+    "rejectPlaceholder": "misali Ya wuce kasafin kuɗina, na sami wani na kusa",
+    "rejectConfirm": "Ƙi farashi"
+  },
+  "myJobs": {
+    "title": "Ayyukana",
+    "waiting_one": "Aiki {{count}} yana buƙatar kulawarka",
+    "waiting_other": "Ayyuka {{count}} suna buƙatar kulawarka",
+    "subtitle": "Bi diddigin buƙatun aikinka da tsare-tsarenka",
+    "loading": "Ana lodo ayyukanka",
+    "emptyTitle": "Babu ayyuka tukuna",
+    "emptyText": "Nemo mai sana’a ka aika buƙatar aiki. Zai bayyana a nan don ka bi diddigi.",
+    "findVendor": "Nemo mai sana’a",
+    "noneWithStatus": "Babu ayyuka a wannan matsayin",
+    "showAll": "Nuna duka ayyuka"
+  },
+  "notifications": {
+    "failed": "An kasa lodo sabbin bayanai.",
+    "loading": "Ana lodo sabbin bayanai",
+    "title": "Sabbin bayanai",
+    "unread": "ba a karanta ba",
+    "markAll": "Nuna duka an karanta",
+    "unreadItem": "(ba a karanta ba)",
+    "showFewer": "Nuna kaɗan",
+    "showAll": "Nuna duka {{count}}"
+  },
+  "cancel": {
+    "button": "Soke aiki",
+    "title": "Ka soke aiki #{{id}}?",
+    "text": "Za a sanar da {{name}} cewa an soke da kuma dalili.",
+    "reasonLabel": "Me ya sa kake sokewa?",
+    "placeholder": "Ƙara duk wani bayani da zai taimaka",
+    "continue": "Ci gaba",
+    "confirmTitle": "Ka soke wannan aikin gaba ɗaya?",
+    "confirmFee": "Za a soke aiki #{{id}} tare da kuɗin soke a makare {{fee}} (na gwaji kawai, ba a caje ba).",
+    "confirmFree": "Za a soke aiki #{{id}} ba tare da wani kuɗi ba.",
+    "reasonLine": "Dalili: “{{reason}}”.",
+    "noUndo": "Ba za ka iya janyewa ba.",
+    "confirm": "Eh, soke aiki",
+    "keep": "Riƙe aikin"
+  },
+  "reviewPrompt": {
+    "title": "Yaya {{name}} ya yi?",
+    "text": "Ra’ayinka zai bayyana a shafinsa kuma zai taimaki sauran abokan ciniki a Minna.",
+    "rating": "Ƙimarka",
+    "comment": "Ra’ayinka (ba dole ba)",
+    "placeholder": "Ya zo a kan lokaci? Farashin ya yi daidai? Za ka sake ɗaukarsa aiki?",
+    "skip": "Tsallake ra’ayi",
+    "post": "Wallafa ra’ayi"
+  },
+  "page": {
+    "title": "Aiki #{{id}}",
+    "back": "Ayyukana",
+    "notFoundTitle": "Ba a sami aikin ba",
+    "notFoundHeading": "Ba mu sami wannan aikin ba",
+    "backToMyJobs": "Koma Ayyukana",
+    "loading": "Ana lodo aiki",
+    "progress": "Ci gaba",
+    "aside": "Farashi da abubuwan da suka faru",
+    "viewVendor": "Duba {{name}}"
+  },
+  "panel": {
+    "somethingWrong": "Akwai matsala?",
+    "startedText": "An fara aikin, don haka ba za a iya soke shi ba. Idan akwai matsala, kai ƙorafi Gwani za ta shiga tsakani.",
+    "report": "Kai ƙorafi",
+    "noQuote": "Babu farashi tukuna. {{name}} zai aiko shi a nan."
+  },
+  "request": {
+    "pageTitle": "Nemi aiki",
+    "vendor": "Mai sana’a",
+    "notFound": "Ba mu sami wannan mai sana’ar ba",
+    "browse": "Duba masu sana’a",
+    "loading": "Ana lodawa",
+    "sellsProducts": "{{name}} yana sayar da kaya ne, don haka babu aikin da za a nema.",
+    "blockedTitle": "Ba za ka iya neman aiki a nan yanzu ba",
+    "backTo": "Koma {{name}}",
+    "formLabel": "Nemi aiki daga {{name}}",
+    "what": "Me kake buƙata?",
+    "photos": "Hotuna",
+    "photosHint": "Saka hotuna 1 zuwa 5 na matsalar. Hotuna masu kyau suna sa a ba ka farashi daidai.",
+    "when": "Yaushe",
+    "where": "Ina",
+    "quoteFirst": "Za a fara ba ka farashi. Ba a tsara komai ko a biya ba sai ka karɓa.",
+    "send": "Aika buƙata",
+    "leaveTitle": "Ka fita ba tare da aikawa ba?",
+    "leaveText": "Ba a aika buƙatar aikinka ba. Idan ka fita yanzu, abin da ka rubuta zai ɓace.",
+    "leave": "Fita",
+    "keepEditing": "Ci gaba da gyarawa",
+    "service": "Aiki (ba dole ba)",
+    "serviceHint": "Ba ka sani ba? Bar shi ka bayyana matsalar a ƙasa.",
+    "notSure": "Ban sani ba",
+    "describe": "Bayyana aikin",
+    "describeHint": "Me ya lalace, a ina yake, da duk abin da mai sana’a ya kamata ya zo da shi.",
+    "minCount": "{{n}}/{{min}} mafi ƙaranci",
+    "descriptionPlaceholder": "misali Famfon kicin yana ɗiga ko an rufe shi sosai. Famfo ne mai hannu ɗaya, ya kai shekara 5.",
+    "date": "Ranar da kake so",
+    "worksThatDay": "Yana aiki {{hours}} a ranar.",
+    "window": "Lokaci",
+    "landmark": "Titi ko alama",
+    "landmarkHint": "Misali: “Bayan ofishin NEPA, ƙofa shuɗiya” ko “Gida 14, Bosso Estate”.",
+    "place": "Gari ko ƙaramar hukuma",
+    "placesFailed": "An kasa lodo jerin yankuna.",
+    "loadingAreas": "Ana lodo yankuna…",
+    "chooseArea": "Zaɓi yankinka",
+    "towns": "Garuruwa da unguwanni",
+    "lgas": "Ƙananan hukumomi",
+    "lgaOption": "{{name}}",
+    "useLocation": "Yi amfani da wurina",
+    "locationDemo": "“Yi amfani da wurina” na gwaji ne a yanzu, yana zaɓar wani wuri a Minna.",
+    "photoAlt": "Hoton aiki"
+  },
+  "sent": {
+    "title": "An aika buƙata zuwa {{name}}",
+    "textWithTime": "Zai aiko maka da farashi, yawanci {{time}}. Ba a tsara komai ba sai ka karɓa.",
+    "text": "Zai aiko maka da farashi. Ba a tsara komai ba sai ka karɓa.",
+    "job": "Aiki",
+    "status": "Matsayi",
+    "preferred": "Lokacin da aka fi so",
+    "track": "Bi diddigin wannan aikin",
+    "back": "Koma {{name}}"
+  },
+  "report": {
+    "title": "Kai ƙorafi",
+    "text": "Wannan zai dakatar da aikin maimakon a tabbatar da shi. Ma’aikatan Gwani za su duba shi tare da kai da {{name}}.",
+    "what": "Me ya faru ba daidai ba?",
+    "happened": "Me ya faru?",
+    "placeholder": "misali Bututun yana ɗiga idan an buɗe famfo.",
+    "submit": "Kai ƙorafi"
+  },
+  "reschedule": {
+    "title": "Kana buƙatar wani lokaci daban?",
+    "youAsked": "Ka nemi a matsar da shi zuwa {{date}}",
+    "theyAsked": "{{name}} ya nemi a matsar da shi zuwa {{date}}",
+    "waiting": "Ana jiran {{name}} ya amsa. Lokacin yanzu yana nan har sai lokacin.",
+    "decline": "Ƙi",
+    "acceptNew": "Karɓi sabon lokaci",
+    "ask": "Roƙi {{name}} ya matsar da shi. Saura canza lokaci {{left}} cikin {{max}}.",
+    "request": "Nemi canza lokaci",
+    "acceptTitle": "Ka karɓi sabon lokacin?",
+    "acceptText": "Aiki #{{id}} zai koma daga {{from}} zuwa {{to}}.",
+    "declineTitle": "Ka ƙi sabon lokacin?",
+    "declineText": "Aiki #{{id}} zai tsaya a {{from}}. Za a sanar da {{name}}.",
+    "keepOriginal": "Riƙe asalin lokaci",
+    "dialogTitle": "Nemi sabon lokaci",
+    "dialogText": "{{name}} zai iya amincewa ko ƙi. Har sai ya amsa, lokacin yanzu yana nan.",
+    "lastOne": "Wannan shi ne canza lokaci na ƙarshe da aka yarda don wannan aikin.",
+    "left_one": "Saura canza lokaci {{count}} don wannan aikin.",
+    "left_other": "Saura canza lokaci {{count}} don wannan aikin.",
+    "current": "An tsara yanzu: {{date}}",
+    "newDate": "Sabuwar rana",
+    "newTime": "Sabon lokaci",
+    "reason": "Dalili",
+    "reasonHint": "Har zuwa haruffa {{max}}.",
+    "placeholder": "misali Zan kasance a wurin aiki da rana.",
+    "send": "Aika buƙata"
+  },
+  "reasonDialog": {
+    "tellMore": "Ƙara mana bayani",
+    "optional": "(ba dole ba)",
+    "other": "Wani dalili"
+  },
+  "toast": {
+    "confirmed": "Mun gode da tabbatarwa. Da fatan ka ba aikin ƙima.",
+    "reported": "An kai ƙorafi. Ma’aikatan Gwani za su tuntuɓe ka.",
+    "reviewed": "Mun gode! An wallafa ra’ayinka.",
+    "closed": "An rufe aikin.",
+    "moved": "An matsar zuwa {{date}}.",
+    "originalStands": "Asalin lokacin yana nan.",
+    "requestSent": "An aika buƙata zuwa {{name}}.",
+    "fixDetails": "Akwai wasu bayanai da ke buƙatar gyara kafin ka aika buƙatar.",
+    "areaSet": "An saita yanki zuwa {{place}}. Ƙara titinka ko wata alama ma.",
+    "locateFailed": "Ba mu iya gano wurinka ba. Zaɓi yankinka daga jerin.",
+    "booked": "An tsara don {{date}}.",
+    "bookedAgreed": "An tsara don lokacin da aka yarda.",
+    "turnedDown": "Ka ƙi farashin {{name}}.",
+    "rescheduleSent": "An aika buƙatar canza lokaci zuwa {{name}}.",
+    "cancelled": "An soke aiki #{{id}}. An sanar da {{name}}."
+  },
+  "form": {
+    "chooseDate": "Zaɓi rana.",
+    "dateFuture": "Zaɓi yau ko wata rana a gaba.",
+    "dateWindow": "Zaɓi rana cikin kwanaki {{days}} masu zuwa.",
+    "descriptionMin": "Bayyana aikin da aƙalla haruffa {{min}} don {{name}} ya ba da farashi daidai.",
+    "descriptionMax": "Kada bayanin ya wuce haruffa {{max}}.",
+    "photoMin": "Saka aƙalla hoto ɗaya na aikin.",
+    "photoMax": "Kada hotuna su wuce {{max}}.",
+    "chooseWindow": "Zaɓi lokaci.",
+    "landmarkMin": "Ƙara titi, lambar gida ko wata alama don mai sana’a ya gano ka.",
+    "keepTo": "Kada ya wuce haruffa {{max}}.",
+    "choosePlace": "Zaɓi garinka ko ƙaramar hukumarka.",
+    "priceNaira": "Shigar da farashinka a Naira, kamar 15,000.",
+    "quoteMin": "Farashi dole ne ya kai aƙalla {{amount}}.",
+    "priceHigh": "Wannan farashin ya yi yawa. Duba ko akwai ƙarin sifili.",
+    "includesMin": "Faɗi abin da farashin ya ƙunsa, misali kayan aiki, aiki, share wuri.",
+    "chooseDuration": "Zaɓi tsawon lokacin da zai ɗauka.",
+    "chooseStart": "Zaɓi lokacin farawa.",
+    "chooseExpiry": "Zaɓi lokacin da farashin zai ƙare.",
+    "vendorClosedOn": "Kana rufe a ranar {{day}}. Zaɓi ranar aiki, ko ka sabunta lokutanka a Gyara shafi.",
+    "startWithin": "Zaɓi lokacin farawa cikin lokutan aikinka a ranar ({{from}} – {{to}}).",
+    "timePassed": "Wannan lokacin ya wuce.",
+    "expiryAfterStart": "Farashin zai kasance a buɗe bayan an fara aikin. Zaɓi lokacin ƙarewa mafi gajarta.",
+    "chooseReason": "Zaɓi dalili.",
+    "chooseReasonList": "Zaɓi dalili daga jerin.",
+    "tellReason": "Faɗa mana dalilin.",
+    "giveReason": "Da fatan ka ba da dalili.",
+    "chooseTime": "Zaɓi lokaci.",
+    "moveWhy": "Faɗi dalilin da ya sa kake son matsar da shi.",
+    "vendorNotWorking": "Mai sana’ar baya aiki a ranar {{day}}. Zaɓi wata rana.",
+    "timeBetween": "Zaɓi lokaci tsakanin {{from}} da {{to}}.",
+    "newTimeCutoff": "Sabon lokacin dole ya kasance aƙalla awa {{hours}} daga yanzu.",
+    "sameTime": "Wannan shi ne lokacin da aka riga aka tsara.",
+    "chooseWhatWrong": "Zaɓi abin da ya faru ba daidai ba.",
+    "problemMin": "Bayyana matsalar (aƙalla haruffa {{min}}) don ma’aikatanmu su taimaka.",
+    "chooseStars": "Zaɓi ƙimar taurari.",
+    "reviewMax": "Kada ra’ayinka ya wuce haruffa {{max}}.",
+    "requestClosedOn": "{{name}} baya aiki a ranar {{day}}. Da fatan za a zaɓi wata rana.",
+    "windowOutside": "{{name}} yana aiki {{from}} – {{to}} a ranar. Zaɓi lokaci cikin waɗannan awoyi."
+  },
+  "order": {
+    "status": {
+      "placed": {
+        "label": "An yi oda",
+        "description": "Ana jiran mai sana’a ya tabbatar da odar."
+      },
+      "confirmed": {
+        "label": "An tabbatar",
+        "description": "Mai sana’a ya karɓi odar kuma ya ware kayan."
+      },
+      "preparing": {
+        "label": "Ana shiryawa",
+        "description": "Mai sana’a yana ɗaure odar."
+      },
+      "dispatched": {
+        "label": "An tura",
+        "description": "Tana kan hanyar zuwa adireshin kai kaya."
+      },
+      "delivered": {
+        "label": "An kai",
+        "description": "Mai sana’a ya ce an kai. Ana jiran abokin ciniki ya tabbatar ya karɓa."
+      },
+      "ready_for_pickup": {
+        "label": "A shirye don ɗauka",
+        "description": "An ɗaure kuma tana jira a wurin ɗaukar kaya na mai sana’a."
+      },
+      "collected": {
+        "label": "An ɗauka",
+        "description": "Mai sana’a ya ce an ɗauka. Ana jiran abokin ciniki ya tabbatar ya karɓa."
+      },
+      "completed": {
+        "label": "An kammala",
+        "description": "Abokin ciniki ya karɓi odar. An gama."
+      },
+      "declined": {
+        "label": "An ƙi",
+        "description": "Mai sana’a ba zai iya ɗaukar wannan odar ba."
+      },
+      "cancelled": {
+        "label": "An soke",
+        "description": "Abokin ciniki ya soke odar."
+      },
+      "out_of_stock": {
+        "label": "Kaya sun ƙare",
+        "description": "Babu ko ɗaya daga cikin kayan, don haka mai sana’a bai iya cika odar ba."
+      },
+      "disputed": {
+        "label": "Akwai ƙorafi",
+        "description": "Abokin ciniki ya kai ƙorafi. Ma’aikatan Gwani suna dubawa, kuma kuɗin yana nan a riƙe."
+      }
+    },
+    "method": {
+      "pickup": "Ɗauka da kai",
+      "delivery": "Kai kaya"
+    },
+    "cancelReason": {
+      "changed_mind": "Na canza ra’ayi",
+      "ordered_by_mistake": "Na yi odar kayan da ba daidai ba",
+      "too_slow": "Yana ɗaukar lokaci da yawa",
+      "found_elsewhere": "Na samu a wani wuri"
+    },
+    "hint": {
+      "collect": "A shirye: je ka ɗauka",
+      "confirmReceipt": "Ka karɓa? Tabbatar",
+      "review": "Ba da ƙima da ra’ayi kan wannan odar",
+      "newOrder": "Sabuwar oda: tabbatar ko ƙi",
+      "startPreparing": "An tabbatar: fara shiryawa",
+      "markDispatched": "An ɗaure? Nuna an tura",
+      "markReady": "An ɗaure? Nuna a shirye take don ɗauka",
+      "markDelivered": "Tana kan hanya: nuna an kai",
+      "waitingCollect": "Ana jiran abokin ciniki ya zo ya ɗauka"
+    },
+    "items_one": "kaya {{count}}",
+    "items_other": "kaya {{count}}",
+    "itemsList": "{{items}}: {{names}}",
+    "placedAt": "An yi oda {{day}}, {{time}}",
+    "fulfilment": {
+      "address": "Adireshi",
+      "phone": "Waya",
+      "lga": "{{lga}}"
+    },
+    "list": {
+      "items": "Kaya",
+      "outOfStock": "Ya ƙare · ba a caje ba",
+      "delivery": "Kai kaya",
+      "free": "Kyauta",
+      "total": "Jimilla"
+    },
+    "outcome": {
+      "backOnSale": "Kayan da aka ware don wannan odar sun koma kasuwa."
+    },
+    "activity": "Abubuwan da suka faru",
+    "filterLabel": "Tace oda ta matsayi",
+    "timeline": {
+      "label": "Ci gaban oda",
+      "stopped": "odar ta tsaya a nan"
+    },
+    "separate": "Kwandonka yana da kaya daga masu sana’a {{count}}. Kowane mai sana’a zai tabbatar, ya ɗaure, ya kai (ko ya miƙa) nasa daban, don haka za ka sami oda {{count}}, ɗaya ga kowane mai sana’a.",
+    "cart": {
+      "outOfStock": "Ya ƙare",
+      "addLabel": "Saka {{name}} a kwando",
+      "addAnother": "Ƙara wani",
+      "add": "Saka a kwando",
+      "inCart": "{{count}} a kwandonka · Duba kwando",
+      "each": "{{price}} kowanne",
+      "remove": "Cire",
+      "onlyInStock": "Saura {{count}} kawai.",
+      "subtotalFrom": "Jimillar {{name}}",
+      "quantityOf": "Yawan {{name}}",
+      "decrease": "Rage {{name}}",
+      "increase": "Ƙara {{name}}",
+      "increaseMax": "Ƙara {{name}} (saura {{max}} kawai)",
+      "vendorUnavailable": "{{name}} baya karɓar oda a yanzu.",
+      "productOutOfStock": "{{name}} ya ƙare.",
+      "haveAll": "Duka {{name}} {{stock}} suna kwandonka tuni. Mai sana’a ba shi da ƙari.",
+      "onlyCanAdd": "Saura {{stock}} kawai. Za ka iya ƙara {{more}}.",
+      "allInCart": "Duka {{stock}} da ke akwai suna kwandonka.",
+      "added": "An saka {{name}} a kwandonka ({{count}}).",
+      "title": "Kwando",
+      "subtitle": "{{items}} daga {{vendors}}",
+      "vendors_one": "mai sana’a {{count}}",
+      "vendors_other": "masu sana’a {{count}}",
+      "subtitleEmpty": "Kayan da ka saka daga shagunan masu sana’a",
+      "emptyTitle": "Kwandonka babu komai",
+      "emptyText": "Buɗe shafin mai sana’a ka danna “Saka a kwando” a kan kowane kaya a shagonsa.",
+      "browse": "Duba masu sana’a",
+      "summary": "Taƙaitawa",
+      "itemsTotal": "Jimillar kaya",
+      "feesNote": "Kuɗin kai kaya, idan akwai, za a ƙara a lokacin biya idan ka zaɓi ɗauka ko kai kaya.",
+      "checkout": "Je wurin biya",
+      "removeTitle": "Ka cire daga kwando?",
+      "removeText": "Za a cire {{name}} daga {{vendor}} daga kwandonka.",
+      "keep": "Bar shi"
+    },
+    "changes": {
+      "priceUp": "Farashi ya hau daga {{before}} zuwa {{after}}.",
+      "priceDown": "Farashi ya sauka daga {{before}} zuwa {{after}}.",
+      "quantity": "Saura {{after}} kawai, don haka yawanka zai koma daga {{before}} zuwa {{after}}.",
+      "outOfStock": "Ya ƙare yanzu. Za a cire shi daga kwandonka.",
+      "unavailable": "Ba a sayar da shi kuma. Za a cire shi daga kwandonka.",
+      "vendorUnavailable": "{{name}} baya karɓar oda a yanzu. Za a cire shi daga kwandonka.",
+      "title": "Wasu abubuwa sun canza tun da ka saka su",
+      "text": "Da fatan ka duba waɗannan kafin ka yi oda.",
+      "back": "Koma kwando",
+      "accept": "Sabunta kwandona ka ci gaba"
+    },
+    "checkout": {
+      "title": "Biya",
+      "subtitle": "Zaɓi ɗauka ko kai kaya ga kowane mai sana’a",
+      "thanks": "Mun gode",
+      "back": "Kwando",
+      "label": "Biya",
+      "totalToPay": "Jimillar da za a biya",
+      "total": "Jimilla",
+      "demo": "Na gwaji kawai: ba a karɓi kuɗi ba. Kana biyan kowane mai sana’a odarsa.",
+      "place_one": "Yi oda",
+      "place_other": "Yi oda {{count}}",
+      "nothingTitle": "Babu abin biya",
+      "nothingText": "Kwandonka babu komai. Saka kaya daga shagon mai sana’a tukuna.",
+      "checkFailed": "An kasa duba kwandonka",
+      "areasFailed": "An kasa lodo yankunan kai kaya",
+      "checking": "Ana duba farashi da kaya",
+      "nothingLeftTitle": "Babu sauran abin oda",
+      "nothingLeftText": "Duk abin da ke kwandonka ya ƙare ko ba a samunsa kuma.",
+      "orderN": "Oda {{n}}",
+      "how": "Yaya kake son samunsa?",
+      "methodFor": "Ɗauka ko kai kaya don {{name}}",
+      "onlyMethod": "{{method}} kawai",
+      "noPickup": " · {{name}} ba ya ba da damar ɗauka.",
+      "noDelivery": " · {{name}} ba ya kai kaya.",
+      "collectFrom": "Ɗauka daga {{address}}",
+      "readyTold": "Za a sanar da kai idan ta shirya don ɗauka.",
+      "deliveryFee": "Kuɗin kai kaya:",
+      "deliversTo_one": "Yana kai kaya zuwa {{areas}}. Yana amfani da bayanan kai kaya da ke ƙasa.",
+      "deliversTo_other": "Yana kai kaya zuwa {{areas}}. Yana amfani da bayanan kai kaya da ke ƙasa.",
+      "items": "Kaya",
+      "delivery": "Kai kaya",
+      "orderTotal": "Jimillar oda",
+      "free": "Kyauta",
+      "detailsTitle": "Bayanan kai kaya",
+      "detailsText": "Ana amfani da su ga kowace oda da ka zaɓa a kai maka. Masu kai kaya za su kira wannan lambar idan sun kusa.",
+      "phone": "Lambar waya",
+      "phoneHint": "Lambar wayar Najeriya, kamar 0803 555 0142.",
+      "placedOne": "An yi oda.",
+      "placedMany": "An yi oda {{count}}, ɗaya ga kowane mai sana’a.",
+      "fixDetails": "Akwai wasu bayanai da ke buƙatar gyara kafin ka yi oda."
+    },
+    "success": {
+      "titleOne": "An yi oda",
+      "titleMany": "An yi oda {{count}}",
+      "reference": "Lambar shaidar biya <strong>{{ref}}</strong>.",
+      "many": "Kowane mai sana’a zai tabbatar da odarsa, kuma za ka iya bin diddigin kowacce daban.",
+      "one": "Mai sana’a zai tabbatar da odarka nan ba da jimawa ba.",
+      "line": "Oda #{{id}} · {{method}} · ",
+      "nextMany": "Na gaba: biya kowane mai sana’a",
+      "nextOne": "Na gaba: biya odarka",
+      "payText": "Ana biyan kowace oda daban, da kati, tura kuɗi ko USSD (ko tsabar kuɗi a wurin ɗauka, inda mai sana’a ya yarda).",
+      "pay": "Biya {{name}}",
+      "myOrders": "Je Ododina"
+    },
+    "form": {
+      "methodNotOffered": "{{name}} ba ya bayar da “{{method}}”. Zaɓi wani zaɓi.",
+      "landmarkMin": "Ƙara titi, lambar gida ko wata alama don mai kai kaya ya gano ka.",
+      "phone": "Shigar da lambar wayar Najeriya, kamar 0803 555 0142.",
+      "noDelivery": "{{name}} ba ya kai kaya. Zaɓi ɗauka.",
+      "notToLga": "{{name}} ba ya kai kaya zuwa {{lga}}. Yana kai kaya zuwa {{areas}}. Zaɓi ɗauka ko canza adireshi.",
+      "noAreas": "babu yankuna tukuna",
+      "and": "{{list}} da {{last}}",
+      "pickupInstructions": "Aika wa mai sana’a saƙo don sanin ainihin wurin ɗauka."
+    },
+    "panel": {
+      "readyTitle": "A shirye take don ka ɗauka",
+      "readyText": "Je <strong>{{address}}</strong> ka nuna oda #{{id}}.",
+      "gotIt": "Ka karɓi odarka?",
+      "markedDelivered": "{{name}} ya nuna an kai. Tabbatar idan ka karɓi komai.",
+      "markedCollected": "{{name}} ya nuna an ɗauka. Tabbatar idan ka karɓi komai.",
+      "autoComplete": " Idan ba ka yi ba, za ta kammala da kanta a {{date}}.",
+      "report": "Kai ƙorafi",
+      "confirmReceipt": "Tabbatar na karɓa",
+      "yourReview": "Ra’ayinka",
+      "canCancel": "Za ka iya soke har sai {{name}} ya fara shirya odarka.",
+      "cancel": "Soke oda",
+      "receiptTitle": "Ka tabbatar ka karɓi wannan odar?",
+      "receiptText": "Wannan zai kammala oda #{{id}} daga {{name}}. Ka tabbatar ne kawai idan ka karɓi kowane kaya.",
+      "receiptConfirm": "Eh, na karɓa",
+      "notYet": "Tukuna",
+      "cancelTitle": "Ka soke oda #{{id}}?",
+      "cancelText": "Za a sanar da {{name}}, kuma duk abin da ya ware zai koma kasuwa. Ba za a iya janyewa ba.",
+      "cancelReason": "Me ya sa kake sokewa?"
+    },
+    "toast": {
+      "cancelled": "An soke oda #{{id}}. An sanar da {{name}}.",
+      "received": "Mun gode da tabbatarwa. Odar ta kammala.",
+      "reported": "An kai ƙorafi. Ma’aikatan Gwani za su tuntuɓe ka, kuma kuɗinka yana nan a riƙe har a warware.",
+      "reviewed": "Mun gode! Ra’ayinka yana kan shafinsa.",
+      "skipped": "To, babu ra’ayi."
+    },
+    "mine": {
+      "title": "Ododina",
+      "waiting_one": "Oda {{count}} tana buƙatar kulawarka",
+      "waiting_other": "Oda {{count}} suna buƙatar kulawarka",
+      "subtitle": "Bi diddigin kayan da ka yi oda",
+      "loading": "Ana lodo ododinka",
+      "emptyTitle": "Babu oda tukuna",
+      "emptyText": "Saka kaya a kwandonka daga shagon mai sana’a. Ododinka za su bayyana a nan don ka bi diddigi.",
+      "browse": "Duba masu sana’a",
+      "noneWithStatus": "Babu oda a wannan matsayin",
+      "showAll": "Nuna duka oda"
+    },
+    "page": {
+      "title": "Oda #{{id}}",
+      "back": "Ododina",
+      "notFoundTitle": "Ba a sami odar ba",
+      "notFoundHeading": "Ba mu sami wannan odar ba",
+      "backToMine": "Koma Ododina",
+      "loading": "Ana lodo oda",
+      "subtitle": "{{name}} · biya {{ref}}",
+      "progress": "Ci gaba",
+      "aside": "Ayyuka da abubuwan da suka faru",
+      "viewVendor": "Duba {{name}}"
+    },
+    "error": {
+      "notFound": "Ba mu sami wannan odar ba.",
+      "emptyCart": "Kwandonka babu komai.",
+      "shopClosed": "Ɗaya daga cikin shagunan da ke kwandonka ya rufe. Da fatan ka cire kayansa.",
+      "methodGone": "{{name}} ba ya ba da “{{method}}” kuma. Da fatan ka sake zaɓa.",
+      "addDelivery": "Ƙara adireshin kai kaya da lambar waya.",
+      "notYours": "Za ka iya sarrafa ododinka ne kawai.",
+      "notEnoughStock": "Kana da {{name}} {{stock}} amma odar tana buƙatar {{needed}}. Nuna ya ƙare, ko ka sabunta yawan kayanka tukuna.",
+      "reviewWhen": "Za ka iya ba da ra’ayi kan oda bayan ka karɓe ta.",
+      "reviewed": "Ka riga ka ba da ra’ayi kan wannan odar.",
+      "notDisputed": "Wannan odar ba ta da ƙorafi.",
+      "beforeDispute": "Ba mu iya gane inda wannan odar take kafin ƙorafin ba.",
+      "pickupNotDispatched": "Wannan odar ɗauka ce, don haka ba a tura ta.",
+      "deliveryNotCollected": "Wannan odar kai kaya ce, don haka ba a ɗauka daga gare ka.",
+      "stillTime": "Abokin ciniki yana da sauran lokaci don tabbatar ya karɓa.",
+      "wasntDelivered": "Ba a kai wannan odar ba lokacin da aka kai ƙorafin.",
+      "wasntCollected": "Ba a ɗauki wannan odar ba lokacin da aka kai ƙorafin.",
+      "ended": "Wannan odar ta riga ta kasance “{{status}}” kuma ba za ta iya canzawa ba.",
+      "preparing": "Mai sana’a ya fara shirya odarka, don haka ba za a iya soke ta yanzu ba. Tuntuɓe shi idan akwai matsala.",
+      "cantMove": "Oda ba za ta iya tafiya daga “{{from}}” zuwa “{{to}}” ba.",
+      "cantMoveBy": "Oda ba za ta iya tafiya daga “{{from}}” zuwa “{{to}}” ta hannun {{by}} ba."
+    }
+  },
+  "arrivalYou": "Ka iso da {{time}}",
+  "notify": {
+    "ref": "aiki #{{id}}",
+    "rescheduleRequested": {
+      "title": "An nemi canza lokaci",
+      "body": "{{name}} ya nemi a matsar da {{ref}} zuwa {{date}}. Da fatan ka amince ko ka ƙi."
+    },
+    "rescheduleAccepted": {
+      "title": "An amince da canza lokaci",
+      "body": "{{name}} ya amince. {{ref}} yanzu yana {{date}}."
+    },
+    "rescheduleDeclined": {
+      "title": "An ƙi canza lokaci",
+      "body": "{{name}} ya ƙi. {{ref}} zai tsaya a {{date}}."
+    },
+    "requested": {
+      "title": "Sabuwar buƙatar aiki",
+      "body": "{{name}} yana buƙatar {{service}} a {{place}}."
+    },
+    "requestedNoService": {
+      "title": "Sabuwar buƙatar aiki",
+      "body": "{{name}} yana buƙatar a yi masa aiki a {{place}}."
+    },
+    "quoted": {
+      "title": "An karɓi farashi",
+      "body": "{{name}} ya ba da farashin {{amount}} don {{ref}}."
+    },
+    "scheduled": {
+      "title": "An karɓi farashinka",
+      "body": "{{name}} ya karɓi farashinka. An tsara {{ref}} don {{date}}."
+    },
+    "scheduledNoTime": {
+      "title": "An karɓi farashinka",
+      "body": "{{name}} ya karɓi farashinka. An tsara {{ref}} don lokacin da aka yarda."
+    },
+    "quoteRejected": {
+      "title": "An ƙi farashi",
+      "body": "{{name}} ya ƙi farashinka don {{ref}}."
+    },
+    "declined": {
+      "title": "An ƙi buƙata",
+      "body": "{{name}} ba zai iya ɗaukar {{ref}} ba."
+    },
+    "inProgress": {
+      "title": "Mai sana’a ya iso",
+      "body": "{{name}} ya iso da {{time}} kuma ya fara {{ref}}."
+    },
+    "awaitingConfirmation": {
+      "title": "Da fatan ka tabbatar da aikin",
+      "body": "{{name}} ya nuna an gama {{ref}}. Tabbatar ko ka kai ƙorafi kafin {{date}}."
+    },
+    "awaitingConfirmationNoDeadline": {
+      "title": "Da fatan ka tabbatar da aikin",
+      "body": "{{name}} ya nuna an gama {{ref}}. Tabbatar ko ka kai ƙorafi."
+    },
+    "disputeResolved": {
+      "title": "An warware ƙorafi",
+      "body": "Ma’aikatan Gwani sun warware matsalar {{ref}}. Duba aikin don ganin sakamako."
+    },
+    "autoConfirmedCustomer": {
+      "title": "An tabbatar da aiki kai tsaye",
+      "body": "Mun tabbatar da {{ref}} saboda ba a amsa ba cikin awa {{hours}}."
+    },
+    "autoConfirmedVendor": {
+      "title": "An tabbatar da aiki kai tsaye",
+      "body": "An tabbatar da {{ref}} bayan awa {{hours}} ba tare da amsa daga {{name}} ba."
+    },
+    "confirmed": {
+      "title": "An tabbatar da aiki",
+      "body": "{{name}} ya tabbatar an kammala {{ref}}."
+    },
+    "disputedVendor": {
+      "title": "An kai ƙorafi",
+      "body": "{{name}} ya kai ƙorafi game da {{ref}}. Ma’aikatan Gwani za su duba."
+    },
+    "disputedCustomer": {
+      "title": "Mun karɓi ƙorafinka",
+      "body": "Ma’aikatan Gwani za su duba {{ref}} su tuntuɓe ka cikin kwanakin aiki 2."
+    },
+    "reviewed": {
+      "title": "Sabon ra’ayi",
+      "body": "{{name}} ya bar ra’ayi mai {{rating}}★ kan {{ref}}."
+    },
+    "closed": {
+      "title": "An rufe aiki",
+      "body": "An rufe {{ref}}."
+    },
+    "cancelledSystem": {
+      "title": "An soke aiki",
+      "body": "An soke {{ref}}."
+    },
+    "cancelled": {
+      "title": "An soke aiki",
+      "body": "{{name}} ya soke {{ref}}."
+    },
+    "cancelledSlot": {
+      "title": "An soke aiki",
+      "body": "{{name}} ya soke {{ref}}. Lokacin da aka tsara ya zama a buɗe yanzu."
+    },
+    "cancelledReason": {
+      "title": "An soke aiki",
+      "body": "{{name}} ya soke {{ref}}: “{{reason}}”."
+    },
+    "cancelledReasonSlot": {
+      "title": "An soke aiki",
+      "body": "{{name}} ya soke {{ref}}: “{{reason}}”. Lokacin da aka tsara ya zama a buɗe yanzu."
+    }
+  },
+  "reminder": {
+    "lead_one": "awa {{count}}",
+    "lead_other": "awa {{count}}",
+    "leadBefore": "{{lead}} kafin lokaci",
+    "booking": "tsari",
+    "scheduled": "Tunatarwar da aka tsara",
+    "off": "An kashe tunatarwa",
+    "failed": "An kasa lodo tunatarwa.",
+    "loading": "Ana lodo tunatarwa",
+    "optedOut": "Ka fita daga tunatarwar tsari.",
+    "tooClose": "Lokacin farawa ya yi kusa don tunatarwa.",
+    "sent": "(an aika)",
+    "turnOn": "Kunna tunatarwa",
+    "change": "Canza yadda ake tunatar da kai",
+    "channelsBoth": "Ta push da SMS, da kuma a Sabbin bayanai",
+    "channelsPush": "Ta push, da kuma a Sabbin bayanai",
+    "channelsSms": "Ta SMS, da kuma a Sabbin bayanai",
+    "channelsApp": "A Sabbin bayanai a manhajar kawai"
+  },
+  "prefs": {
+    "title": "Sanarwa",
+    "subtitleCustomer": "Yadda muke tunatar da kai game da tsare-tsare masu zuwa",
+    "subtitleVendor": "Yadda muke tunatar da kai game da ayyukan da ka tsara",
+    "loading": "Ana lodo zaɓuɓɓukanka",
+    "label": "Zaɓuɓɓukan sanarwa",
+    "booking": "Tunatarwar tsari",
+    "bookingText": "Muna tunatar da kai {{leads}} kafin kowane aikin da aka tsara. Kullum za ka gan su a Sabbin bayanai a manhajar.",
+    "and": " da ",
+    "push": "Sanarwar push",
+    "pushText": "A wayarka, daga manhajar Gwani.",
+    "sms": "SMS",
+    "smsText": "Saƙon tes, ko babu data.",
+    "phone": "Lambar waya don SMS",
+    "phoneOptional": "Lambar waya don SMS (ba dole ba)",
+    "phoneHint": "Lambar Najeriya: 0803 555 0142 ko +234 803 555 0142.",
+    "optOutHeading": "Fita",
+    "optOut": "Fita daga duk tunatarwar tsari",
+    "optOutText": "Babu tunatarwa ta push, SMS ko a manhajar. Sauran sabbin bayanan aiki za su ci gaba da bayyana a manhajar.",
+    "save": "Ajiye zaɓuɓɓuka",
+    "savedOff": "An ajiye. Ba za ka sami tunatarwar tsari ba.",
+    "saved": "An ajiye. Tunatarwarka za ta yi amfani da waɗannan saitunan.",
+    "checkPhone": "Duba lambar wayar kafin ka ajiye.",
+    "phoneInvalid": "Shigar da lambar wayar Najeriya, kamar 0803 555 0142 ko +234 803 555 0142.",
+    "phoneNeeded": "Ƙara lambar waya don samun tunatarwar SMS, ko ka kashe SMS."
+  },
+  "error": {
+    "notFound": "Ba mu sami wannan aikin ba.",
+    "retailVendor": "Wannan mai sana’ar yana karɓar buƙatun kaya ne, ba tsarin aiki ba.",
+    "notTaking": "{{name}} baya karɓar sababbin ayyuka a yanzu.",
+    "notTakingRequests": "{{name}} baya karɓar sababbin buƙatu a yanzu.",
+    "startPassed": "Lokacin farawa da aka gabatar ya wuce.",
+    "expiryAfterStart": "Dole farashin ya ƙare kafin lokacin farawa da aka gabatar.",
+    "noReschedule": "Wannan buƙatar canza lokacin babu ita.",
+    "notDisputed": "Wannan aikin ba shi da ƙorafi.",
+    "beforeDispute": "Ba mu iya gane inda wannan aikin yake kafin ƙorafin ba.",
+    "noTime": "Wannan aikin ba shi da lokacin da aka tsara.",
+    "startFrom": "Za ka iya fara wannan aikin daga {{date}}.",
+    "stillTime": "Abokin ciniki yana da sauran lokaci don tabbatarwa.",
+    "wasntInProgress": "Ba a kan aikin wannan lokacin da aka kai ƙorafin ba.",
+    "wasntAwaiting": "Wannan aikin ba ya jiran tabbatarwa lokacin da aka kai ƙorafin.",
+    "reviewOpen": "Lokacin ba da ra’ayi yana nan a buɗe.",
+    "noQuote": "Babu farashin da za a amsa tukuna.",
+    "quoteExpired": "Wannan farashin ya ƙare. Roƙi mai sana’a ya ba da sabo.",
+    "ended": "Wannan aikin ya riga ya kasance “{{status}}” kuma ba zai iya canzawa ba.",
+    "cancelReason": "Da fatan ka ba da dalilin sokewa.",
+    "cantMove": "Aiki ba zai iya tafiya daga “{{from}}” zuwa “{{to}}” ba.",
+    "cantMoveBy": "Aiki ba zai iya tafiya daga “{{from}}” zuwa “{{to}}” ta hannun {{by}} ba.",
+    "remindersScheduledOnly": "Ayyukan da aka tsara ne kawai ke samun tunatarwa."
+  }
+}

@@ -1,3 +1,4 @@
+import i18n from '../../i18n';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { CheckCircle2Icon, AlertCircleIcon, XIcon } from 'lucide-react';
 import { ToastContext, type Toast, type ToastApi, type ToastTone } from './toastContext';
@@ -64,7 +65,7 @@ export function ToastProvider({ children }: {children: React.ReactNode;}) {
             <button
         type="button"
         onClick={() => dismiss(t.id)}
-        aria-label="Dismiss"
+        aria-label={i18n.t('common:toast.dismiss')}
         className="-m-1 rounded p-1 text-white/80 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70">
 
               <XIcon className="h-4 w-4" aria-hidden="true" />

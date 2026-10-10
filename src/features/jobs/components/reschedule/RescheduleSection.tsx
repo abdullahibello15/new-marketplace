@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { format } from 'date-fns';
+import { useTranslation } from 'react-i18next';
+import { formatDate } from '../../../../utils/format';
 import { CalendarClockIcon } from 'lucide-react';
 import { Button } from '../../../../components/ui/Button';
 import { ConfirmDialog } from '../../../../components/ui/ConfirmDialog';
@@ -18,13 +19,14 @@ interface RescheduleSectionProps {
   onRespond: (requestId: string, accept: boolean) => Promise<boolean>;
 }
 
-const when = (iso: string) => format(new Date(iso), 'EEE d MMM, h:mm a');
+const when = (iso: string) => formatDate(iso, 'EEE d MMM, h:mm a');
 
 /**
  * Task 56 on a Scheduled job: a pending request (answer it, or wait for the other side), or a button
  * to ask for a new time. The button explains itself when a request isn't allowed.
  */
 export function RescheduleSection({ job, viewer, workingHours, busy, onRequest, onRespond }: RescheduleSectionProps) {
+  const { t } = useTranslation('jobs');
   const [dialog, setDialog] = useState<'request' | 'accept' | 'decline' | null>(null);
   const pending = pendingReschedule(job);
   const blocked = rescheduleBlockedReason(job);
@@ -35,24 +37,26 @@ export function RescheduleSection({ job, viewer, workingHours, busy, onRequest, 
     <section aria-labelledby="reschedule-heading" className="rounded-2xl border border-line bg-white p-4 lg:p-5">
       <h2 id="reschedule-heading" className="flex items-center gap-2 text-base font-bold text-ink">
         <CalendarClockIcon className="h-4 w-4 text-muted" aria-hidden="true" />
-        Need a different time?
+        {t('reschedule.title')}
       </h2>
 
       {pending ?
       <div className="mt-3 rounded-xl bg-[#F7EBCB] p-3 text-sm">
           <p className="font-bold text-ink">
-            {pending.requestedBy === viewer ? 'You asked' : `${otherParty} asked`} to move it to {when(pending.proposedStart)}
+            {pending.requestedBy === viewer ?
+          t('reschedule.youAsked', { date: when(pending.proposedStart) }) :
+          t('reschedule.theyAsked', { name: otherParty, date: when(pending.proposedStart) })}
           </p>
           <p className="mt-0.5 text-ink">“{pending.reason}”</p>
           {pending.requestedBy === viewer ?
-        <p className="mt-2 text-muted">Waiting for {otherParty} to reply. The current time stands until then.</p> :
+        <p className="mt-2 text-muted">{t('reschedule.waiting', { name: otherParty })}</p> :
 
         <div className="mt-3 grid grid-cols-2 gap-2">
               <Button variant="outline" size="sm" onClick={() => setDialog('decline')} disabled={busy !== null}>
-                Decline
+                {t('reschedule.decline')}
               </Button>
               <Button size="sm" onClick={() => setDialog('accept')} loading={busy === 'reschedule-accept'}>
-                Accept new time
+                {t('reschedule.acceptNew')}
               </Button>
             </div>
         }
@@ -60,7 +64,7 @@ export function RescheduleSection({ job, viewer, workingHours, busy, onRequest, 
 
       <>
           <p className="mt-1 text-sm text-muted">
-            Ask {otherParty} to move it. {reschedulesLeft(job)} of {RESCHEDULE_MAX_REQUESTS} reschedules left.
+            {t('reschedule.ask', { name: otherParty, left: reschedulesLeft(job), max: RESCHEDULE_MAX_REQUESTS })}
           </p>
           <Button
           variant="secondary"
@@ -70,7 +74,7 @@ export function RescheduleSection({ job, viewer, workingHours, busy, onRequest, 
           disabled={blocked !== null}
           aria-describedby={blocked ? blockedId : undefined}>
 
-            Request reschedule
+            {t('reschedule.request')}
           </Button>
           {blocked &&
         <p id={blockedId} className="mt-2 text-sm text-muted">
@@ -93,9 +97,9 @@ export function RescheduleSection({ job, viewer, workingHours, busy, onRequest, 
       <>
           <ConfirmDialog
           open={dialog === 'accept'}
-          title="Accept the new time?"
-          description={`Job #${job.id} moves from ${when(pending.fromStart)} to ${when(pending.proposedStart)}.`}
-          confirmLabel="Accept new time"
+          title={t('reschedule.acceptTitle')}
+          description={t('reschedule.acceptText', { id: job.id, from: when(pending.fromStart), to: when(pending.proposedStart) })}
+          confirmLabel={t('reschedule.acceptNew')}
           loading={busy === 'reschedule-accept'}
           onConfirm={async () => {
             if (await onRespond(pending.id, true)) setDialog(null);
@@ -104,9 +108,9 @@ export function RescheduleSection({ job, viewer, workingHours, busy, onRequest, 
 
           <ConfirmDialog
           open={dialog === 'decline'}
-          title="Decline the new time?"
-          description={`Job #${job.id} stays on ${when(pending.fromStart)}. ${otherParty} will be told.`}
-          confirmLabel="Keep original time"
+          title={t('reschedule.declineTitle')}
+          description={t('reschedule.declineText', { id: job.id, from: when(pending.fromStart), name: otherParty })}
+          confirmLabel={t('reschedule.keepOriginal')}
           destructive
           loading={busy === 'reschedule-decline'}
           onConfirm={async () => {

@@ -1,6 +1,8 @@
+import { useTranslation } from 'react-i18next';
 import { useFormContext } from 'react-hook-form';
 import { FormField } from '../../../../components/ui/FormField';
 import { bad, field, ok } from '../../../../components/vendor/formStyles';
+import { lgaLabel } from '../../../../i18n/labels';
 import { PLACE_KIND } from '../../../discovery/constants';
 import type { Place } from '../../../discovery/types';
 import type { CheckoutFormData, CheckoutFormValues } from '../../schemas';
@@ -10,6 +12,7 @@ import type { CheckoutFormData, CheckoutFormValues } from '../../schemas';
  * job request form, since Minna addresses are landmarks rather than postcodes.
  */
 export function DeliveryDetailsFields({ places }: {places: Place[];}) {
+  const { t } = useTranslation('jobs');
   const {
     register,
     formState: { errors }
@@ -21,14 +24,14 @@ export function DeliveryDetailsFields({ places }: {places: Place[];}) {
     <section aria-labelledby="delivery-details-heading" className="space-y-4 rounded-2xl border border-line bg-white p-4 lg:p-5">
       <div>
         <h2 id="delivery-details-heading" className="text-base font-bold text-ink">
-          Delivery details
+          {t('order.checkout.detailsTitle')}
         </h2>
-        <p className="mt-0.5 text-sm text-muted">Used for every order you’ve set to delivery. Riders call this number when they’re close.</p>
+        <p className="mt-0.5 text-sm text-muted">{t('order.checkout.detailsText')}</p>
       </div>
       <FormField
         id="checkout-landmark"
-        label="Street or landmark"
-        hint="For example: “Behind NEPA office, blue gate” or “House 14, Bosso Estate”."
+        label={t('request.landmark')}
+        hint={t('request.landmarkHint')}
         error={errors.landmark?.message}>
 
         {(describedBy) =>
@@ -43,7 +46,7 @@ export function DeliveryDetailsFields({ places }: {places: Place[];}) {
 
         }
       </FormField>
-      <FormField id="checkout-place" label="Town or LGA" error={errors.placeId?.message}>
+      <FormField id="checkout-place" label={t('request.place')} error={errors.placeId?.message}>
         {(describedBy) =>
         <select
           id="checkout-place"
@@ -53,9 +56,9 @@ export function DeliveryDetailsFields({ places }: {places: Place[];}) {
           aria-describedby={describedBy}
           className={`${field} ${errors.placeId ? bad : ok}`}>
 
-            <option value="">Choose your area</option>
+            <option value="">{t('request.chooseArea')}</option>
             {towns.length > 0 &&
-          <optgroup label="Towns & neighbourhoods">
+          <optgroup label={t('request.towns')}>
                 {towns.map((p) =>
             <option key={p.id} value={p.id}>
                     {p.name}, {p.context}
@@ -64,10 +67,10 @@ export function DeliveryDetailsFields({ places }: {places: Place[];}) {
               </optgroup>
           }
             {lgas.length > 0 &&
-          <optgroup label="Local Government Areas">
+          <optgroup label={t('request.lgas')}>
                 {lgas.map((p) =>
             <option key={p.id} value={p.id}>
-                    {p.name} LGA
+                    {t('request.lgaOption', { name: lgaLabel(p.name) })}
                   </option>
             )}
               </optgroup>
@@ -75,7 +78,7 @@ export function DeliveryDetailsFields({ places }: {places: Place[];}) {
           </select>
         }
       </FormField>
-      <FormField id="checkout-phone" label="Phone number" hint="A Nigerian mobile number, like 0803 555 0142." error={errors.phone?.message}>
+      <FormField id="checkout-phone" label={t('order.checkout.phone')} hint={t('order.checkout.phoneHint')} error={errors.phone?.message}>
         {(describedBy) =>
         <input
           id="checkout-phone"

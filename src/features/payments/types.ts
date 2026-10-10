@@ -1,4 +1,4 @@
-import type { ESCROW_EVENT, ESCROW_STATUS, PAYMENT_METHOD, PAYMENT_STATUS, PAYMENT_SUBJECT } from './constants';
+import type { ESCROW_EVENT, ESCROW_STATUS, PAYMENT_METHOD, PAYMENT_STATUS, PAYMENT_SUBJECT, TRANSACTION_STATUS, TRANSACTION_TYPE } from './constants';
 
 type ValueOf<T> = T[keyof T];
 
@@ -114,10 +114,143 @@ export interface PaymentOverview {
   escrow: Escrow | null;
 }
 
-export interface Receipt {
-  payment: Payment;
-  lines: {label: string;amount: number;}[];
+/* ---------- Receipts (one format for the screen, the PDF, customers and vendors) ---------- */
+
+export type ReceiptViewer = 'customer' | 'vendor';
+/** A refund note when everything paid was returned; otherwise a receipt (with any part refund on it). */
+export type ReceiptKind = 'receipt' | 'refund_note';
+
+export interface ReceiptLine {
+  label: string;
+  /** Whole Naira, positive. */
+  amount: number;
+}
+
+/** The vendor's business details as printed on the receipt. */
+export interface ReceiptBusiness {
+  name: string;
+  /** e.g. "Plumbing" */
+  trade: string | null;
+  /** e.g. "Chanchaga LGA, Niger State" */
+  location: string | null;
+}
+
+/** What was paid and what came back. `total` is always what was actually paid in. */
+export interface ReceiptBreakdown {
+  /** Services or products, without delivery. */
+  items: ReceiptLine[];
+  deliveryFee: number;
+  /** Fees kept out of a refund, e.g. a late-cancellation fee. Part of `total`, not added to it. */
+  fees: ReceiptLine[];
+  total: number;
+  /** Each refund from escrow (or the whole payment, if it was refunded outside escrow). */
+  refunds: ReceiptLine[];
+  refundedTotal: number;
+  /** What the customer paid in the end: total − refunds. */
+  netPaid: number;
+}
+
+/** Vendor copies only: the platform commission on this payment. */
+export interface ReceiptCommission {
+  /** 0.05 = 5%. */
+  rate: number;
+  amount: number;
+  /** What the vendor gets after commission (and after refunds). */
+  vendorNet: number;
+  /** True while money is still held: the commission is what release will cost. */
+  estimated: boolean;
+}
+
+export interface ReceiptDocument {
+  receiptNumber: string;
+  kind: ReceiptKind;
+  title: string;
+  viewer: ReceiptViewer;
   issuedAt: string;
+  paidAt: string | null;
+  platform: {name: string;address: string;website: string;email: string;};
+  customerName: string;
+  vendor: ReceiptBusiness;
+  /** e.g. "Order #5007" */
+  description: string;
+  subject: PaymentSubjectRef;
+  reference: string;
+  method: PaymentMethod;
+  /** e.g. "USSD (GTBank)" */
+  methodLabel: string;
+  status: TransactionStatus;
+  breakdown: ReceiptBreakdown;
+  commission: ReceiptCommission | null;
+  notes: string[];
+}
+
+/** Everything the receipt mapping needs, gathered by the service. */
+export interface ReceiptSource {
+  payment: Payment;
+  escrow: Escrow | null;
+  items: ReceiptLine[];
+  deliveryFee: number;
+  /** Late-cancellation fee kept by the vendor (jobs), 0 if none. */
+  cancellationFee: number;
+  vendor: ReceiptBusiness;
+}
+
+/* ---------- Transaction history (customer) ---------- */
+
+export type TransactionStatus = ValueOf<typeof TRANSACTION_STATUS>;
+export type TransactionType = ValueOf<typeof TRANSACTION_TYPE>;
+export type TransactionSort = 'newest' | 'oldest';
+
+export interface TransactionFilters {
+  status: TransactionStatus | 'all';
+  method: PaymentMethod | 'all';
+  type: TransactionType | 'all';
+  /** "yyyy-MM-dd", inclusive; empty for no limit. */
+  from: string;
+  to: string;
+  /** Matches the reference or the vendor's name. */
+  query: string;
+  sort: TransactionSort;
+}
+
+export interface TransactionListItem {
+  reference: string;
+  subject: PaymentSubjectRef;
+  type: TransactionType;
+  description: string;
+  vendorId: string;
+  vendorName: string;
+  amount: number;
+  method: PaymentMethod;
+  status: TransactionStatus;
+  /** When the money moved, or when the attempt was made if it never did. */
+  date: string;
+  /** Whole Naira returned so far. */
+  refunded: number;
+  /** Paid or refunded, so there's a receipt. */
+  hasReceipt: boolean;
+}
+
+export interface TransactionSummary {
+  /** Paid this calendar month, less refunds. */
+  spentThisMonth: number;
+  /** Of what's been paid, still held in escrow. */
+  heldInEscrow: number;
+  /** Started but not paid yet (awaiting payment or processing). */
+  pending: number;
+  /** Returned to the customer, all time. */
+  refunded: number;
+}
+
+export interface TransactionDetail {
+  transaction: TransactionListItem;
+  payment: Payment;
+  escrow: Escrow | null;
+  /** In the receipt's format, also before there's a receipt. */
+  breakdown: ReceiptBreakdown;
+  vendor: ReceiptBusiness;
+  /** Why "Report a problem" isn't available right now, or null when it is. */
+  reportBlockedReason: string | null;
 }
 
 /* ---------- Escrow ---------- */

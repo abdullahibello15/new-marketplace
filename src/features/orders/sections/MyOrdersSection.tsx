@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { PackageIcon, SearchXIcon } from 'lucide-react';
 import { PageHeader } from '../../../components/PageHeader';
@@ -19,21 +20,22 @@ const hintFor = (order: Order) => orderActionHint(order, ORDER_ACTOR.Customer);
 
 /** The customer's product orders, one per vendor per checkout, with a status filter. */
 export function MyOrdersSection() {
+  const { t } = useTranslation('jobs');
   const m = useMyOrders();
   const waiting = m.orders.filter((o) => hintFor(o) !== null).length;
 
   function renderList() {
     if (m.status === 'error') return <ErrorState message={m.error ?? ''} onRetry={m.reload} />;
-    if (m.status === 'loading' && m.orders.length === 0) return <LoadingState label="Loading your orders" rows={3} rowClassName="h-32" />;
+    if (m.status === 'loading' && m.orders.length === 0) return <LoadingState label={t('order.mine.loading')} rows={3} rowClassName="h-32" />;
     if (m.orders.length === 0) {
       return (
         <EmptyState
           icon={PackageIcon}
-          title="No orders yet"
-          description="Add products to your cart from a vendor’s shop. Your orders show up here so you can track them."
+          title={t('order.mine.emptyTitle')}
+          description={t('order.mine.emptyText')}
           action={
           <Link to={SEARCH_ROUTE} className={buttonClasses({ variant: 'secondary', size: 'sm' })}>
-              Browse vendors
+              {t('order.mine.browse')}
             </Link>
           } />);
 
@@ -43,10 +45,10 @@ export function MyOrdersSection() {
       return (
         <EmptyState
           icon={SearchXIcon}
-          title="No orders with this status"
+          title={t('order.mine.noneWithStatus')}
           action={
           <Button variant="secondary" size="sm" onClick={() => m.setFilter('all')}>
-              Show all orders
+              {t('order.mine.showAll')}
             </Button>
           } />);
 
@@ -66,8 +68,8 @@ export function MyOrdersSection() {
   return (
     <>
       <PageHeader
-        title="My Orders"
-        subtitle={waiting ? `${waiting} ${waiting === 1 ? 'order needs' : 'orders need'} your attention` : 'Track the products you’ve ordered'} />
+        title={t('order.mine.title')}
+        subtitle={waiting ? t('order.mine.waiting', { count: waiting }) : t('order.mine.subtitle')} />
 
       <PageContainer className="space-y-4">
         {m.orders.length > 0 && <OrderStatusFilter value={m.filter} onChange={m.setFilter} counts={m.counts} total={m.orders.length} />}

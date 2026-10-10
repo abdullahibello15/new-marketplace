@@ -1,9 +1,11 @@
+import { useTranslation } from 'react-i18next';
 import { TriangleAlertIcon } from 'lucide-react';
 import { Price } from '../../../../components/ui/Price';
 import type { CancellationTerms } from '../../cancellationPolicy';
 
 /** The part of the policy that applies to this cancellation, with the fee if there is one. */
 export function CancellationTermsSummary({ terms }: {terms: CancellationTerms;}) {
+  const { t } = useTranslation('jobs');
   return (
     <div className="space-y-2 rounded-xl bg-sand p-3 text-sm">
       <p className="text-ink">{terms.summary}</p>
@@ -14,14 +16,14 @@ export function CancellationTermsSummary({ terms }: {terms: CancellationTerms;})
         </p>
       }
       <p className="flex flex-wrap items-baseline justify-between gap-2 border-t border-line pt-2">
-        <span className="font-semibold text-muted">Cancellation fee</span>
+        <span className="font-semibold text-muted">{t('policy.fee')}</span>
         {terms.fee > 0 ?
         <span className="text-right">
             <Price amount={terms.fee} className="font-bold text-ink" />
-            <span className="block text-xs text-muted">Demo only: no money is charged.</span>
+            <span className="block text-xs text-muted">{t('policy.feeDemo')}</span>
           </span> :
 
-        <span className="font-bold text-pine">Free</span>
+        <span className="font-bold text-pine">{t('policy.free')}</span>
         }
       </p>
     </div>);

@@ -1,13 +1,13 @@
 import React, { useCallback, useMemo } from 'react';
-import { vendorAccount } from '../../../data/vendorPortal';
 import { useAsyncData } from '../../../hooks/useAsyncData';
 import { ORDER_STATUS } from '../constants';
 import { listVendorOrders } from '../services/orderService';
 import { VendorOrdersContext, type VendorOrdersContextValue } from './vendorOrdersContext';
 import type { Order } from '../types';
+import { currentVendorId } from '../../auth/session';
 
 const EMPTY: Order[] = [];
-const loadVendorOrders = () => listVendorOrders(vendorAccount.vendorId);
+const loadVendorOrders = () => listVendorOrders(currentVendorId());
 
 /** The signed-in vendor's orders, shared by the orders list, order details and the nav badge. */
 export function VendorOrdersProvider({ children }: {children: React.ReactNode;}) {

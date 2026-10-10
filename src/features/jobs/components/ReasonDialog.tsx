@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React, { useEffect, useId, useMemo } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -49,6 +50,7 @@ export function ReasonDialog({
   onConfirm,
   onCancel
 }: ReasonDialogProps) {
+  const { t } = useTranslation();
   const id = useId();
   const presetIds = useMemo(() => presets?.map((p) => p.id) ?? [], [presets]);
   const schema = useMemo(() => makeReasonSchema({ required, presetIds }), [required, presetIds]);
@@ -71,7 +73,7 @@ export function ReasonDialog({
   const textField =
   <FormField
     id={`${id}-text`}
-    label={usingPresets ? 'Tell us more' : `${reasonLabel}${required ? '' : ' (optional)'}`}
+    label={usingPresets ? t('jobs:reasonDialog.tellMore') : `${reasonLabel}${required ? '' : ` ${t('jobs:reasonDialog.optional')}`}`}
     error={errors.reason?.message}
     aside={
     <span className={`text-xs font-semibold tabular-nums ${length > REASON_MAX ? 'text-clay-dark' : 'text-muted'}`}>
@@ -111,10 +113,10 @@ export function ReasonDialog({
         <fieldset aria-describedby={errors.preset ? `${id}-preset-error` : undefined}>
             <legend className="mb-2 text-sm font-bold text-muted">
               {reasonLabel}
-              {!required && ' (optional)'}
+              {!required && ` ${t('jobs:reasonDialog.optional')}`}
             </legend>
             <div className="space-y-2">
-              {[...(presets ?? []), { id: OTHER_REASON, label: 'Other' }].map((p) =>
+              {[...(presets ?? []), { id: OTHER_REASON, label: t('jobs:reasonDialog.other') }].map((p) =>
             <label
               key={p.id}
               className="flex cursor-pointer items-center gap-3 rounded-xl border border-line px-3 py-2.5 text-[15px] font-semibold text-ink has-[:checked]:border-pine has-[:checked]:bg-[#E3EEEC] has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-pine/40">
@@ -136,7 +138,7 @@ export function ReasonDialog({
 
         <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
           <Button variant="secondary" onClick={onCancel} disabled={isSubmitting}>
-            Back
+            {t('action.back')}
           </Button>
           <Button type="submit" variant={destructive ? 'danger' : 'primary'} loading={isSubmitting}>
             {confirmLabel}

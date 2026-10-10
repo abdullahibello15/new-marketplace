@@ -1,6 +1,9 @@
 import { addDays, isAfter, isBefore, parseISO, startOfToday } from 'date-fns';
 import { z } from 'zod';
 import { weekdays } from '../../data/weekdays';
+import i18n from '../../i18n';
+import { weekdayLabel } from '../../i18n/labels';
+import { formatNaira } from '../../utils/format';
 import { parseNumberInput } from '../../lib/numberInput';
 import { sanitizeText } from '../../lib/sanitize';
 import { formatClock, toMinutes, weekdayOfDate } from '../../utils/workingHours';
@@ -32,7 +35,7 @@ import type { WorkingHours } from '../../types/marketplace';
 import type { StarLevel } from '../vendor-dashboard/types';
 
 const cleanText = z.string().transform(sanitizeText);
-const dateKey = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Choose a date.');
+const dateKey = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, { error: () => i18n.t('jobs:form.chooseDate') });
 
 /** Checks a date is today or later, within the booking window, and a day the vendor works. `closedMessage` explains a day off. */
 function checkWorkingDay(
@@ -46,17 +49,17 @@ path: string)
   const today = startOfToday();
   if (Number.isNaN(day.getTime())) return null;
   if (isBefore(day, today)) {
-    ctx.addIssue({ code: 'custom', path: [path], message: 'Choose today or a later date.' });
+    ctx.addIssue({ code: 'custom', path: [path], message: i18n.t('jobs:form.dateFuture') });
     return null;
   }
   if (isAfter(day, addDays(today, JOB_BOOKING_WINDOW_DAYS))) {
-    ctx.addIssue({ code: 'custom', path: [path], message: `Choose a date in the next ${JOB_BOOKING_WINDOW_DAYS} days.` });
+    ctx.addIssue({ code: 'custom', path: [path], message: i18n.t('jobs:form.dateWindow', { days: JOB_BOOKING_WINDOW_DAYS }) });
     return null;
   }
   const weekday = weekdayOfDate(day);
   const hours = workingHours[weekday];
   if (!hours.open) {
-    const name = weekdays.find((w) => w.id === weekday)?.label ?? 'that day';
+    const name = weekdayLabel(weekday, weekdays.find((w) => w.id === weekday)?.label ?? weekday);
     ctx.addIssue({ code: 'custom', path: [path], message: closedMessage(name) });
     return null;
   }
@@ -72,26 +75,26 @@ export function makeJobRequestSchema({ workingHours, vendorName }: {workingHours
     description: cleanText.pipe(
       z.
       string().
-      min(JOB_DESCRIPTION_MIN, `Describe the job in at least ${JOB_DESCRIPTION_MIN} characters so ${vendorName} can quote accurately.`).
-      max(JOB_DESCRIPTION_MAX, `Keep the description to ${JOB_DESCRIPTION_MAX} characters.`)
+      min(JOB_DESCRIPTION_MIN, i18n.t('jobs:form.descriptionMin', { min: JOB_DESCRIPTION_MIN, name: vendorName })).
+      max(JOB_DESCRIPTION_MAX, i18n.t('jobs:form.descriptionMax', { max: JOB_DESCRIPTION_MAX }))
     ),
     photos: z.
     array(z.string()).
-    min(JOB_PHOTOS_MIN, 'Add at least one photo of the job.').
-    max(JOB_PHOTOS_MAX, `Use ${JOB_PHOTOS_MAX} photos or fewer.`),
+    min(JOB_PHOTOS_MIN, i18n.t('jobs:form.photoMin')).
+    max(JOB_PHOTOS_MAX, i18n.t('jobs:form.photoMax', { max: JOB_PHOTOS_MAX })),
     preferredDate: dateKey,
-    timeWindow: z.enum(TIME_WINDOW, { error: 'Choose a time window.' }),
+    timeWindow: z.enum(TIME_WINDOW, { error: () => i18n.t('jobs:form.chooseWindow') }),
     landmark: cleanText.pipe(
       z.
       string().
-      min(JOB_LANDMARK_MIN, 'Add a street, house number or landmark so the vendor can find you.').
-      max(JOB_LANDMARK_MAX, `Keep it to ${JOB_LANDMARK_MAX} characters.`)
+      min(JOB_LANDMARK_MIN, i18n.t('jobs:form.landmarkMin')).
+      max(JOB_LANDMARK_MAX, i18n.t('jobs:form.keepTo', { max: JOB_LANDMARK_MAX }))
     ),
-    placeId: z.string().min(1, 'Choose your town or LGA.'),
+    placeId: z.string().min(1, i18n.t('jobs:form.choosePlace')),
     coordinates: z.object({ lat: z.number(), lng: z.number() }).nullable()
   }).
   superRefine((v, ctx) => {
-    const hours = checkWorkingDay(v.preferredDate, workingHours, (d) => `${vendorName} doesn’t work on ${d}s. Please pick another day.`, ctx, 'preferredDate');
+    const hours = checkWorkingDay(v.preferredDate, workingHours, (d) => i18n.t('jobs:form.requestClosedOn', { name: vendorName, day: d }), ctx, 'preferredDate');
     const window = TIME_WINDOWS.find((w) => w.id === v.timeWindow);
     if (!hours || !window) return;
     // The window must overlap the vendor's opening hours that day.
@@ -99,7 +102,7 @@ export function makeJobRequestSchema({ workingHours, vendorName }: {workingHours
       ctx.addIssue({
         code: 'custom',
         path: ['timeWindow'],
-        message: `${vendorName} works ${formatClock(hours.opensAt)} – ${formatClock(hours.closesAt)} that day. Choose a window inside those hours.`
+        message: i18n.t('jobs:form.windowOutside', { name: vendorName, from: formatClock(hours.opensAt), to: formatClock(hours.closesAt) })
       });
     }
   });
@@ -116,15 +119,15 @@ export function makeQuoteSchema({ workingHours }: {workingHours: WorkingHours;})
     amount: z.string().transform((raw, ctx) => {
       const value = parseNumberInput(raw);
       if (value === null || Number.isNaN(value)) {
-        ctx.addIssue({ code: 'custom', message: 'Enter your price in Naira, like 15,000.' });
+        ctx.addIssue({ code: 'custom', message: i18n.t('jobs:form.priceNaira') });
         return z.NEVER;
       }
       if (value < QUOTE_PRICE_MIN) {
-        ctx.addIssue({ code: 'custom', message: `A quote must be at least ₦${QUOTE_PRICE_MIN.toLocaleString('en-NG')}.` });
+        ctx.addIssue({ code: 'custom', message: i18n.t('jobs:form.quoteMin', { amount: formatNaira(QUOTE_PRICE_MIN) }) });
         return z.NEVER;
       }
       if (value > QUOTE_PRICE_MAX) {
-        ctx.addIssue({ code: 'custom', message: 'That price looks too high. Check for extra zeros.' });
+        ctx.addIssue({ code: 'custom', message: i18n.t('jobs:form.priceHigh') });
         return z.NEVER;
       }
       return value;
@@ -132,34 +135,34 @@ export function makeQuoteSchema({ workingHours }: {workingHours: WorkingHours;})
     includes: cleanText.pipe(
       z.
       string().
-      min(QUOTE_INCLUDES_MIN, 'Say what the price covers, e.g. parts, labour, clean-up.').
-      max(QUOTE_INCLUDES_MAX, `Keep it to ${QUOTE_INCLUDES_MAX} characters.`)
+      min(QUOTE_INCLUDES_MIN, i18n.t('jobs:form.includesMin')).
+      max(QUOTE_INCLUDES_MAX, i18n.t('jobs:form.keepTo', { max: QUOTE_INCLUDES_MAX }))
     ),
-    durationHours: z.string().transform(Number).refine((h) => QUOTE_DURATIONS.some((d) => d.hours === h), 'Choose an estimated duration.'),
+    durationHours: z.string().transform(Number).refine((h) => QUOTE_DURATIONS.some((d) => d.hours === h), i18n.t('jobs:form.chooseDuration')),
     proposedDate: dateKey,
-    proposedTime: z.string().regex(/^\d{2}:\d{2}$/, 'Choose a start time.'),
-    expiresInHours: z.string().transform(Number).refine((h) => QUOTE_EXPIRY_OPTIONS.some((o) => o.hours === h), 'Choose when the quote expires.')
+    proposedTime: z.string().regex(/^\d{2}:\d{2}$/, i18n.t('jobs:form.chooseStart')),
+    expiresInHours: z.string().transform(Number).refine((h) => QUOTE_EXPIRY_OPTIONS.some((o) => o.hours === h), i18n.t('jobs:form.chooseExpiry'))
   }).
   superRefine((v, ctx) => {
-    const hours = checkWorkingDay(v.proposedDate, workingHours, (d) => `You’re closed on ${d}s. Pick a working day, or update your hours on Edit Profile.`, ctx, 'proposedDate');
+    const hours = checkWorkingDay(v.proposedDate, workingHours, (d) => i18n.t('jobs:form.vendorClosedOn', { day: d }), ctx, 'proposedDate');
     if (!hours) return;
     const minutes = toMinutes(v.proposedTime);
     if (minutes < toMinutes(hours.opensAt) || minutes >= toMinutes(hours.closesAt)) {
       ctx.addIssue({
         code: 'custom',
         path: ['proposedTime'],
-        message: `Pick a start time within your hours that day (${formatClock(hours.opensAt)} – ${formatClock(hours.closesAt)}).`
+        message: i18n.t('jobs:form.startWithin', { from: formatClock(hours.opensAt), to: formatClock(hours.closesAt) })
       });
       return;
     }
     const start = new Date(`${v.proposedDate}T${v.proposedTime}`);
     if (start <= new Date()) {
-      ctx.addIssue({ code: 'custom', path: ['proposedTime'], message: 'That time has already passed.' });
+      ctx.addIssue({ code: 'custom', path: ['proposedTime'], message: i18n.t('jobs:form.timePassed') });
       return;
     }
     // The customer must be able to accept before the job starts.
     if (Date.now() + v.expiresInHours * 3_600_000 > start.getTime()) {
-      ctx.addIssue({ code: 'custom', path: ['expiresInHours'], message: 'The quote would still be open after the job starts. Choose a shorter expiry.' });
+      ctx.addIssue({ code: 'custom', path: ['expiresInHours'], message: i18n.t('jobs:form.expiryAfterStart') });
     }
   });
 }
@@ -178,21 +181,21 @@ export function makeReasonSchema({ required = false, presetIds = [] }: {required
   return z.
   object({
     preset: z.string(),
-    reason: cleanText.pipe(z.string().max(REASON_MAX, `Keep it to ${REASON_MAX} characters.`))
+    reason: cleanText.pipe(z.string().max(REASON_MAX, i18n.t('jobs:form.keepTo', { max: REASON_MAX })))
   }).
   superRefine((v, ctx) => {
     if (presetIds.length > 0) {
       if (!v.preset) {
-        if (required) ctx.addIssue({ code: 'custom', path: ['preset'], message: 'Choose a reason.' });
+        if (required) ctx.addIssue({ code: 'custom', path: ['preset'], message: i18n.t('jobs:form.chooseReason') });
         return;
       }
       if (v.preset !== OTHER_REASON && !presetIds.includes(v.preset)) {
-        ctx.addIssue({ code: 'custom', path: ['preset'], message: 'Choose a reason from the list.' });
+        ctx.addIssue({ code: 'custom', path: ['preset'], message: i18n.t('jobs:form.chooseReasonList') });
       } else if (v.preset === OTHER_REASON && !v.reason) {
-        ctx.addIssue({ code: 'custom', path: ['reason'], message: 'Tell us the reason.' });
+        ctx.addIssue({ code: 'custom', path: ['reason'], message: i18n.t('jobs:form.tellReason') });
       }
     } else if (required && !v.reason) {
-      ctx.addIssue({ code: 'custom', path: ['reason'], message: 'Please give a reason.' });
+      ctx.addIssue({ code: 'custom', path: ['reason'], message: i18n.t('jobs:form.giveReason') });
     }
   });
 }
@@ -205,26 +208,26 @@ export function makeRescheduleSchema({ workingHours, currentStart }: {workingHou
   return z.
   object({
     date: dateKey,
-    time: z.string().regex(/^\d{2}:\d{2}$/, 'Choose a time.'),
+    time: z.string().regex(/^\d{2}:\d{2}$/, i18n.t('jobs:form.chooseTime')),
     reason: cleanText.pipe(
-      z.string().min(RESCHEDULE_REASON_MIN, 'Say why you need to move it.').max(REASON_MAX, `Keep it to ${REASON_MAX} characters.`)
+      z.string().min(RESCHEDULE_REASON_MIN, i18n.t('jobs:form.moveWhy')).max(REASON_MAX, i18n.t('jobs:form.keepTo', { max: REASON_MAX }))
     )
   }).
   superRefine((v, ctx) => {
-    const hours = checkWorkingDay(v.date, workingHours, (d) => `The vendor doesn’t work on ${d}s. Pick another day.`, ctx, 'date');
+    const hours = checkWorkingDay(v.date, workingHours, (d) => i18n.t('jobs:form.vendorNotWorking', { day: d }), ctx, 'date');
     if (!hours) return;
     const minutes = toMinutes(v.time);
     if (minutes < toMinutes(hours.opensAt) || minutes >= toMinutes(hours.closesAt)) {
-      ctx.addIssue({ code: 'custom', path: ['time'], message: `Choose a time between ${formatClock(hours.opensAt)} and ${formatClock(hours.closesAt)}.` });
+      ctx.addIssue({ code: 'custom', path: ['time'], message: i18n.t('jobs:form.timeBetween', { from: formatClock(hours.opensAt), to: formatClock(hours.closesAt) }) });
       return;
     }
     const start = new Date(`${v.date}T${v.time}`);
     if (start.getTime() < Date.now() + RESCHEDULE_CUTOFF_HOURS * 3_600_000) {
-      ctx.addIssue({ code: 'custom', path: ['time'], message: `The new time must be at least ${RESCHEDULE_CUTOFF_HOURS} hours from now.` });
+      ctx.addIssue({ code: 'custom', path: ['time'], message: i18n.t('jobs:form.newTimeCutoff', { hours: RESCHEDULE_CUTOFF_HOURS }) });
       return;
     }
     if (currentStart && start.getTime() === new Date(currentStart).getTime()) {
-      ctx.addIssue({ code: 'custom', path: ['time'], message: 'That’s the time it’s already booked for.' });
+      ctx.addIssue({ code: 'custom', path: ['time'], message: i18n.t('jobs:form.sameTime') });
     }
   });
 }
@@ -235,20 +238,20 @@ export type RescheduleFormData = z.output<ReturnType<typeof makeRescheduleSchema
 /* ---------- Task 55: report a problem, review ---------- */
 
 export const reportProblemSchema = z.object({
-  reason: z.enum(DISPUTE_REASON, { error: 'Choose what went wrong.' }),
+  reason: z.enum(DISPUTE_REASON, { error: () => i18n.t('jobs:form.chooseWhatWrong') }),
   details: cleanText.pipe(
     z.
     string().
-    min(DISPUTE_DETAILS_MIN, `Describe the problem (at least ${DISPUTE_DETAILS_MIN} characters) so our team can help.`).
-    max(DISPUTE_DETAILS_MAX, `Keep it to ${DISPUTE_DETAILS_MAX} characters.`)
+    min(DISPUTE_DETAILS_MIN, { error: () => i18n.t('jobs:form.problemMin', { min: DISPUTE_DETAILS_MIN }) }).
+    max(DISPUTE_DETAILS_MAX, { error: () => i18n.t('jobs:form.keepTo', { max: DISPUTE_DETAILS_MAX }) })
   )
 });
 export type ReportProblemFormValues = z.input<typeof reportProblemSchema>;
 export type ReportProblemFormData = z.output<typeof reportProblemSchema>;
 
 export const reviewSchema = z.object({
-  rating: z.custom<StarLevel>((v) => typeof v === 'number' && Number.isInteger(v) && v >= 1 && v <= 5, 'Choose a star rating.'),
-  comment: cleanText.pipe(z.string().max(REVIEW_COMMENT_MAX, `Keep your review to ${REVIEW_COMMENT_MAX} characters.`))
+  rating: z.custom<StarLevel>((v) => typeof v === 'number' && Number.isInteger(v) && v >= 1 && v <= 5, { error: () => i18n.t('jobs:form.chooseStars') }),
+  comment: cleanText.pipe(z.string().max(REVIEW_COMMENT_MAX, { error: () => i18n.t('jobs:form.reviewMax', { max: REVIEW_COMMENT_MAX }) }))
 });
 export type ReviewFormValues = z.input<typeof reviewSchema>;
 export type ReviewFormData = z.output<typeof reviewSchema>;

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useId } from 'react';
 import { SORT_OPTIONS } from '../../constants';
 import type { SortOption } from '../../types';
@@ -9,10 +10,11 @@ interface SortSelectProps {
 
 export function SortSelect({ value, onChange }: SortSelectProps) {
   const id = useId();
+  const { t } = useTranslation('discovery');
   return (
     <div className="flex items-center gap-2">
       <label htmlFor={id} className="whitespace-nowrap text-sm font-semibold text-muted">
-        Sort by
+        {t('sort.label')}
       </label>
       <select
         id={id}
@@ -22,7 +24,7 @@ export function SortSelect({ value, onChange }: SortSelectProps) {
 
         {SORT_OPTIONS.map((o) =>
         <option key={o.id} value={o.id}>
-            {o.label}
+            {t(`sort.${o.id}`)}
           </option>
         )}
       </select>

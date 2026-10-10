@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { MinusIcon, PlusIcon } from 'lucide-react';
 
 interface QuantityStepperProps {
@@ -13,9 +14,10 @@ const stepButton =
 
 /** −/+ for a cart line, from 1 up to the stock available. Removing is a separate button. */
 export function QuantityStepper({ value, max, onChange, itemName }: QuantityStepperProps) {
+  const { t } = useTranslation('jobs');
   return (
-    <div className="flex items-center overflow-hidden rounded-xl border border-line bg-white" role="group" aria-label={`Quantity of ${itemName}`}>
-      <button type="button" onClick={() => onChange(value - 1)} disabled={value <= 1} aria-label={`Decrease ${itemName}`} className={stepButton}>
+    <div className="flex items-center overflow-hidden rounded-xl border border-line bg-white" role="group" aria-label={t('order.cart.quantityOf', { name: itemName })}>
+      <button type="button" onClick={() => onChange(value - 1)} disabled={value <= 1} aria-label={t('order.cart.decrease', { name: itemName })} className={stepButton}>
         <MinusIcon className="h-4 w-4" aria-hidden="true" />
       </button>
       <output aria-live="polite" className="w-10 text-center text-[15px] font-bold tabular-nums text-ink">
@@ -25,7 +27,7 @@ export function QuantityStepper({ value, max, onChange, itemName }: QuantityStep
         type="button"
         onClick={() => onChange(value + 1)}
         disabled={value >= max}
-        aria-label={value >= max ? `Increase ${itemName} (only ${max} in stock)` : `Increase ${itemName}`}
+        aria-label={value >= max ? t('order.cart.increaseMax', { name: itemName, max }) : t('order.cart.increase', { name: itemName })}
         className={stepButton}>
 
         <PlusIcon className="h-4 w-4" aria-hidden="true" />

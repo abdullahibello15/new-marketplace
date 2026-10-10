@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { PackageIcon, SearchXIcon } from 'lucide-react';
 import { PageHeader } from '../../../components/PageHeader';
 import { Button } from '../../../components/ui/Button';
@@ -6,34 +7,36 @@ import { ErrorState } from '../../../components/ui/ErrorState';
 import { LoadingState } from '../../../components/ui/LoadingState';
 import { PageContainer } from '../../../components/ui/PageContainer';
 import { SearchInput } from '../../../components/ui/SearchInput';
-import { vendorAccount } from '../../../data/vendorPortal';
 import { ORDER_ACTOR, VENDOR_ORDER_ROUTES } from '../constants';
 import { OrderListItem } from '../components/OrderListItem';
 import { OrderStatusFilter } from '../components/OrderStatusFilter';
 import { useVendorOrderList } from '../hooks/useVendorOrderList';
 import { useVendorOrders } from '../hooks/useVendorOrders';
 import { orderActionHint } from '../utils/actionHints';
+import { useCurrentVendor } from '../../auth/hooks/useCurrentVendor';
 
 /** Vendor dashboard: this vendor's product orders, filterable by status. */
 export function VendorOrdersSection() {
+  const { t } = useTranslation('vendor');
+  const { businessName } = useCurrentVendor();
   const { orders, status, error, reload, newCount } = useVendorOrders();
   const list = useVendorOrderList(orders);
 
   function renderList() {
     if (status === 'error') return <ErrorState message={error ?? ''} onRetry={reload} />;
-    if (status === 'loading' && orders.length === 0) return <LoadingState label="Loading orders" rows={4} rowClassName="h-32" />;
+    if (status === 'loading' && orders.length === 0) return <LoadingState label={t('orders.loading')} rows={4} rowClassName="h-32" />;
     if (orders.length === 0) {
-      return <EmptyState icon={PackageIcon} title="No orders yet" description="When customers order products from your shop, they show up here." />;
+      return <EmptyState icon={PackageIcon} title={t('orders.emptyTitle')} description={t('orders.emptyText')} />;
     }
     if (list.results.length === 0) {
       return (
         <EmptyState
           icon={SearchXIcon}
-          title="No orders match"
-          description="Try a different name, order number or status."
+          title={t('orders.noMatchTitle')}
+          description={t('orders.noMatchText')}
           action={
           <Button variant="secondary" size="sm" onClick={list.clearFilters}>
-              Clear filters
+              {t('requests.clearFilters')}
             </Button>
           } />);
 
@@ -52,15 +55,15 @@ export function VendorOrdersSection() {
 
   return (
     <>
-      <PageHeader title="Orders" subtitle={`${vendorAccount.businessName} · ${newCount} new`} />
+      <PageHeader title={t('orders.title')} subtitle={t('orders.subtitle', { name: businessName, count: newCount })} />
       <PageContainer>
         <div className="space-y-3">
-          <SearchInput value={list.query} onChange={list.setQuery} label="Search by customer or order number" placeholder="Search by customer or order #…" />
+          <SearchInput value={list.query} onChange={list.setQuery} label={t('orders.search')} placeholder={t('orders.searchPlaceholder')} />
           {orders.length > 0 && <OrderStatusFilter value={list.statusFilter} onChange={list.setStatusFilter} counts={list.counts} total={orders.length} />}
         </div>
         <div className="mt-6 flex items-baseline justify-between gap-4">
           <h2 className="text-xs font-bold uppercase tracking-wider text-muted" aria-live="polite">
-            {list.hasFilters ? `${list.results.length} of ${orders.length} shown` : 'All orders'}
+            {list.hasFilters ? t('requests.shown', { shown: list.results.length, total: orders.length }) : t('orders.all')}
           </h2>
           {list.hasFilters &&
           <button
@@ -68,7 +71,7 @@ export function VendorOrdersSection() {
             onClick={list.clearFilters}
             className="rounded text-sm font-semibold text-clay-dark hover:text-clay focus:outline-none focus-visible:ring-2 focus-visible:ring-clay/40">
 
-              Clear filters
+              {t('requests.clearFilters')}
             </button>
           }
         </div>

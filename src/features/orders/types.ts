@@ -1,5 +1,6 @@
 import type { NigerLga, VendorFulfilment } from '../../types/marketplace';
 import type { StarLevel } from '../vendor-dashboard/types';
+import type { JobDispute } from '../jobs/types';
 import type { CART_CHANGE_KIND, FULFILMENT_METHOD, ORDER_ACTOR, ORDER_STATUS } from './constants';
 
 type ValueOf<T> = T[keyof T];
@@ -56,6 +57,9 @@ export interface OrderReview {
 }
 
 /** One vendor's part of a checkout. A checkout with three vendors creates three orders sharing `checkoutRef`. */
+/** A reported problem with an order: reason, details and, once Gwani decides, the resolution. */
+export type OrderDispute = JobDispute;
+
 export interface Order {
   id: string;
   checkoutRef: string;
@@ -82,6 +86,8 @@ export interface Order {
   /** True once the vendor confirmed and stock was taken; cancelling then puts it back. */
   stockReserved: boolean;
   review: OrderReview | null;
+  /** Set when the customer reports a problem after delivery or collection (same shape as a job's). */
+  dispute: OrderDispute | null;
   /** The customer chose not to review; the prompt stays hidden. */
   reviewSkipped: boolean;
   createdAt: string;

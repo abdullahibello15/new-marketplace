@@ -1,14 +1,25 @@
-import { format, subMinutes } from 'date-fns';
-import { user } from '../../../data/user';
+import i18n from '../../../i18n';
+import { addDays, format, setHours, setMinutes, startOfDay, subMinutes } from 'date-fns';
+import { DEMO_CUSTOMER } from '../../auth/mock/users';
 import { ApiError, mockResponse } from '../../../services/mockApi';
-import { CURRENT_CUSTOMER_ID, JOB_ACTOR, JOB_STATUS } from '../../jobs/constants';
-import { recordJobNotification } from '../../jobs/services/notificationService';
-import { DEFAULT_PREFERENCES, MOCK_DELIVERY, REMINDER_RULES } from '../config';
-import { DELIVERY_OUTCOME, REMINDER_CHANNEL, REMINDER_STATUS } from '../constants';
-import { relativeDay, renderReminder } from '../templates';
-import { maskPhone, toE164 } from '../utils/phone';
+import { JOB_ACTOR, JOB_STATUS } from '../../jobs/constants';
+import { recordAccountNotification, recordJobNotification } from '../../jobs/services/notificationService';
+import { APP_LINK_BASE, DEFAULT_PREFERENCES, MOCK_DELIVERY, REMINDER_RULES, SUBSCRIPTION_REMINDER_SCHEDULE, SUBSCRIPTION_REMINDER_TIME } from '../config';
+import { DELIVERY_OUTCOME, REMINDER_CHANNEL, REMINDER_STATUS, REMINDER_TOPIC, SUBSCRIPTION_REMINDER_PHASE } from '../constants';
+import { relativeDay, renderReminder, renderSubscriptionReminder } from '../templates';
+import { recipientLanguage, tIn } from '../../../i18n/recipient';
+import { formatDateIn } from '../../../utils/format';
+import type { TFunction } from 'i18next';
+import { maskPhone } from '../../../utils/phone';
 import type { Job, JobParty } from '../../jobs/types';
-import type { DeliveryLogEntry, NotificationPreferences, ReminderChannel, ScheduledReminder } from '../types';
+import type {
+  DeliveryLogEntry,
+  NotificationPreferences,
+  ReminderChannel,
+  ScheduledReminder,
+  SubscriptionReminderPhase,
+  SubscriptionReminderTarget } from
+'../types';
 
 /*
  * MOCK reminder service. Everything up to the push/SMS boundary is real logic: which reminders a booking
@@ -27,7 +38,7 @@ let nextLogId = 1;
 const prefKey = (party: JobParty, id: string) => `${party}:${id}`;
 const preferences = new Map<string, NotificationPreferences>([
 // The demo customer has a phone on file, so SMS starts on for her.
-[prefKey(JOB_ACTOR.Customer, CURRENT_CUSTOMER_ID), { ...DEFAULT_PREFERENCES, sms: true, phone: toE164(user.phone) }]]
+[prefKey(JOB_ACTOR.Customer, DEMO_CUSTOMER.id), { ...DEFAULT_PREFERENCES, sms: true, phone: DEMO_CUSTOMER.phone }]]
 );
 
 function preferencesFor(party: JobParty, id: string): NotificationPreferences {
@@ -45,25 +56,38 @@ function buildReminders(job: Job, now: Date): ScheduledReminder[] {
   rule.recipients.map((recipient): ScheduledReminder => {
     const fireAt = subMinutes(start, rule.minutesBefore);
     const late = fireAt <= now;
+    // Written in the recipient's saved language: they're the only one who sees it.
+    const language = recipientLanguage(recipient, recipientIdOf(job, recipient));
+    const t = tIn(language);
+    const lead = t('jobs:reminder.lead', { count: Math.round(rule.minutesBefore / 60) });
     return {
       id: `rem-${nextReminderId++}`,
+      topic: REMINDER_TOPIC.Booking,
       jobId: job.id,
+      subscriptionKey: null,
       ruleId: rule.id,
+      label: t('jobs:reminder.leadBefore', { lead }),
+      href: null,
       recipient,
       recipientId: recipientIdOf(job, recipient),
-      jobStart: job.scheduledAt ?? createdAt,
+      anchorAt: job.scheduledAt ?? createdAt,
       fireAt: fireAt.toISOString(),
       status: late ? REMINDER_STATUS.Skipped : REMINDER_STATUS.Scheduled,
-      message: renderReminder(rule.id, recipient, {
-        service: job.serviceName ?? 'booking',
-        vendor: job.vendorName,
-        customer: job.customerName,
-        day: relativeDay(start, fireAt),
-        time: format(start, 'h:mm a'),
-        address: `${job.address.landmark}, ${job.address.placeLabel}.`,
-        lead: rule.lead,
-        ref: `#${job.id}`
-      }),
+      message: renderReminder(
+        rule.id,
+        recipient,
+        {
+          service: job.serviceName ?? t('jobs:reminder.booking'),
+          vendor: job.vendorName,
+          customer: job.customerName,
+          day: relativeDay(start, fireAt, language),
+          time: formatDateIn(start, 'h:mm a', language),
+          address: `${job.address.landmark}, ${job.address.placeLabel}.`,
+          lead,
+          ref: `#${job.id}`
+        },
+        language
+      ),
       createdAt,
       closedAt: late ? createdAt : null,
       closedReason: late ? `The ${rule.lead} mark had already passed when it was booked.` : null
@@ -73,7 +97,7 @@ function buildReminders(job: Job, now: Date): ScheduledReminder[] {
 }
 
 function scheduleNow(job: Job, now: Date): ScheduledReminder[] {
-  if (job.status !== JOB_STATUS.Scheduled || !job.scheduledAt) throw new ApiError('Only scheduled jobs get reminders.', 409);
+  if (job.status !== JOB_STATUS.Scheduled || !job.scheduledAt) throw new ApiError(i18n.t('jobs:error.remindersScheduledOnly'), 409);
   // Idempotent: scheduling again replaces what's pending rather than doubling up.
   cancelNow(job.id, 'Replaced by a new schedule', now);
   const created = buildReminders(job, now);
@@ -84,7 +108,7 @@ function scheduleNow(job: Job, now: Date): ScheduledReminder[] {
 function cancelNow(jobId: string, reason: string, now: Date): number {
   let count = 0;
   reminders = reminders.map((r) => {
-    if (r.jobId !== jobId || r.status !== REMINDER_STATUS.Scheduled) return r;
+    if (r.topic !== REMINDER_TOPIC.Booking || r.jobId !== jobId || r.status !== REMINDER_STATUS.Scheduled) return r;
     count += 1;
     return { ...r, status: REMINDER_STATUS.Cancelled, closedAt: now.toISOString(), closedReason: reason };
   });
@@ -114,7 +138,110 @@ export function rescheduleReminders(job: Job): Promise<ScheduledReminder[]> {
 
 /** GET /jobs/:id/reminders?recipient= — what this person will get about this job, soonest first. */
 export function listJobReminders(jobId: string, recipient: JobParty): Promise<ScheduledReminder[]> {
-  return mockResponse(() => reminders.filter((r) => r.jobId === jobId && r.recipient === recipient).sort((a, b) => a.fireAt.localeCompare(b.fireAt)), 200);
+  return mockResponse(
+    () => reminders.filter((r) => r.topic === REMINDER_TOPIC.Booking && r.jobId === jobId && r.recipient === recipient).sort((a, b) => a.fireAt.localeCompare(b.fireAt)),
+    200
+  );
+}
+
+/* ---------- Subscription renewal reminders ---------- */
+
+/** Which wording applies `days` after the end date (negative = before it). */
+function phaseFor(days: number, graceDays: number): SubscriptionReminderPhase {
+  if (days < 0) return SUBSCRIPTION_REMINDER_PHASE.Before;
+  if (days === 0) return SUBSCRIPTION_REMINDER_PHASE.Today;
+  return days <= graceDays ? SUBSCRIPTION_REMINDER_PHASE.Grace : SUBSCRIPTION_REMINDER_PHASE.Suspended;
+}
+
+const plural = (n: number, t: TFunction) => t('vendor:renewal.days', { count: n });
+
+function stepLabel(days: number, graceDays: number, t: TFunction): string {
+  if (days < 0) return t('vendor:renewal.beforeExpiry', { days: plural(-days, t) });
+  if (days === 0) return t('vendor:renewal.onExpiry');
+  return days <= graceDays ? t('vendor:renewal.graceDay', { day: days }) : t('vendor:renewal.suspendedDay', { day: days - graceDays });
+}
+
+/** One person's renewal reminders from the schedule. Steps already past are kept as Skipped, so the list explains itself. */
+function buildSubscriptionReminders(t: SubscriptionReminderTarget, now: Date): ScheduledReminder[] {
+  const endDay = startOfDay(new Date(t.renewsOn));
+  const graceEnd = addDays(endDay, t.graceDays);
+  const createdAt = now.toISOString();
+  return SUBSCRIPTION_REMINDER_SCHEDULE.map((step): ScheduledReminder => {
+    const day = addDays(endDay, step.daysFromExpiry);
+    const fireAt = setMinutes(setHours(day, SUBSCRIPTION_REMINDER_TIME.hour), SUBSCRIPTION_REMINDER_TIME.minute);
+    const late = fireAt <= now;
+    const language = recipientLanguage(t.recipient, t.recipientId);
+    const tt = tIn(language);
+    return {
+      id: `rem-${nextReminderId++}`,
+      topic: REMINDER_TOPIC.Subscription,
+      jobId: '',
+      subscriptionKey: t.key,
+      ruleId: step.id,
+      label: stepLabel(step.daysFromExpiry, t.graceDays, tt),
+      href: t.path,
+      recipient: t.recipient,
+      recipientId: t.recipientId,
+      anchorAt: t.renewsOn,
+      fireAt: fireAt.toISOString(),
+      status: late ? REMINDER_STATUS.Skipped : REMINDER_STATUS.Scheduled,
+      message: renderSubscriptionReminder(
+        phaseFor(step.daysFromExpiry, t.graceDays),
+        t.audience,
+        {
+          vendor: t.vendorName,
+          plan: t.planName,
+          expiry: formatDateIn(endDay, 'EEE d MMM', language),
+          link: `${APP_LINK_BASE}${t.path}`,
+          association: t.associationName ?? tt('vendor:renewal.yourAssociation'),
+          days: plural(Math.abs(step.daysFromExpiry) || t.graceDays, tt),
+          graceEnd: formatDateIn(graceEnd, 'EEE d MMM', language)
+        },
+        language
+      ),
+      createdAt,
+      closedAt: late ? createdAt : null,
+      closedReason: late ? 'Its date had already passed when this was scheduled.' : null
+    };
+  });
+}
+
+/** Withdraws one person's pending subscription reminders. Returns how many. */
+export function cancelSubscriptionRemindersNow(key: string, reason: string, now = new Date()): number {
+  let count = 0;
+  reminders = reminders.map((r) => {
+    if (r.subscriptionKey !== key || r.status !== REMINDER_STATUS.Scheduled) return r;
+    count += 1;
+    return { ...r, status: REMINDER_STATUS.Cancelled, closedAt: now.toISOString(), closedReason: reason };
+  });
+  return count;
+}
+
+/**
+ * (Re)schedules one person's renewal reminders from the end date. Anything still pending for the same
+ * key is withdrawn first, so renewing (a new end date) or changing plan (new wording) never doubles up.
+ * Synchronous: subscriptionService calls it in the same step as the payment that changed the dates.
+ */
+export function scheduleSubscriptionRemindersNow(t: SubscriptionReminderTarget, reason = 'Replaced by a new schedule', now = new Date()): ScheduledReminder[] {
+  cancelSubscriptionRemindersNow(t.key, reason, now);
+  const created = buildSubscriptionReminders(t, now);
+  reminders = [...reminders, ...created];
+  return created;
+}
+
+/** POST /reminders/subscription — the API shape for the above. */
+export function scheduleSubscriptionReminders(t: SubscriptionReminderTarget): Promise<ScheduledReminder[]> {
+  return mockResponse(() => scheduleSubscriptionRemindersNow(t), MOCK_DELIVERY.latencyMs);
+}
+
+/** DELETE /reminders/subscription/:key */
+export function cancelSubscriptionReminders(key: string, reason: string): Promise<{cancelled: number;}> {
+  return mockResponse(() => ({ cancelled: cancelSubscriptionRemindersNow(key, reason) }), MOCK_DELIVERY.latencyMs);
+}
+
+/** GET /reminders/subscription/:key — one person's renewal reminders, soonest first. */
+export function listSubscriptionReminders(key: string): Promise<ScheduledReminder[]> {
+  return mockResponse(() => reminders.filter((r) => r.subscriptionKey === key).sort((a, b) => a.fireAt.localeCompare(b.fireAt)), 200);
 }
 
 /* ---------- Preferences ---------- */
@@ -127,7 +254,7 @@ export function getPreferences(party: JobParty, id: string): Promise<Notificatio
 /** PUT /me/notification-preferences — applies to reminders already scheduled too, since channels are picked when one fires. */
 export function savePreferences(party: JobParty, id: string, next: NotificationPreferences): Promise<NotificationPreferences> {
   return mockResponse(() => {
-    if (next.sms && !next.optedOut && !next.phone) throw new ApiError('Add a phone number to get SMS reminders.', 400);
+    if (next.sms && !next.optedOut && !next.phone) throw new ApiError(i18n.t('jobs:prefs.phoneNeeded'), 400);
     preferences.set(prefKey(party, id), next);
     return next;
   }, 500);
@@ -136,7 +263,7 @@ export function savePreferences(party: JobParty, id: string, next: NotificationP
 /* ---------- MOCK delivery ---------- */
 
 function logAttempt(r: ScheduledReminder, channel: ReminderChannel, outcome: DeliveryLogEntry['outcome'], detail: string, text: string, at: string) {
-  log = [{ id: `log-${nextLogId++}`, reminderId: r.id, jobId: r.jobId, recipient: r.recipient, recipientId: r.recipientId, channel, outcome, detail, text, at }, ...log];
+  log = [{ id: `log-${nextLogId++}`, reminderId: r.id, jobId: r.jobId, subscriptionKey: r.subscriptionKey, recipient: r.recipient, recipientId: r.recipientId, channel, outcome, detail, text, at }, ...log];
 }
 
 /** "Sends" one reminder on each channel the person has on, honouring opt-out, and records every attempt. */
@@ -149,7 +276,8 @@ function deliver(r: ScheduledReminder, now: Date): ScheduledReminder {
     return { ...sent, closedReason: 'Opted out: nothing was sent' };
   }
 
-  // In-app: always, into the same Updates list as other job news.
+  // In-app: always, into the same Updates list as job news. Subscription reminders open their own page.
+  if (r.href) recordAccountNotification(r.recipient, r.recipientId, r.message.pushTitle, r.message.pushBody, r.href, at);else
   recordJobNotification(r.jobId, r.recipient, r.recipientId, r.message.pushTitle, r.message.pushBody, at);
   logAttempt(r, REMINDER_CHANNEL.InApp, DELIVERY_OUTCOME.Delivered, 'Updates list', r.message.pushBody, at);
 

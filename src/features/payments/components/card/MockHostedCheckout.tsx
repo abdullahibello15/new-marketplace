@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { ShieldCheckIcon } from 'lucide-react';
 import { Button } from '../../../../components/ui/Button';
 import { Dialog } from '../../../../components/ui/Dialog';
@@ -25,36 +26,36 @@ interface MockHostedCheckoutProps {
  * deliberately has no card, CVV or PIN fields: only buttons for each outcome.
  */
 export function MockHostedCheckout({ open, reference, amount, checkoutUrl, onReturn, onClosed, onTimeout }: MockHostedCheckoutProps) {
+  const { t } = useTranslation('payments');
   function finish(outcome: 'success' | 'declined') {
     completeHostedCheckout(reference, outcome);
     onReturn();
   }
 
   return (
-    <Dialog open={open} onClose={onClosed} title={`${MOCK_PSP.providerName} checkout`} description="Simulated hosted payment page">
+    <Dialog open={open} onClose={onClosed} title={t('hosted.title', { provider: MOCK_PSP.providerName })} description={t('hosted.description')}>
       <div className="space-y-4">
         <div className="rounded-xl border border-line bg-sand p-3 text-sm">
           <p className="flex items-center gap-1.5 font-bold text-ink">
             <ShieldCheckIcon className="h-4 w-4 text-pine" aria-hidden="true" />
-            Pay Gwani <Price amount={amount} className="ml-auto text-base" />
+            {t('hosted.payGwani')} <Price amount={amount} className="ml-auto text-base" />
           </p>
           <p className="mt-1 break-all font-mono text-xs text-muted">{checkoutUrl}</p>
-          <p className="mt-1 text-xs text-muted">Reference {reference}</p>
+          <p className="mt-1 text-xs text-muted">{t('hosted.reference', { reference })}</p>
         </div>
         <p className="text-sm text-muted">
-          On the real page you’d enter your card here, on the payment provider’s site. This demo never asks for card details. Choose what
-          happens:
+          {t('hosted.text')}
         </p>
         <div className="grid gap-2">
-          <Button onClick={() => finish('success')}>Simulate: payment succeeds</Button>
+          <Button onClick={() => finish('success')}>{t('hosted.success')}</Button>
           <Button variant="outline" onClick={() => finish('declined')}>
-            Simulate: card declined
+            {t('hosted.declined')}
           </Button>
           <Button variant="outline" onClick={onTimeout}>
-            Simulate: page stops responding
+            {t('hosted.timeout')}
           </Button>
           <Button variant="ghost" onClick={onClosed}>
-            Close window without paying
+            {t('hosted.close')}
           </Button>
         </div>
       </div>

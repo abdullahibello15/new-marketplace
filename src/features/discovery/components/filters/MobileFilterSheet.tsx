@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Dialog } from '../../../../components/ui/Dialog';
 import { useMediaQuery } from '../../../../hooks/useMediaQuery';
 import { MobileFilterSheetContent } from './MobileFilterSheetContent';
@@ -16,8 +17,9 @@ interface MobileFilterSheetProps {
  */
 export function MobileFilterSheet({ open, onClose, filters, onApply }: MobileFilterSheetProps) {
   const isDesktop = useMediaQuery('(min-width: 1024px)');
+  const { t } = useTranslation('discovery');
   return (
-    <Dialog open={open} onClose={onClose} title="Filters" variant={isDesktop ? 'center' : 'sheet'}>
+    <Dialog open={open} onClose={onClose} title={t('filters.title')} variant={isDesktop ? 'center' : 'sheet'}>
       <MobileFilterSheetContent
         filters={filters}
         onApply={(next) => {

@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+import { lgaLabel } from '../../../i18n/labels';
 import { useRef } from 'react';
 import { useController, useFormContext } from 'react-hook-form';
 import { XIcon } from 'lucide-react';
@@ -17,7 +19,9 @@ interface ServiceAreasFieldProps {
   label?: string;
 }
 
-export function ServiceAreasField({ name = 'serviceAreas', idPrefix = 'profile-areas', label: labelText = 'Add a Local Government Area' }: ServiceAreasFieldProps) {
+export function ServiceAreasField({ name = 'serviceAreas', idPrefix = 'profile-areas', label: customLabel }: ServiceAreasFieldProps) {
+  const { t } = useTranslation('vendor');
+  const labelText = customLabel ?? t('profile.areas.add');
   const { control } = useFormContext<ProfileFormValues, unknown, ProfileFormData>();
   const { field, fieldState } = useController({ control, name });
   const selectRef = useRef<HTMLSelectElement | null>(null);
@@ -40,7 +44,7 @@ export function ServiceAreasField({ name = 'serviceAreas', idPrefix = 'profile-a
           {labelText}
         </label>
         <span className="text-xs font-semibold text-muted">
-          {areas.length} of {nigerLgas.length}
+          {t('profile.areas.count', { n: areas.length, total: nigerLgas.length })}
         </span>
       </div>
       <select
@@ -57,10 +61,10 @@ export function ServiceAreasField({ name = 'serviceAreas', idPrefix = 'profile-a
         aria-describedby={error ? `${idPrefix}-error` : undefined}
         className={`${fieldClass} ${error ? bad : ok} disabled:opacity-60`}>
 
-        <option value="">{available.length ? 'Choose an LGA…' : 'All LGAs selected'}</option>
+        <option value="">{available.length ? t('profile.areas.choose') : t('profile.areas.allSelected')}</option>
         {available.map((lga) =>
         <option key={lga} value={lga}>
-            {lga}
+            {lgaLabel(lga)}
           </option>
         )}
       </select>
@@ -71,14 +75,14 @@ export function ServiceAreasField({ name = 'serviceAreas', idPrefix = 'profile-a
       }
 
       {areas.length > 0 &&
-      <ul className="mt-3 flex flex-wrap gap-2" aria-label="Selected areas">
+      <ul className="mt-3 flex flex-wrap gap-2" aria-label={t('profile.areas.selected')}>
           {areas.map((lga) =>
         <li key={lga} className="inline-flex items-center gap-1 rounded-full bg-sand py-1 pl-3 pr-1 text-sm font-semibold text-ink">
-              {lga}
+              {lgaLabel(lga)}
               <button
             type="button"
             onClick={() => remove(lga)}
-            aria-label={`Remove ${lga}`}
+            aria-label={t('profile.areas.remove', { name: lgaLabel(lga) })}
             className="flex h-6 w-6 items-center justify-center rounded-full text-muted transition-colors duration-150 hover:bg-line hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-pine/40">
 
                 <XIcon className="h-3.5 w-3.5" aria-hidden="true" />
@@ -95,7 +99,7 @@ export function ServiceAreasField({ name = 'serviceAreas', idPrefix = 'profile-a
           onClick={() => change([...nigerLgas])}
           className="rounded text-clay-dark hover:text-clay focus:outline-none focus-visible:ring-2 focus-visible:ring-clay/40">
 
-            Select all
+            {t('profile.areas.selectAll')}
           </button>
         }
         {areas.length > 0 &&
@@ -104,7 +108,7 @@ export function ServiceAreasField({ name = 'serviceAreas', idPrefix = 'profile-a
           onClick={() => change([])}
           className="rounded text-muted hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-pine/40">
 
-            Clear all
+            {t('profile.areas.clearAll')}
           </button>
         }
       </div>

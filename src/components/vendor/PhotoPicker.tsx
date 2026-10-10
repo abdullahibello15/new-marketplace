@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useId, useRef, useState } from 'react';
 import { ImagePlusIcon, XIcon } from 'lucide-react';
 import { Lightbox } from '../Lightbox';
@@ -18,6 +19,7 @@ interface PhotoPickerProps {
 
 /** Thumbnail grid with add tile, remove buttons, "New" tags and a preview lightbox. State lives in usePhotoDraft. */
 export function PhotoPicker({ photos, problems, max, isUnsaved, onAddFiles, onRemove, altPrefix, invalid, describedBy }: PhotoPickerProps) {
+  const { t } = useTranslation();
   const uid = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<number | null>(null);
@@ -27,9 +29,9 @@ export function PhotoPicker({ photos, problems, max, isUnsaved, onAddFiles, onRe
     <>
       <div className="flex items-baseline justify-between gap-3">
         <p className="text-sm font-bold text-muted">
-          {photos.length}/{max} photos
+          {t('photos.count', { n: photos.length, max })}
         </p>
-        <p id={`${uid}-hint`} className="text-xs font-medium text-muted">JPG or PNG, up to 5 MB each</p>
+        <p id={`${uid}-hint`} className="text-xs font-medium text-muted">{t('photos.rules')}</p>
       </div>
 
       <ul className="mt-3 grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-5">
@@ -40,20 +42,20 @@ export function PhotoPicker({ photos, problems, max, isUnsaved, onAddFiles, onRe
               <button
                 type="button"
                 onClick={() => setPreview(i)}
-                aria-label={`Preview photo ${i + 1}${unsaved ? ' (not saved yet)' : ''}`}
+                aria-label={unsaved ? t('photos.previewUnsaved', { n: i + 1 }) : t('photos.preview', { n: i + 1 })}
                 className="block w-full overflow-hidden rounded-xl ring-offset-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-pine">
 
                 <img src={url} alt="" className="aspect-square w-full object-cover transition-transform duration-200 hover:scale-[1.03]" />
               </button>
               {unsaved &&
               <span className="pointer-events-none absolute bottom-1.5 left-1.5 rounded-md bg-mustard px-1.5 py-0.5 text-[11px] font-bold text-ink">
-                  New
+                  {t('photos.new')}
                 </span>
               }
               <button
                 type="button"
                 onClick={() => onRemove(url)}
-                aria-label={`Remove photo ${i + 1}`}
+                aria-label={t('photos.remove', { n: i + 1 })}
                 className="absolute right-1.5 top-1.5 flex h-7 w-7 items-center justify-center rounded-full bg-ink/70 text-white transition-colors duration-150 hover:bg-clay-dark focus:outline-none focus-visible:ring-2 focus-visible:ring-white">
 
                 <XIcon className="h-4 w-4" aria-hidden="true" />
@@ -72,7 +74,7 @@ export function PhotoPicker({ photos, problems, max, isUnsaved, onAddFiles, onRe
             }>
 
               <ImagePlusIcon className="h-6 w-6" aria-hidden="true" />
-              <span className="text-xs font-bold">Add photos</span>
+              <span className="text-xs font-bold">{t('photos.add')}</span>
             </button>
           </li>
         }

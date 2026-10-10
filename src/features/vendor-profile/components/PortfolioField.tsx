@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useController, useFormContext } from 'react-hook-form';
 import { PhotoPicker } from '../../../components/vendor/PhotoPicker';
 import { errorText } from '../../../components/vendor/formStyles';
@@ -15,6 +16,7 @@ interface PortfolioFieldProps {
 }
 
 export function PortfolioField({ vendorName, saved }: PortfolioFieldProps) {
+  const { t } = useTranslation('vendor');
   const { control } = useFormContext<ProfileFormValues, unknown, ProfileFormData>();
   const { field, fieldState } = useController({ control, name: 'gallery' });
   // The plan's photo limit (plans.ts), never above the app's own maximum.
@@ -32,7 +34,7 @@ export function PortfolioField({ vendorName, saved }: PortfolioFieldProps) {
         isUnsaved={photos.isUnsaved}
         onAddFiles={photos.addFiles}
         onRemove={photos.remove}
-        altPrefix={`Work by ${vendorName}`}
+        altPrefix={t('profile.workBy', { name: vendorName })}
         invalid={Boolean(fieldState.error)}
         describedBy={fieldState.error ? errorId : undefined} />
 

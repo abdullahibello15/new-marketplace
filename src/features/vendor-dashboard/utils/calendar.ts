@@ -4,12 +4,12 @@ import {
   eachDayOfInterval,
   endOfMonth,
   endOfWeek,
-  format,
   isSameMonth,
   startOfMonth,
   startOfWeek } from
 'date-fns';
 import { toDateKey } from '../../../lib/dates';
+import { formatDate as format } from '../../../utils/format';
 import { BOOKED_JOB_STATUSES } from '../../jobs/constants';
 import { CALENDAR_VIEW, DAY_AVAILABILITY, WEEK_STARTS_ON } from '../constants';
 import type { Job } from '../../jobs/types';

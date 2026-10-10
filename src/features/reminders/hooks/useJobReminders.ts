@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { useAsyncData } from '../../../hooks/useAsyncData';
-import { CURRENT_CUSTOMER_ID, JOB_ACTOR } from '../../jobs/constants';
-import { vendorAccount } from '../../../data/vendorPortal';
+import { JOB_ACTOR } from '../../jobs/constants';
+import { useAuth } from '../../auth/hooks/useAuth';
 import { getPreferences, listJobReminders } from '../services/reminderService';
 import type { Job, JobParty } from '../../jobs/types';
 
@@ -10,7 +10,8 @@ import type { Job, JobParty } from '../../jobs/types';
  * (status or time), so a reschedule or cancellation shows straight away.
  */
 export function useJobReminders(job: Pick<Job, 'id' | 'status' | 'scheduledAt' | 'updatedAt'>, viewer: JobParty) {
-  const viewerId = viewer === JOB_ACTOR.Customer ? CURRENT_CUSTOMER_ID : vendorAccount.vendorId;
+  const { user } = useAuth();
+  const viewerId = (viewer === JOB_ACTOR.Customer ? user?.id : user?.vendorId) ?? '';
   const { id, updatedAt } = job;
   const load = useCallback(
     () => Promise.all([listJobReminders(id, viewer), getPreferences(viewer, viewerId)]).then(([reminders, prefs]) => ({ reminders, prefs })),

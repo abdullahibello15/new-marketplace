@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { PhotoPicker } from '../../../../components/vendor/PhotoPicker';
 import { errorText } from '../../../../components/vendor/formStyles';
 import { JOB_PHOTOS_MAX } from '../../constants';
@@ -14,6 +15,7 @@ interface JobPhotosFieldProps {
 
 /** 1–5 JPG/PNG photos up to 5 MB each, with previews and remove (shared picker and file checks). */
 export function JobPhotosField({ photos, problems, onAddFiles, onRemove, error }: JobPhotosFieldProps) {
+  const { t } = useTranslation('jobs');
   const errorId = 'job-photos-error';
   return (
     <div id="job-photos" tabIndex={-1} className="rounded-xl focus:outline-none">
@@ -24,7 +26,7 @@ export function JobPhotosField({ photos, problems, onAddFiles, onRemove, error }
         isUnsaved={NEVER_UNSAVED}
         onAddFiles={onAddFiles}
         onRemove={onRemove}
-        altPrefix="Job photo"
+        altPrefix={t('request.photoAlt')}
         invalid={Boolean(error)}
         describedBy={error ? errorId : undefined} />
 

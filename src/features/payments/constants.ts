@@ -1,4 +1,4 @@
-import type { EscrowEventType, EscrowStatus, PaymentMethod, PaymentStatus, PaymentSubjectKind } from './types';
+import type { EscrowEventType, EscrowStatus, PaymentMethod, PaymentStatus, PaymentSubjectKind, TransactionStatus, TransactionType } from './types';
 
 /** Every payment status, in one place. Shared by jobs and retail orders. */
 export const PAYMENT_STATUS = {
@@ -52,7 +52,12 @@ export const PAYMENT_SUBJECT = {
 
 export const PAYMENT_ROUTES = {
   checkout: (kind: PaymentSubjectKind, id: string) => `/pay/${kind}/${encodeURIComponent(id)}`,
-  receipt: (reference: string) => `/payments/${encodeURIComponent(reference)}/receipt`
+  receipt: (reference: string) => `/payments/${encodeURIComponent(reference)}/receipt`,
+  /** The customer's transaction history. */
+  transactions: '/payments',
+  transaction: (reference: string) => `/payments/${encodeURIComponent(reference)}`,
+  /** The vendor's copy of a customer's receipt (with the commission breakdown). */
+  vendorReceipt: (reference: string) => `/pro/payments/${encodeURIComponent(reference)}/receipt`
 } as const;
 
 /* ---------- Escrow ---------- */
@@ -95,3 +100,38 @@ export const ESCROW_EVENT_LABELS: Record<EscrowEventType, string> = {
   disputed: 'Held for dispute review',
   paid_out: 'Paid out to vendor'
 };
+
+/* ---------- Transaction history ---------- */
+
+/**
+ * How a payment reads in the customer's transaction history. Combines the payment status with escrow:
+ * paid money still held shows as Held in escrow, and any refund (full or part) shows as Refunded.
+ */
+export const TRANSACTION_STATUS = {
+  Paid: 'paid',
+  Held: 'held',
+  Pending: 'pending',
+  Failed: 'failed',
+  Refunded: 'refunded'
+} as const;
+
+/** Same pills as the payment and escrow badges, so a status looks the same everywhere. */
+export const TRANSACTION_STATUS_META: Record<TransactionStatus, {label: string;badgeClass: string;dotClass: string;}> = {
+  paid: { ...PAYMENT_STATUS_META.paid, label: 'Paid' },
+  held: { ...ESCROW_STATUS_META.held, label: 'Held in escrow' },
+  pending: { ...PAYMENT_STATUS_META.pending, label: 'Pending' },
+  failed: { ...PAYMENT_STATUS_META.failed, label: 'Failed' },
+  refunded: { ...PAYMENT_STATUS_META.refunded, label: 'Refunded' }
+};
+
+export const TRANSACTION_TYPE = {
+  Service: 'service',
+  Retail: 'retail'
+} as const;
+
+export const TRANSACTION_TYPE_LABELS: Record<TransactionType, string> = {
+  service: 'Services',
+  retail: 'Retail orders'
+};
+
+export const TRANSACTIONS_PAGE_SIZE = 6;

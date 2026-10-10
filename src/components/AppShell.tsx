@@ -1,23 +1,36 @@
-import { Suspense, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import React, { Suspense, useEffect, useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { ArrowLeftRightIcon, EllipsisIcon } from 'lucide-react';
 import { LoadingState } from './ui/LoadingState';
 import { BottomNavItem } from './shell/BottomNavItem';
 import { MobileMoreMenu } from './shell/MobileMoreMenu';
 import { SidebarLink } from './shell/SidebarLink';
+import { AccountPanel } from '../features/auth/components/AccountPanel';
 import type { NavItem } from '../types/navigation';
 
 interface AppShellProps {
   navItems: NavItem[];
   homeTo: string;
   modeLabel?: string;
-  account: {name: string;subtitle: string;};
-  switchLink: {to: string;label: string;};
+  /**
+   * Fixed account details (the investor preview). Omitted: the signed-in user from useAuth, with their
+   * role switcher and sign out (customer, provider and rider shells).
+   */
+  account?: {name: string;subtitle: string;};
+  /** Subtitle under the signed-in user's name, e.g. the vendor's business name. */
+  accountSubtitle?: string;
+  switchLink?: {to: string;label: string;};
+  /** Shown above every page, e.g. the vendor's subscription banner. */
+  banner?: React.ReactNode;
 }
 
-export function AppShell({ navItems, homeTo, modeLabel, account, switchLink }: AppShellProps) {
+export function AppShell({ navItems, homeTo, modeLabel, account, accountSubtitle, switchLink, banner }: AppShellProps) {
+  const { t } = useTranslation();
   const { pathname } = useLocation();
   const [moreOpen, setMoreOpen] = useState(false);
+  // Labels follow the UI language (items without a key, e.g. the investor preview, keep their label).
+  navItems = navItems.map((i) => ({ ...i, label: i.labelKey ? t(i.labelKey) : i.label, shortLabel: i.shortLabelKey ? t(i.shortLabelKey) : i.shortLabel }));
 
   // Placement comes from each item's config, so adding a page never means editing this component.
   const mainItems = navItems.filter((i) => (i.group ?? 'main') === 'main');
@@ -39,7 +52,7 @@ export function AppShell({ navItems, homeTo, modeLabel, account, switchLink }: A
           <span className="rounded-md bg-white/10 px-2 py-0.5 text-xs font-bold text-mustard">{modeLabel}</span>
           }
         </Link>
-        <nav aria-label="Main" className="mt-10 flex flex-col gap-1">
+        <nav aria-label={t('shell.mainNav')} className="mt-10 flex flex-col gap-1">
           {mainItems.map((item) =>
           <SidebarLink key={item.to} item={item} active={item.match(pathname)} />
           )}
@@ -49,7 +62,7 @@ export function AppShell({ navItems, homeTo, modeLabel, account, switchLink }: A
           {accountItems.length > 0 &&
           <nav aria-labelledby="sidebar-account-heading" className="mb-5 flex flex-col gap-1">
               <p id="sidebar-account-heading" className="mb-1 px-3 text-xs font-bold uppercase tracking-wider text-white/50">
-                Account
+                {t('shell.account')}
               </p>
               {accountItems.map((item) =>
             <SidebarLink key={item.to} item={item} active={item.match(pathname)} />
@@ -57,6 +70,8 @@ export function AppShell({ navItems, homeTo, modeLabel, account, switchLink }: A
             </nav>
           }
           <div className="border-t border-white/10 pt-5">
+            {account ?
+            <>
             <div className="flex items-center gap-3 px-2">
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/15 text-sm font-bold">
                 {account.name[0]}
@@ -66,6 +81,7 @@ export function AppShell({ navItems, homeTo, modeLabel, account, switchLink }: A
                 <p className="truncate text-xs text-white/70">{account.subtitle}</p>
               </div>
             </div>
+            {switchLink &&
             <Link
               to={switchLink.to}
               className="mt-4 flex items-center justify-center gap-2 rounded-xl border border-white/15 px-3 py-2.5 text-sm font-semibold text-white/85 transition-colors duration-150 hover:bg-white/5 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60">
@@ -73,16 +89,22 @@ export function AppShell({ navItems, homeTo, modeLabel, account, switchLink }: A
               <ArrowLeftRightIcon className="h-4 w-4" aria-hidden="true" />
               {switchLink.label}
             </Link>
+            }
+            </> :
+
+            <AccountPanel subtitle={accountSubtitle} />
+            }
           </div>
         </div>
       </aside>
 
       <main className="pb-24 lg:pb-0 lg:pl-64 print:p-0">
+        {banner}
         {/* Routes are lazy-loaded; keep the shell and nav visible while a page's code downloads. */}
         <Suspense
           fallback={
           <div className="mx-auto max-w-6xl px-5 py-8 lg:px-10">
-              <LoadingState label="Loading page" rows={3} />
+              <LoadingState label={t('shell.loadingPage')} rows={3} />
             </div>
           }>
 
@@ -91,7 +113,7 @@ export function AppShell({ navItems, homeTo, modeLabel, account, switchLink }: A
       </main>
 
       <nav
-        aria-label="Main"
+        aria-label={t('shell.mainNav')}
         style={{ gridTemplateColumns: `repeat(${barColumns}, minmax(0, 1fr))` }}
         className="fixed inset-x-0 bottom-0 z-20 grid border-t border-line bg-cream pb-[env(safe-area-inset-bottom)] lg:hidden print:hidden">
 
@@ -110,7 +132,7 @@ export function AppShell({ navItems, homeTo, modeLabel, account, switchLink }: A
         {moreItems.length > 0 &&
         <BottomNavItem
           icon={EllipsisIcon}
-          label="More"
+          label={t('shell.more')}
           active={moreActive || moreOpen}
           onClick={() => setMoreOpen(true)}
           buttonProps={{ 'aria-haspopup': 'dialog', 'aria-expanded': moreOpen }} />
@@ -124,7 +146,8 @@ export function AppShell({ navItems, homeTo, modeLabel, account, switchLink }: A
         onClose={() => setMoreOpen(false)}
         items={moreItems}
         pathname={pathname}
-        switchLink={switchLink} />
+        switchLink={switchLink}
+        account={account ? undefined : <AccountPanel subtitle={accountSubtitle} tone="light" onNavigate={() => setMoreOpen(false)} />} />
 
       }
     </div>);

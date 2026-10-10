@@ -1,4 +1,5 @@
 import { subHours } from 'date-fns';
+import i18n from '../../i18n';
 import { JOB_STATUS, RESCHEDULE_CUTOFF_HOURS, RESCHEDULE_MAX_REQUESTS, RESCHEDULE_STATUS } from './constants';
 import type { Job, JobParty, RescheduleRequest } from './types';
 
@@ -15,11 +16,11 @@ export const reschedulesLeft = (job: Pick<Job, 'reschedules'>) => Math.max(0, RE
 
 /** Why a reschedule can’t be requested right now (by either side), or null if it can. */
 export function rescheduleBlockedReason(job: Job, now = new Date()): string | null {
-  if (job.status !== JOB_STATUS.Scheduled || !job.scheduledAt) return 'Only scheduled jobs can be rescheduled.';
-  if (pendingReschedule(job)) return 'There’s already a reschedule request waiting for a reply.';
-  if (reschedulesLeft(job) === 0) return `This job has already had ${RESCHEDULE_MAX_REQUESTS} reschedule requests, the most allowed.`;
+  if (job.status !== JOB_STATUS.Scheduled || !job.scheduledAt) return i18n.t('jobs:rescheduleRule.onlyScheduled');
+  if (pendingReschedule(job)) return i18n.t('jobs:rescheduleRule.alreadyWaiting');
+  if (reschedulesLeft(job) === 0) return i18n.t('jobs:rescheduleRule.maxReached', { max: RESCHEDULE_MAX_REQUESTS });
   if (now >= subHours(new Date(job.scheduledAt), RESCHEDULE_CUTOFF_HOURS)) {
-    return `It’s too close to the start time. Reschedules must be requested at least ${RESCHEDULE_CUTOFF_HOURS} hours before.`;
+    return i18n.t('jobs:rescheduleRule.tooClose', { hours: RESCHEDULE_CUTOFF_HOURS });
   }
   return null;
 }
@@ -27,8 +28,8 @@ export function rescheduleBlockedReason(job: Job, now = new Date()): string | nu
 /** Why `by` can't answer the pending request, or null if they can. Only the other side may answer. */
 export function rescheduleResponseBlockedReason(job: Job, requestId: string, by: JobParty): string | null {
   const request = job.reschedules.find((r) => r.id === requestId);
-  if (!request || request.status !== RESCHEDULE_STATUS.Pending) return 'This reschedule request has already been answered.';
-  if (request.requestedBy === by) return 'You can’t answer your own reschedule request.';
-  if (job.status !== JOB_STATUS.Scheduled) return 'This job can no longer be rescheduled.';
+  if (!request || request.status !== RESCHEDULE_STATUS.Pending) return i18n.t('jobs:rescheduleRule.answered');
+  if (request.requestedBy === by) return i18n.t('jobs:rescheduleRule.ownRequest');
+  if (job.status !== JOB_STATUS.Scheduled) return i18n.t('jobs:rescheduleRule.noLonger');
   return null;
 }

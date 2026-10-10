@@ -8,12 +8,13 @@ import { PortfolioEditor } from '../../components/vendor/PortfolioEditor';
 import { WorkingHoursEditor } from '../../components/vendor/WorkingHoursEditor';
 import { ServiceAreasEditor } from '../../components/vendor/ServiceAreasEditor';
 import { useVendors } from '../../contexts/VendorsContext';
-import { vendorAccount } from '../../data/vendorPortal';
 import { NotFound } from '../NotFound';
+import { useCurrentVendor } from '../../features/auth/hooks/useCurrentVendor';
 
 export function EditProfile() {
   const { getVendor, updateVendorProfile } = useVendors();
-  const vendor = getVendor(vendorAccount.vendorId);
+  const { vendorId } = useCurrentVendor();
+  const vendor = getVendor(vendorId);
   const [draft, setDraft] = useState<ProfileDraft | null>(null);
 
   if (!vendor) return <NotFound message="We couldn't find your vendor profile." />;
@@ -30,7 +31,7 @@ export function EditProfile() {
     <>
       <PageHeader
         title="Edit profile"
-        subtitle={vendorAccount.businessName}
+        subtitle={vendor?.name ?? ''}
         backTo={{ to: '/pro/catalogue', label: 'My services' }} />
 
       <div className="mx-auto grid max-w-6xl gap-6 px-5 py-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-10 lg:px-10 lg:py-8">

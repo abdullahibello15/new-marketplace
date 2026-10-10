@@ -1,3 +1,4 @@
+import i18n from '../../../i18n';
 import { MOCK_PSP } from '../config';
 import type { NigerianBank } from '../../../data/nigerianBanks';
 import type { PaymentMethod } from '../types';
@@ -76,7 +77,7 @@ export function completeHostedCheckout(reference: string, outcome: 'success' | '
     tx.amountReceived = tx.amount;
   } else {
     tx.state = 'failed';
-    tx.failureReason = 'Your bank declined the card. No money was taken.';
+    tx.failureReason = i18n.t('payments:outcome.cardDeclined');
   }
 }
 
@@ -112,7 +113,7 @@ export function queryTransaction(reference: string, now = Date.now()): PspStatus
       tx.amountReceived = tx.amount;
     } else {
       tx.state = 'failed';
-      tx.failureReason = 'The payment was cancelled on your phone. No money was taken.';
+      tx.failureReason = i18n.t('payments:outcome.ussdCancelled');
     }
   }
   const settling = tx.incoming.length > 0 || tx.ussdOutcome !== null && tx.ussdOutcome.arrivesAt > now;

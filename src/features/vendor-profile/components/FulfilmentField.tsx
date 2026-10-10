@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Controller, useFormContext, useWatch } from 'react-hook-form';
 import { Switch } from '../../../components/Switch';
 import { FormField } from '../../../components/ui/FormField';
@@ -8,6 +9,7 @@ import type { ProfileFormData, ProfileFormValues } from '../types';
 
 /** Pickup and delivery for product orders. Only what's switched on is offered at checkout. */
 export function FulfilmentField() {
+  const { t } = useTranslation('vendor');
   const {
     control,
     register,
@@ -25,16 +27,16 @@ export function FulfilmentField() {
           render={({ field: f }) =>
           <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="font-bold text-ink">Pickup</p>
-                <p className="text-sm text-muted">Customers collect from your shop or stall.</p>
+                <p className="font-bold text-ink">{t('profile.fulfilment.pickup')}</p>
+                <p className="text-sm text-muted">{t('profile.fulfilment.pickupText')}</p>
               </div>
-              <Switch checked={f.value} onChange={f.onChange} label="Offer pickup" describedBy={e?.pickupEnabled ? 'fulfilment-toggle-error' : undefined} />
+              <Switch checked={f.value} onChange={f.onChange} label={t('profile.fulfilment.offerPickup')} describedBy={e?.pickupEnabled ? 'fulfilment-toggle-error' : undefined} />
             </div>
           } />
 
         {pickupOn &&
         <>
-            <FormField id="pickup-address" label="Pickup address" hint="For example: “Shop 4, Tunga Market Road, Minna”." error={e?.pickupAddress?.message}>
+            <FormField id="pickup-address" label={t('profile.fulfilment.address')} hint={t('profile.fulfilment.addressHint')} error={e?.pickupAddress?.message}>
               {(describedBy) =>
             <input
               id="pickup-address"
@@ -45,13 +47,13 @@ export function FulfilmentField() {
 
             }
             </FormField>
-            <FormField id="pickup-instructions" label="Pickup instructions (optional)" error={e?.pickupInstructions?.message}>
+            <FormField id="pickup-instructions" label={t('profile.fulfilment.instructions')} error={e?.pickupInstructions?.message}>
               {(describedBy) =>
             <textarea
               id="pickup-instructions"
               rows={2}
               {...register('fulfilment.pickupInstructions')}
-              placeholder="Opening times, who to ask for, what to bring…"
+              placeholder={t('profile.fulfilment.instructionsPlaceholder')}
               aria-invalid={Boolean(e?.pickupInstructions)}
               aria-describedby={describedBy}
               className={`${field} resize-y ${e?.pickupInstructions ? bad : ok}`} />
@@ -69,10 +71,10 @@ export function FulfilmentField() {
           render={({ field: f }) =>
           <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="font-bold text-ink">Delivery</p>
-                <p className="text-sm text-muted">You or your rider bring orders to the customer.</p>
+                <p className="font-bold text-ink">{t('profile.fulfilment.delivery')}</p>
+                <p className="text-sm text-muted">{t('profile.fulfilment.deliveryText')}</p>
               </div>
-              <Switch checked={f.value} onChange={f.onChange} label="Offer delivery" describedBy={e?.pickupEnabled ? 'fulfilment-toggle-error' : undefined} />
+              <Switch checked={f.value} onChange={f.onChange} label={t('profile.fulfilment.offerDelivery')} describedBy={e?.pickupEnabled ? 'fulfilment-toggle-error' : undefined} />
             </div>
           } />
 
@@ -82,7 +84,7 @@ export function FulfilmentField() {
             control={control}
             name="fulfilment.deliveryFee"
             render={({ field: f }) =>
-            <FormField id="delivery-fee" label="Delivery fee per order (₦)" hint="Enter 0 for free delivery." error={e?.deliveryFee?.message}>
+            <FormField id="delivery-fee" label={t('profile.fulfilment.fee')} hint={t('profile.fulfilment.feeHint')} error={e?.deliveryFee?.message}>
                   {(describedBy) =>
               <input
                 id="delivery-fee"
@@ -99,7 +101,7 @@ export function FulfilmentField() {
                 </FormField>
             } />
 
-            <ServiceAreasField name="fulfilment.deliveryAreas" idPrefix="delivery-areas" label="Add an LGA you deliver to" />
+            <ServiceAreasField name="fulfilment.deliveryAreas" idPrefix="delivery-areas" label={t('profile.fulfilment.addLga')} />
           </>
         }
       </div>

@@ -130,6 +130,8 @@ export interface DisputeResolution {
   /** Whole Naira returned to the customer from escrow (0 when resolved for the vendor). */
   refundAmount: number;
   at: string;
+  /** The mediator's written reason, shared with both parties. */
+  reason?: string;
 }
 
 export interface JobCancellation {
@@ -151,9 +153,12 @@ export interface JobReview {
 export interface JobNotification {
   id: string;
   recipient: JobParty;
-  /** Customer id or vendor id. */
+  /** Customer id, vendor id or association id. */
   recipientId: string;
+  /** The job it's about; empty for account notices such as subscription reminders. */
   jobId: string;
+  /** Where the item opens. When missing, the list links to the job. */
+  href?: string;
   title: string;
   body: string;
   createdAt: string;

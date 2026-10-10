@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo } from 'react';
 import { usePersistentState } from '../../../hooks/usePersistentState';
+import i18n from '../../../i18n';
 import { CART_STORAGE_KEY } from '../constants';
 import { cartTotal, cartUnitCount, groupCart, parseStoredCart, sameLine } from '../utils/cart';
 import { CartContext, type CartContextValue } from './cartContext';
@@ -21,8 +22,8 @@ export function CartProvider({ children }: {children: React.ReactNode;}) {
 
   const add = useCallback<CartContextValue['add']>(
     (vendor, product, quantity = 1) => {
-      if (vendor.unavailable) return { ok: false, message: `${vendor.name} isn’t taking orders right now.` };
-      if (!product.available || product.stock <= 0) return { ok: false, message: `${product.name} is out of stock.` };
+      if (vendor.unavailable) return { ok: false, message: i18n.t('jobs:order.cart.vendorUnavailable', { name: vendor.name }) };
+      if (!product.available || product.stock <= 0) return { ok: false, message: i18n.t('jobs:order.cart.productOutOfStock', { name: product.name }) };
       const key = { vendorId: vendor.id, productId: product.id };
       const existing = items.find((i) => sameLine(i, key))?.quantity ?? 0;
       if (existing + quantity > product.stock) {
@@ -30,8 +31,8 @@ export function CartProvider({ children }: {children: React.ReactNode;}) {
           ok: false,
           message:
           existing >= product.stock ?
-          `You already have all ${product.stock} ${product.name} in your cart. The vendor has no more in stock.` :
-          `Only ${product.stock} in stock. You can add ${product.stock - existing} more.`
+          i18n.t('jobs:order.cart.haveAll', { stock: product.stock, name: product.name }) :
+          i18n.t('jobs:order.cart.onlyCanAdd', { stock: product.stock, more: product.stock - existing })
         };
       }
       const next = existing + quantity;

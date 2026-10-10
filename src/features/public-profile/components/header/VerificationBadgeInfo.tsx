@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+import { tierExplanation, tierLabel } from '../../../../i18n/labels';
 import { useEffect, useId, useRef, useState } from 'react';
 import { InfoIcon } from 'lucide-react';
 import { VerificationBadge } from '../../../../components/VerificationBadge';
@@ -9,6 +11,7 @@ import type { Verification } from '../../../../types/marketplace';
  * mouse leave, a second tap, Escape or a tap elsewhere. The badge itself is the shared VerificationBadge.
  */
 export function VerificationBadgeInfo({ verification }: {verification: Verification;}) {
+  const { t } = useTranslation('discovery');
   const [open, setOpen] = useState(false);
   const panelId = useId();
   const rootRef = useRef<HTMLSpanElement>(null);
@@ -24,6 +27,7 @@ export function VerificationBadgeInfo({ verification }: {verification: Verificat
   }, [open]);
 
   if (!tier) return null;
+  const label = tierLabel(tier.id, tier.label);
 
   return (
     <span
@@ -43,7 +47,7 @@ export function VerificationBadgeInfo({ verification }: {verification: Verificat
 
         <VerificationBadge verification={verification} />
         <InfoIcon className="h-4 w-4 text-white/70" aria-hidden="true" />
-        <span className="sr-only">What does {tier.label} mean?</span>
+        <span className="sr-only">{t('profile.tierInfo', { tier: label })}</span>
       </button>
       <span
         id={panelId}
@@ -51,8 +55,8 @@ export function VerificationBadgeInfo({ verification }: {verification: Verificat
         hidden={!open}
         className="absolute left-0 top-full z-40 mt-2 w-72 max-w-[calc(100vw-2.5rem)] rounded-xl border border-line bg-white p-3 text-left text-sm text-ink shadow-xl">
 
-        <span className="block font-bold">{tier.label}</span>
-        <span className="mt-1 block text-muted">{tier.explanation}</span>
+        <span className="block font-bold">{label}</span>
+        <span className="mt-1 block text-muted">{tierExplanation(tier.id, tier.explanation)}</span>
       </span>
     </span>);
 

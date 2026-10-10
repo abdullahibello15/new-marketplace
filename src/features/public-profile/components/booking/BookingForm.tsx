@@ -1,6 +1,7 @@
 import { useId } from 'react';
 import { useWatch, type UseFormReturn } from 'react-hook-form';
 import { addDays, format, parseISO } from 'date-fns';
+import { useTranslation } from 'react-i18next';
 import { Button } from '../../../../components/ui/Button';
 import { FormField } from '../../../../components/ui/FormField';
 import { bad, field, ok } from '../../../../components/vendor/formStyles';
@@ -23,6 +24,7 @@ interface BookingFormProps {
 const optionLabel = (i: BookableItem) => `${i.name} · ${formatPriceRange(i.minPrice, i.maxPrice)}`;
 
 export function BookingForm({ form, onSubmit, onCancel, vendor, kind, items }: BookingFormProps) {
+  const { t } = useTranslation('discovery');
   const uid = useId();
   const id = (name: string) => `${uid}-${name}`;
   const {
@@ -41,7 +43,7 @@ export function BookingForm({ form, onSubmit, onCancel, vendor, kind, items }: B
 
   return (
     <form onSubmit={onSubmit} noValidate className="space-y-4">
-      <FormField id={id('item')} label={kind === 'retail' ? 'What would you like?' : 'Which service?'} error={errors.itemId?.message}>
+      <FormField id={id('item')} label={kind === 'retail' ? t('booking.whatRetail') : t('booking.whatService')} error={errors.itemId?.message}>
         {(describedBy) =>
         <select
           id={id('item')}
@@ -51,10 +53,10 @@ export function BookingForm({ form, onSubmit, onCancel, vendor, kind, items }: B
           className={`${field} ${errors.itemId ? bad : ok}`}>
 
             <option value="" disabled>
-              Choose one…
+              {t('booking.chooseOne')}
             </option>
             {services.length > 0 &&
-          <optgroup label="Services">
+          <optgroup label={t('booking.services')}>
                 {services.map((i) =>
             <option key={i.id} value={i.id}>
                     {optionLabel(i)}
@@ -63,7 +65,7 @@ export function BookingForm({ form, onSubmit, onCancel, vendor, kind, items }: B
               </optgroup>
           }
             {products.length > 0 &&
-          <optgroup label="Products">
+          <optgroup label={t('booking.products')}>
                 {products.map((i) =>
             <option key={i.id} value={i.id}>
                     {optionLabel(i)}
@@ -76,7 +78,7 @@ export function BookingForm({ form, onSubmit, onCancel, vendor, kind, items }: B
       </FormField>
 
       <div className="grid grid-cols-2 gap-3">
-        <FormField id={id('date')} label="Preferred date" error={errors.date?.message}>
+        <FormField id={id('date')} label={t('booking.date')} error={errors.date?.message}>
           {(describedBy) =>
           <input
             id={id('date')}
@@ -92,8 +94,8 @@ export function BookingForm({ form, onSubmit, onCancel, vendor, kind, items }: B
         </FormField>
         <FormField
           id={id('time')}
-          label="Preferred time"
-          hint={dayHours ? dayHours.open ? `Open ${formatDayHours(dayHours)}` : 'Closed that day' : undefined}
+          label={t('booking.time')}
+          hint={dayHours ? dayHours.open ? t('booking.openHours', { hours: formatDayHours(dayHours) }) : t('booking.closedThatDay') : undefined}
           error={errors.time?.message}>
 
           {(describedBy) =>
@@ -114,7 +116,7 @@ export function BookingForm({ form, onSubmit, onCancel, vendor, kind, items }: B
 
       <FormField
         id={id('message')}
-        label="Message"
+        label={t('booking.message')}
         error={errors.message?.message}
         aside={
         <span className={`text-xs font-semibold tabular-nums ${messageLength > BOOKING_MESSAGE_MAX ? 'text-clay-dark' : 'text-muted'}`}>
@@ -127,7 +129,7 @@ export function BookingForm({ form, onSubmit, onCancel, vendor, kind, items }: B
           id={id('message')}
           rows={4}
           {...register('message')}
-          placeholder={kind === 'retail' ? 'Quantity, delivery address, anything else…' : 'Describe the job, your area and any access details…'}
+          placeholder={kind === 'retail' ? t('booking.messageRetail') : t('booking.messageService')}
           aria-invalid={Boolean(errors.message)}
           aria-describedby={describedBy}
           className={`${field} resize-y ${errors.message ? bad : ok}`} />
@@ -135,14 +137,14 @@ export function BookingForm({ form, onSubmit, onCancel, vendor, kind, items }: B
         }
       </FormField>
 
-      <p className="text-sm text-muted">Nothing is booked or paid until {vendor.name} confirms.</p>
+      <p className="text-sm text-muted">{t('booking.nothingYet', { name: vendor.name })}</p>
 
       <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
         <Button variant="secondary" onClick={onCancel} disabled={isSubmitting}>
-          Cancel
+          {t('common:action.cancel')}
         </Button>
         <Button type="submit" variant="accent" loading={isSubmitting}>
-          Send request
+          {t('booking.send')}
         </Button>
       </div>
     </form>);

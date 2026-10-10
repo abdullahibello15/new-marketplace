@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { MessageSquareIcon } from 'lucide-react';
 import { EmptyState } from '../../../../components/ui/EmptyState';
 import { ErrorState } from '../../../../components/ui/ErrorState';
@@ -5,20 +6,23 @@ import { LoadingState } from '../../../../components/ui/LoadingState';
 import { SegmentedControl } from '../../../../components/ui/SegmentedControl';
 import { RatingSummary } from '../../../vendor-dashboard/components/reviews/RatingSummary';
 import { PROFILE_SECTION_ID, REVIEW_SORT_OPTIONS } from '../../constants';
+import type { ReviewSort } from '../../types';
 import { useVendorReviews } from '../../hooks/useVendorReviews';
 import { PageSection } from '../PageSection';
 import { ReviewList } from './ReviewList';
 
 export function ReviewsSection({ vendorId, vendorName }: {vendorId: string;vendorName: string;}) {
+  const { t } = useTranslation('discovery');
   const { summary, list, sort, setSort } = useVendorReviews(vendorId);
+  const sortOptions = REVIEW_SORT_OPTIONS.map((o): {id: ReviewSort;label: string;} => ({ id: o.id, label: t(`profile.sort.${o.id}`) }));
   const stats = summary.data;
   const hasReviews = Boolean(stats && stats.total > 0);
 
   function renderBody() {
     if (summary.status === 'error') return <ErrorState message={summary.error ?? ''} onRetry={summary.reload} />;
-    if (!stats) return <LoadingState label="Loading reviews" rows={2} rowClassName="h-32" />;
+    if (!stats) return <LoadingState label={t('profile.loadingReviews')} rows={2} rowClassName="h-32" />;
     if (!hasReviews) {
-      return <EmptyState icon={MessageSquareIcon} title="No reviews yet" description={`Reviews appear here after customers finish a job with ${vendorName}.`} />;
+      return <EmptyState icon={MessageSquareIcon} title={t('profile.noReviews')} description={t('profile.noReviewsText', { name: vendorName })} />;
     }
     return (
       <div className="grid gap-5 md:grid-cols-[260px_minmax(0,1fr)]">
@@ -43,8 +47,8 @@ export function ReviewsSection({ vendorId, vendorName }: {vendorId: string;vendo
   return (
     <PageSection
       id={PROFILE_SECTION_ID.Reviews}
-      title={stats ? `Reviews · ${stats.total}` : 'Reviews'}
-      action={hasReviews ? <SegmentedControl label="Sort reviews" options={REVIEW_SORT_OPTIONS} value={sort} onChange={setSort} /> : undefined}>
+      title={stats ? t('profile.reviewsCount', { count: stats.total }) : t('profile.reviews')}
+      action={hasReviews ? <SegmentedControl label={t('profile.sortReviews')} options={sortOptions} value={sort} onChange={setSort} /> : undefined}>
 
       {renderBody()}
     </PageSection>);

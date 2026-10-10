@@ -1,3 +1,5 @@
+import i18n from '../../i18n';
+import { weekdayLabel } from '../../i18n/labels';
 import { addDays, format, isAfter, isBefore, parseISO, startOfToday } from 'date-fns';
 import { z } from 'zod';
 import { weekdays } from '../../data/weekdays';
@@ -24,38 +26,38 @@ export function makeBookingSchema({ items, workingHours, vendorName, now = new D
 
   return z.
   object({
-    itemId: z.string().refine((id) => items.some((i) => i.id === id), 'Choose what you need.'),
-    date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Choose a date.'),
-    time: z.string().regex(/^\d{2}:\d{2}$/, 'Choose a time.'),
+    itemId: z.string().refine((id) => items.some((i) => i.id === id), { message: i18n.t('discovery:booking.error.chooseItem') }),
+    date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, { message: i18n.t('discovery:booking.error.chooseDate') }),
+    time: z.string().regex(/^\d{2}:\d{2}$/, { message: i18n.t('discovery:booking.error.chooseTime') }),
     message: z.
     string().
     transform(sanitizeText).
     pipe(
       z.
       string().
-      min(BOOKING_MESSAGE_MIN, `Tell ${vendorName} a little more (at least ${BOOKING_MESSAGE_MIN} characters).`).
-      max(BOOKING_MESSAGE_MAX, `Keep it to ${BOOKING_MESSAGE_MAX} characters.`)
+      min(BOOKING_MESSAGE_MIN, i18n.t('discovery:booking.error.messageMin', { name: vendorName, min: BOOKING_MESSAGE_MIN })).
+      max(BOOKING_MESSAGE_MAX, i18n.t('discovery:booking.error.messageMax', { max: BOOKING_MESSAGE_MAX }))
     )
   }).
   superRefine((v, ctx) => {
     const day = parseISO(v.date);
     if (Number.isNaN(day.getTime())) {
-      ctx.addIssue({ code: 'custom', path: ['date'], message: 'Choose a date.' });
+      ctx.addIssue({ code: 'custom', path: ['date'], message: i18n.t('discovery:booking.error.chooseDate') });
       return;
     }
     if (isBefore(day, today)) {
-      ctx.addIssue({ code: 'custom', path: ['date'], message: 'Choose today or a later date.' });
+      ctx.addIssue({ code: 'custom', path: ['date'], message: i18n.t('discovery:booking.error.dateFuture') });
       return;
     }
     if (isAfter(day, lastDay)) {
-      ctx.addIssue({ code: 'custom', path: ['date'], message: `Choose a date in the next ${BOOKING_WINDOW_DAYS} days.` });
+      ctx.addIssue({ code: 'custom', path: ['date'], message: i18n.t('discovery:booking.error.dateWindow', { days: BOOKING_WINDOW_DAYS }) });
       return;
     }
     const weekday = weekdayOfDate(day);
     const hours = workingHours[weekday];
     if (!hours.open) {
-      const dayName = weekdays.find((w) => w.id === weekday)?.label ?? 'that day';
-      ctx.addIssue({ code: 'custom', path: ['date'], message: `${vendorName} is closed on ${dayName}s. Please pick another day.` });
+      const dayName = weekdayLabel(weekday, weekdays.find((w) => w.id === weekday)?.label);
+      ctx.addIssue({ code: 'custom', path: ['date'], message: i18n.t('discovery:booking.error.closedOn', { name: vendorName, day: dayName }) });
       return;
     }
     const minutes = toMinutes(v.time);
@@ -63,12 +65,12 @@ export function makeBookingSchema({ items, workingHours, vendorName, now = new D
       ctx.addIssue({
         code: 'custom',
         path: ['time'],
-        message: `Choose a time between ${formatClock(hours.opensAt)} and ${formatClock(hours.closesAt)}.`
+        message: i18n.t('discovery:booking.error.timeBetween', { from: formatClock(hours.opensAt), to: formatClock(hours.closesAt) })
       });
       return;
     }
     if (v.date === format(now, 'yyyy-MM-dd') && minutes <= now.getHours() * 60 + now.getMinutes()) {
-      ctx.addIssue({ code: 'custom', path: ['time'], message: 'That time has already passed. Choose a later time.' });
+      ctx.addIssue({ code: 'custom', path: ['time'], message: i18n.t('discovery:booking.error.timePassed') });
     }
   });
 }

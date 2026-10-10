@@ -1,12 +1,21 @@
-import { lazy } from 'react';
-import { Navigate, Route, RouterProvider, createBrowserRouter, createRoutesFromElements } from 'react-router-dom';
+import { Suspense, lazy } from 'react';
+import { Navigate, Outlet, Route, RouterProvider, createBrowserRouter, createRoutesFromElements } from 'react-router-dom';
 import { ToastProvider } from './components/ui/ToastProvider';
+import { EnglishOnly } from './i18n/EnglishOnly';
 import { RequestsProvider } from './features/vendor-dashboard/context/RequestsProvider';
 import { JobsProvider } from './contexts/JobsContext';
 import { VendorsProvider } from './contexts/VendorsContext';
 import { VendorPortalProvider } from './contexts/VendorPortalContext';
 import { CustomerShell } from './components/CustomerShell';
 import { VendorShell } from './components/VendorShell';
+import { InvestorShell } from './components/InvestorShell';
+import { RiderShell } from './components/RiderShell';
+import { AuthProvider } from './features/auth/context/AuthContext';
+import { AuthLayout } from './features/auth/components/AuthLayout';
+import { DevAuthBanner } from './features/auth/components/DevAuthBanner';
+import { RequireAuth, RequireRole } from './features/auth/components/guards';
+import { ROLE } from './features/auth/constants';
+import { LanguageSync } from './i18n/LanguageSync';
 import { PlaceProvider } from './features/discovery/context/PlaceProvider';
 import { CartProvider } from './features/orders/context/CartProvider';
 import { VendorOrdersProvider } from './features/orders/context/VendorOrdersProvider';
@@ -53,6 +62,10 @@ const PaymentCheckoutSection = lazy(() =>
 import('./features/payments/sections/PaymentCheckoutSection').then((m) => ({ default: m.PaymentCheckoutSection }))
 );
 const ReceiptSection = lazy(() => import('./features/payments/sections/ReceiptSection').then((m) => ({ default: m.ReceiptSection })));
+const TransactionsSection = lazy(() => import('./features/payments/sections/TransactionsSection').then((m) => ({ default: m.TransactionsSection })));
+const TransactionDetailSection = lazy(() =>
+import('./features/payments/sections/TransactionDetailSection').then((m) => ({ default: m.TransactionDetailSection }))
+);
 const NotificationPreferencesSection = lazy(() =>
 import('./features/reminders/sections/NotificationPreferencesSection').then((m) => ({ default: m.NotificationPreferencesSection }))
 );
@@ -66,6 +79,48 @@ import('./features/vendor-dashboard/sections/BillingHistorySection').then((m) =>
 const InvoiceReceiptSection = lazy(() =>
 import('./features/vendor-dashboard/sections/InvoiceReceiptSection').then((m) => ({ default: m.InvoiceReceiptSection }))
 );
+const AssociationSection = lazy(() =>
+import('./features/vendor-dashboard/sections/AssociationSection').then((m) => ({ default: m.AssociationSection }))
+);
+const InvestorOverviewSection = lazy(() =>
+import('./features/investor/sections/InvestorOverviewSection').then((m) => ({ default: m.InvestorOverviewSection }))
+);
+const InvestorLedgerSection = lazy(() => import('./features/investor/sections/InvestorLedgerSection').then((m) => ({ default: m.InvestorLedgerSection })));
+const InvestorPayoutsSection = lazy(() => import('./features/investor/sections/InvestorPayoutsSection').then((m) => ({ default: m.InvestorPayoutsSection })));
+const VerificationStandingSection = lazy(() =>
+import('./features/vendor-dashboard/sections/VerificationStandingSection').then((m) => ({ default: m.VerificationStandingSection }))
+);
+// The admin console loads only when /admin is opened, so none of it is in the customer or vendor bundles.
+const AdminLayout = lazy(() => import('./features/admin/components/AdminLayout').then((m) => ({ default: m.AdminLayout })));
+const AdminHomeRedirect = lazy(() => import('./features/admin/components/AdminLayout').then((m) => ({ default: m.AdminHomeRedirect })));
+const RequireSection = lazy(() => import('./features/admin/components/AdminLayout').then((m) => ({ default: m.RequireSection })));
+const VerificationQueueSection = lazy(() =>
+import('./features/admin/sections/VerificationQueueSection').then((m) => ({ default: m.VerificationQueueSection }))
+);
+const VerificationReviewSection = lazy(() =>
+import('./features/admin/sections/VerificationReviewSection').then((m) => ({ default: m.VerificationReviewSection }))
+);
+const DisputesSection = lazy(() => import('./features/admin/sections/DisputesSection').then((m) => ({ default: m.DisputesSection })));
+const DisputeDetailSection = lazy(() => import('./features/admin/sections/DisputeDetailSection').then((m) => ({ default: m.DisputeDetailSection })));
+const ModerationSection = lazy(() => import('./features/admin/sections/ModerationSection').then((m) => ({ default: m.ModerationSection })));
+const AnalyticsSection = lazy(() => import('./features/admin/sections/AnalyticsSection').then((m) => ({ default: m.AnalyticsSection })));
+const OutreachSection = lazy(() => import('./features/admin/sections/OutreachSection').then((m) => ({ default: m.OutreachSection })));
+const BulkToolsSection = lazy(() => import('./features/admin/sections/BulkToolsSection').then((m) => ({ default: m.BulkToolsSection })));
+const VendorImportSection = lazy(() => import('./features/admin/sections/VendorImportSection').then((m) => ({ default: m.VendorImportSection })));
+const VendorImportDetailSection = lazy(() =>
+import('./features/admin/sections/VendorImportDetailSection').then((m) => ({ default: m.VendorImportDetailSection }))
+);
+const ClaimProfileSection = lazy(() => import('./features/profile-claim/sections/ClaimProfileSection').then((m) => ({ default: m.ClaimProfileSection })));
+const NotAuthorised = lazy(() => import('./features/admin/components/NotAuthorised').then((m) => ({ default: m.NotAuthorised })));
+const LoginSection = lazy(() => import('./features/auth/sections/LoginSection').then((m) => ({ default: m.LoginSection })));
+const SignupSection = lazy(() => import('./features/auth/sections/SignupSection').then((m) => ({ default: m.SignupSection })));
+const WelcomeSection = lazy(() => import('./features/auth/sections/WelcomeSection').then((m) => ({ default: m.WelcomeSection })));
+const ForgotPasswordSection = lazy(() => import('./features/auth/sections/PasswordResetSections').then((m) => ({ default: m.ForgotPasswordSection })));
+const ResetPasswordSection = lazy(() => import('./features/auth/sections/PasswordResetSections').then((m) => ({ default: m.ResetPasswordSection })));
+const AddRoleSection = lazy(() => import('./features/auth/sections/AddRoleSection').then((m) => ({ default: m.AddRoleSection })));
+const ProviderTermsSection = lazy(() => import('./features/auth/sections/ProviderTermsSection').then((m) => ({ default: m.ProviderTermsSection })));
+const RiderDashboardSection = lazy(() => import('./features/rider/sections/RiderDashboardSection').then((m) => ({ default: m.RiderDashboardSection })));
+const AuditLogSection = lazy(() => import('./features/admin/sections/AuditLogSection').then((m) => ({ default: m.AuditLogSection })));
 const EditProfileSection = lazy(() =>
 import('./features/vendor-profile/sections/EditProfileSection').then((m) => ({ default: m.EditProfileSection }))
 );
@@ -73,7 +128,26 @@ import('./features/vendor-profile/sections/EditProfileSection').then((m) => ({ d
 // A data router (rather than <BrowserRouter>) so pages can block navigation, e.g. to warn about unsaved changes.
 const router = createBrowserRouter(
   createRoutesFromElements(
-    <>
+    <Route
+      element={
+      <>
+          <Outlet />
+          <DevAuthBanner />
+        </>
+      }>
+
+      {/* Sign-in, signup and onboarding: their own simple layout. */}
+      <Route element={<AuthLayout />}>
+        <Route path="/login" element={<LoginSection />} />
+        <Route path="/login/forgot" element={<ForgotPasswordSection />} />
+        <Route path="/reset-password/:token" element={<ResetPasswordSection />} />
+        <Route path="/signup" element={<SignupSection />} />
+        <Route element={<RequireAuth />}>
+          <Route path="/welcome" element={<WelcomeSection />} />
+          <Route path="/account/roles" element={<AddRoleSection />} />
+        </Route>
+      </Route>
+      {/* Customer shell. Browsing (home, search, vendor profiles, cart) is open to everyone; booking, ordering, payments and the account need sign-in. */}
       <Route
         element={
         <PlaceProvider>
@@ -87,31 +161,40 @@ const router = createBrowserRouter(
         <Route path="/search" element={<SearchResultsSection />} />
         <Route path="/vendors/:vendorId" element={<VendorProfileSection />} />
         <Route path="/vendor/:vendorId" element={<LegacyVendorRedirect />} />
-        <Route path="/vendors/:vendorId/book" element={<JobRequestSection />} />
-        <Route path="/vendor/:vendorId/request" element={<LegacyJobRequestRedirect />} />
-        <Route path="/jobs" element={<MyJobsSection />} />
-        <Route path="/jobs/:jobId" element={<JobDetailsSection />} />
-        <Route path="/bookings" element={<Navigate to="/jobs" replace />} />
         <Route path="/cart" element={<CartSection />} />
-        <Route path="/checkout" element={<CheckoutSection />} />
-        <Route path="/orders" element={<MyOrdersSection />} />
-        <Route path="/orders/:orderId" element={<OrderDetailsSection />} />
-        <Route path="/pay/:kind/:id" element={<PaymentCheckoutSection />} />
-        <Route path="/payments/:reference/receipt" element={<ReceiptSection />} />
-        <Route path="/inbox" element={<Inbox />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/profile/notifications" element={<NotificationPreferencesSection party="customer" />} />
+        <Route path="/terms/providers" element={<ProviderTermsSection />} />
+        <Route element={<RequireAuth />}>
+          <Route path="/vendors/:vendorId/book" element={<JobRequestSection />} />
+          <Route path="/vendor/:vendorId/request" element={<LegacyJobRequestRedirect />} />
+          <Route path="/jobs" element={<MyJobsSection />} />
+          <Route path="/jobs/:jobId" element={<JobDetailsSection />} />
+          <Route path="/bookings" element={<Navigate to="/jobs" replace />} />
+          <Route path="/checkout" element={<CheckoutSection />} />
+          <Route path="/orders" element={<MyOrdersSection />} />
+          <Route path="/orders/:orderId" element={<OrderDetailsSection />} />
+          <Route path="/pay/:kind/:id" element={<PaymentCheckoutSection />} />
+          <Route path="/payments" element={<TransactionsSection />} />
+          <Route path="/payments/:reference" element={<TransactionDetailSection />} />
+          <Route path="/payments/:reference/receipt" element={<ReceiptSection />} />
+          <Route path="/inbox" element={<Inbox />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/profile/notifications" element={<NotificationPreferencesSection party="customer" />} />
+        </Route>
+        {/* A vendor added by their trade association claims the draft profile created for them. */}
+        <Route path="/claim/:token" element={<ClaimProfileSection />} />
         {ReminderDevSection && <Route path="/dev/reminders" element={<ReminderDevSection />} />}
         <Route path="*" element={<NotFound />} />
       </Route>
       <Route
         path="/pro"
         element={
-        <RequestsProvider>
-            <VendorOrdersProvider>
-              <VendorShell />
-            </VendorOrdersProvider>
-          </RequestsProvider>
+        <RequireRole role={ROLE.Provider}>
+            <RequestsProvider>
+              <VendorOrdersProvider>
+                <VendorShell />
+              </VendorOrdersProvider>
+            </RequestsProvider>
+          </RequireRole>
         }>
 
         <Route index element={<RequestsSection />} />
@@ -129,17 +212,67 @@ const router = createBrowserRouter(
         <Route path="subscription" element={<SubscriptionSection />} />
         <Route path="subscription/billing" element={<BillingHistorySection />} />
         <Route path="subscription/billing/:invoiceId" element={<InvoiceReceiptSection />} />
+        <Route path="association" element={<AssociationSection />} />
         {/* The shared payment screen, inside the vendor portal (subscription invoices). */}
         <Route path="pay/:kind/:id" element={<PaymentCheckoutSection />} />
+        {/* The vendor's copy of a customer's receipt, with the commission breakdown. */}
+        <Route path="payments/:reference/receipt" element={<ReceiptSection viewer="vendor" />} />
         <Route path="profile" element={<EditProfileSection />} />
         <Route path="notifications" element={<NotificationPreferencesSection party="vendor" />} />
+        <Route path="verification" element={<VerificationStandingSection />} />
       </Route>
-    </>
+      {/* Gwani's admin console: its own layout. Signed-out visitors go to the login page; signed-in non-staff see "Not authorised"; each admin role sees only its sections. */}
+      <Route
+        path="/admin"
+        element={
+        <EnglishOnly>
+            <Suspense fallback={<div className="min-h-screen bg-cream" aria-busy="true" />}>
+              <RequireRole role={ROLE.Admin} fallback={<NotAuthorised />}>
+                <AdminLayout />
+              </RequireRole>
+            </Suspense>
+          </EnglishOnly>
+        }>
+
+        <Route index element={<AdminHomeRedirect />} />
+        <Route path="verification" element={<RequireSection section="verification"><VerificationQueueSection /></RequireSection>} />
+        <Route path="verification/:id" element={<RequireSection section="verification"><VerificationReviewSection /></RequireSection>} />
+        <Route path="disputes" element={<RequireSection section="disputes"><DisputesSection /></RequireSection>} />
+        <Route path="disputes/:id" element={<RequireSection section="disputes"><DisputeDetailSection /></RequireSection>} />
+        <Route path="moderation" element={<RequireSection section="moderation"><ModerationSection /></RequireSection>} />
+        <Route path="analytics" element={<RequireSection section="analytics"><AnalyticsSection /></RequireSection>} />
+        <Route path="outreach" element={<RequireSection section="outreach"><OutreachSection /></RequireSection>} />
+        <Route path="bulk" element={<RequireSection section="bulk"><BulkToolsSection /></RequireSection>} />
+        <Route path="bulk/vendor-import" element={<RequireSection section="bulk"><VendorImportSection /></RequireSection>} />
+        <Route path="bulk/imports/:importId" element={<RequireSection section="bulk"><VendorImportDetailSection /></RequireSection>} />
+        <Route path="audit" element={<RequireSection section="audit"><AuditLogSection /></RequireSection>} />
+        <Route path="*" element={<AdminHomeRedirect />} />
+      </Route>
+      {/* Riders: the role, routes and shell only; delivery features come later. */}
+      <Route
+        path="/rider"
+        element={
+        <RequireRole role={ROLE.Rider}>
+            <RiderShell />
+          </RequireRole>
+        }>
+
+        <Route index element={<RiderDashboardSection />} />
+      </Route>
+      {/* The Investor role: a read-only dividend ledger (front end and mock data only). */}
+      <Route path="/investor" element={<EnglishOnly><InvestorShell /></EnglishOnly>}>
+        <Route index element={<InvestorOverviewSection />} />
+        <Route path="ledger" element={<InvestorLedgerSection />} />
+        <Route path="payouts" element={<InvestorPayoutsSection />} />
+      </Route>
+    </Route>
   )
 );
 
 export function App() {
   return (
+    <AuthProvider>
+    <LanguageSync />
     <JobsProvider>
       <VendorsProvider>
         <VendorPortalProvider>
@@ -148,6 +281,7 @@ export function App() {
           </ToastProvider>
         </VendorPortalProvider>
       </VendorsProvider>
-    </JobsProvider>);
+    </JobsProvider>
+    </AuthProvider>);
 
 }

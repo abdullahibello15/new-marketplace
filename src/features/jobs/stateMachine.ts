@@ -1,4 +1,7 @@
-import { addDays, addHours, format, subMinutes } from 'date-fns';
+import { addDays, addHours, subMinutes } from 'date-fns';
+import i18n from '../../i18n';
+import { jobStatusLabel } from '../../i18n/labels';
+import { formatDate } from '../../utils/format';
 import {
   AUTO_CLOSE_DAYS,
   AUTO_CONFIRM_HOURS,
@@ -18,7 +21,8 @@ import type { Job, JobActor, JobStatus } from './types';
  *   Requested ─▶ Quoted ─▶ Scheduled ─▶ In Progress ─▶ Awaiting confirmation ─▶ Completed ─▶ Closed
  *      │decline    │reject     │cancel        └──report a problem──┤
  *      ▼           ▼           ▼                             ▼
- *   Declined  Quote Rejected  Cancelled                   Disputed ──(review team)──▶ Completed / Cancelled
+ *   Declined  Quote Rejected  Cancelled                   Disputed ──(review team)──▶ Completed / Cancelled,
+ *                                                            or dismissed: back to In Progress / Awaiting confirmation
  *
  * Who may cancel, when, with what fee and whether a reason is needed comes from cancellationPolicy.ts.
  */
@@ -58,7 +62,10 @@ export const JOB_TRANSITIONS: Record<JobStatus, Partial<Record<JobStatus, readon
   disputed: {
     // Resolved by Gwani's review team only.
     completed: [System],
-    cancelled: [System]
+    cancelled: [System],
+    // Dismissed: back to where it was when the problem was reported.
+    in_progress: [System],
+    awaiting_confirmation: [System]
   },
   closed: {},
   declined: {},
@@ -77,28 +84,32 @@ const GUARDS: Partial<Record<`${JobStatus}>${JobStatus}`, Partial<Record<JobActo
   'quoted>quote_rejected': { customer: quoteStillOpen },
   'scheduled>in_progress': {
     vendor: (job, now) => {
-      if (!job.scheduledAt) return 'This job has no booked time.';
+      if (!job.scheduledAt) return i18n.t('jobs:error.noTime');
       const opensAt = subMinutes(new Date(job.scheduledAt), START_JOB_EARLY_MINUTES);
-      return now < opensAt ? `You can start this job from ${format(opensAt, 'EEE d MMM, h:mm a')}.` : null;
+      return now < opensAt ? i18n.t('jobs:error.startFrom', { date: formatDate(opensAt, 'EEE d MMM, h:mm a') }) : null;
     }
   },
   'awaiting_confirmation>completed': {
     system: (job, now) => {
       const doneAt = reachedAt(job, JOB_STATUS.AwaitingConfirmation);
-      return doneAt && now >= addHours(new Date(doneAt), AUTO_CONFIRM_HOURS) ? null : 'The customer still has time to confirm.';
+      return doneAt && now >= addHours(new Date(doneAt), AUTO_CONFIRM_HOURS) ? null : i18n.t('jobs:error.stillTime');
     }
+  },
+  'disputed>in_progress': { system: (job) => statusBeforeDispute(job) === JOB_STATUS.InProgress ? null : i18n.t('jobs:error.wasntInProgress') },
+  'disputed>awaiting_confirmation': {
+    system: (job) => statusBeforeDispute(job) === JOB_STATUS.AwaitingConfirmation ? null : i18n.t('jobs:error.wasntAwaiting')
   },
   'completed>closed': {
     system: (job, now) => {
       const completedAt = reachedAt(job, JOB_STATUS.Completed);
-      return completedAt && now >= addDays(new Date(completedAt), AUTO_CLOSE_DAYS) ? null : 'The review window is still open.';
+      return completedAt && now >= addDays(new Date(completedAt), AUTO_CLOSE_DAYS) ? null : i18n.t('jobs:error.reviewOpen');
     }
   }
 };
 
 function quoteStillOpen(job: Job, now: Date): string | null {
-  if (!job.quote) return 'There’s no quote to respond to yet.';
-  return new Date(job.quote.expiresAt) <= now ? 'This quote has expired. Ask the vendor for a new one.' : null;
+  if (!job.quote) return i18n.t('jobs:error.noQuote');
+  return new Date(job.quote.expiresAt) <= now ? i18n.t('jobs:error.quoteExpired') : null;
 }
 
 export class JobTransitionError extends Error {
@@ -106,6 +117,12 @@ export class JobTransitionError extends Error {
     super(message);
     this.name = 'JobTransitionError';
   }
+}
+
+/** The status a job had just before its latest dispute (where a dismissed dispute returns it). */
+export function statusBeforeDispute(job: Pick<Job, 'history'>): JobStatus | null {
+  const i = job.history.map((h) => h.status).lastIndexOf(JOB_STATUS.Disputed);
+  return i > 0 ? job.history[i - 1].status : null;
 }
 
 /** When the job last reached a status, from its history. */
@@ -123,17 +140,18 @@ export function canTransition(from: JobStatus, to: JobStatus, by: JobActor): boo
  * the cancellation policy (including its reason requirement, checked against `note`).
  */
 export function transitionBlockedReason(job: Job, to: JobStatus, by: JobActor, now = new Date(), { note }: {note?: string;} = {}): string | null {
-  const from = JOB_STATUS_META[job.status].label;
-  if (isEndState(job.status)) return `This job is already ${from.toLowerCase()} and can’t change.`;
+  const from = jobStatusLabel(job.status, JOB_STATUS_META[job.status].label);
+  if (isEndState(job.status)) return i18n.t('jobs:error.ended', { status: from.toLowerCase() });
   if (to === JOB_STATUS.Cancelled) {
     // One policy for every cancellation: the same terms the cancel dialog shows. Checked before the
     // table so a refusal explains the policy ("use Report a problem") rather than a bare status rule.
     const terms = getCancellationTerms(job, by, now);
     if (!terms.allowed) return terms.blockedReason;
-    if (terms.reasonRequired && !note?.trim()) return 'Please give a reason for cancelling.';
+    if (terms.reasonRequired && !note?.trim()) return i18n.t('jobs:error.cancelReason');
   }
   if (!canTransition(job.status, to, by)) {
-    return `A job can’t go from ${from} to ${JOB_STATUS_META[to].label}${by === System ? '' : ` by the ${by}`}.`;
+    const toLabel = jobStatusLabel(to, JOB_STATUS_META[to].label);
+    return by === System ? i18n.t('jobs:error.cantMove', { from, to: toLabel }) : i18n.t('jobs:error.cantMoveBy', { from, to: toLabel, by: i18n.t(`jobs:actor.${by}`).toLowerCase() });
   }
   return GUARDS[`${job.status}>${to}`]?.[by]?.(job, now) ?? null;
 }

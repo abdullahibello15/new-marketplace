@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Link, useParams } from 'react-router-dom';
 import { SearchXIcon, StoreIcon } from 'lucide-react';
 import { PageHeader } from '../../../components/PageHeader';
@@ -13,9 +14,10 @@ import { JobRequestForm } from '../components/request/JobRequestForm';
 
 /** /vendors/:vendorId/book — the job request form for service vendors. */
 export function JobRequestSection() {
+  const { t } = useTranslation('jobs');
   const { vendorId = '' } = useParams();
   const { profile, notFound, status, error, reload } = useVendorProfile(vendorId);
-  const back = { to: vendorProfilePath(vendorId), label: profile?.vendor.name ?? 'Vendor' };
+  const back = { to: vendorProfilePath(vendorId), label: profile?.vendor.name ?? t('request.vendor') };
 
   function renderBody() {
     if (status === 'error') return <ErrorState message={error ?? ''} onRetry={reload} />;
@@ -23,29 +25,29 @@ export function JobRequestSection() {
       return (
         <EmptyState
           icon={SearchXIcon}
-          title="We couldn’t find that vendor"
+          title={t('request.notFound')}
           action={
           <Link to="/search" className={buttonClasses({ variant: 'secondary', size: 'sm' })}>
-              Browse vendors
+              {t('request.browse')}
             </Link>
           } />);
 
 
     }
-    if (!profile) return <LoadingState label="Loading" rows={3} rowClassName="h-40" />;
+    if (!profile) return <LoadingState label={t('request.loading')} rows={3} rowClassName="h-40" />;
 
     const { vendor, kind } = profile;
     // Product sellers use the simpler Request dialog on their profile; jobs are for service vendors.
-    const blocked = kind === 'retail' ? `${vendor.name} sells products, so there’s no job to book.` : bookingBlockedReason(vendor, kind, true);
+    const blocked = kind === 'retail' ? t('request.sellsProducts', { name: vendor.name }) : bookingBlockedReason(vendor, kind, true);
     if (blocked) {
       return (
         <EmptyState
           icon={StoreIcon}
-          title="You can’t book a job here right now"
+          title={t('request.blockedTitle')}
           description={blocked}
           action={
           <Link to={vendorProfilePath(vendor.id)} className={buttonClasses({ variant: 'secondary', size: 'sm' })}>
-              Back to {vendor.name}
+              {t('request.backTo', { name: vendor.name })}
             </Link>
           } />);
 
@@ -56,7 +58,7 @@ export function JobRequestSection() {
 
   return (
     <>
-      <PageHeader title="Request a job" subtitle={profile?.vendor.name} backTo={back} />
+      <PageHeader title={t('request.pageTitle')} subtitle={profile?.vendor.name} backTo={back} />
       <PageContainer width="narrow">{renderBody()}</PageContainer>
     </>);
 

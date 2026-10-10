@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useEffect, useId } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -15,6 +16,7 @@ interface ReviewReplyFormProps {
 }
 
 export function ReviewReplyForm({ customerName, onSubmit, onCancel }: ReviewReplyFormProps) {
+  const { t } = useTranslation('vendor');
   const id = useId();
   const {
     register,
@@ -38,13 +40,13 @@ export function ReviewReplyForm({ customerName, onSubmit, onCancel }: ReviewRepl
         await onSubmit(body);
       })}
       noValidate
-      aria-label={`Reply to ${customerName}`}
+      aria-label={t('reviews.replyTo', { name: customerName })}
       className="mt-4 space-y-3 border-t border-line pt-4">
 
       <FormField
         id={id}
-        label="Your public reply"
-        hint="Anyone who views your profile can read this. You can reply once."
+        label={t('reviews.replyLabel')}
+        hint={t('reviews.replyHint')}
         error={errors.body?.message}
         aside={
         <span className={`text-xs font-semibold tabular-nums ${over ? 'text-clay-dark' : 'text-muted'}`}>
@@ -59,17 +61,17 @@ export function ReviewReplyForm({ customerName, onSubmit, onCancel }: ReviewRepl
           {...register('body')}
           aria-invalid={Boolean(errors.body)}
           aria-describedby={describedBy}
-          placeholder={`Thank ${customerName}, or explain what happened.`}
+          placeholder={t('reviews.replyPlaceholder', { name: customerName })}
           className={`${field} resize-y ${errors.body ? bad : ok}`} />
 
         }
       </FormField>
       <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
         <Button variant="secondary" onClick={onCancel} disabled={isSubmitting}>
-          Cancel
+          {t('common:action.cancel')}
         </Button>
         <Button type="submit" loading={isSubmitting}>
-          Post reply
+          {t('reviews.postReply')}
         </Button>
       </div>
     </form>);

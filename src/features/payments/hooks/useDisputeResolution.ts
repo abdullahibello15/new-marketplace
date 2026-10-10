@@ -1,3 +1,5 @@
+import i18n from '../../../i18n';
+import { disputeOutcomeLabel } from '../../../i18n/labels';
 import { useState } from 'react';
 import { useToast } from '../../../hooks/useToast';
 import { errorMessage } from '../../../lib/errors';
@@ -23,7 +25,7 @@ export function useDisputeResolution(job: Job, onUpdated: (job: Job) => void) {
     setBusy(outcome);
     try {
       onUpdated(await resolveDispute(job.id, outcome, refundFor(outcome)));
-      toast.success(`${DISPUTE_OUTCOME_LABELS[outcome]}. Escrow has been settled.`);
+      toast.success(i18n.t('payments:dispute.toast', { outcome: disputeOutcomeLabel(outcome, DISPUTE_OUTCOME_LABELS[outcome]) }));
       setConfirming(null);
     } catch (e) {
       toast.error(errorMessage(e));

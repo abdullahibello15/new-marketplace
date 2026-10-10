@@ -1,3 +1,4 @@
+import i18n from '../../../i18n';
 import { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -36,10 +37,10 @@ export function useCashConfirmation(payment: Payment, party: JobParty, onUpdated
       onUpdated(updated);
       toast.success(
         updated.status === PAYMENT_STATUS.Paid ?
-        `Both sides confirmed ${formatNaira(pending)}. Payment complete.` :
+        i18n.t('payments:cash.toastBoth', { amount: formatNaira(pending) }) :
         updated.reviewFlag ?
-        'The amounts don’t match, so Gwani’s team will review it.' :
-        `Thanks. Waiting for the ${party === JOB_ACTOR.Vendor ? 'customer' : 'vendor'} to confirm.`
+        i18n.t('payments:cash.toastMismatch') :
+        i18n.t(party === JOB_ACTOR.Vendor ? 'payments:cash.toastWaitCustomer' : 'payments:cash.toastWaitVendor')
       );
       setPending(null);
     } catch (e) {

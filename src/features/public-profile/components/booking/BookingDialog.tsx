@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Dialog } from '../../../../components/ui/Dialog';
 import { useMediaQuery } from '../../../../hooks/useMediaQuery';
 import { BookingDialogContent } from './BookingDialogContent';
@@ -15,13 +16,14 @@ interface BookingDialogProps {
 
 /** Bottom sheet on phones, centred dialog on desktop. */
 export function BookingDialog({ open, onClose, vendor, kind, label, items }: BookingDialogProps) {
+  const { t } = useTranslation('discovery');
   const isDesktop = useMediaQuery('(min-width: 1024px)');
   return (
     <Dialog
       open={open}
       onClose={onClose}
-      title={`${label}: ${vendor.name}`}
-      description="Tell them what you need and when. The full booking flow is coming soon."
+      title={t('booking.dialogTitle', { action: label, name: vendor.name })}
+      description={t('booking.dialogText')}
       variant={isDesktop ? 'center' : 'sheet'}>
 
       <BookingDialogContent vendor={vendor} kind={kind} items={items} onClose={onClose} />

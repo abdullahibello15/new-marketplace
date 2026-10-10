@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 import { PlusIcon } from 'lucide-react';
@@ -13,6 +14,7 @@ import { ServiceFieldset } from './ServiceFieldset';
 import type { ProfileFormData, ProfileFormValues } from '../types';
 
 export function ServicesField() {
+  const { t } = useTranslation('vendor');
   const {
     control,
     getValues,
@@ -32,7 +34,7 @@ export function ServicesField() {
     setPendingRemove(index);
   }
 
-  const pendingName = pendingRemove === null ? '' : getValues(`services.${pendingRemove}.name`).trim() || 'this service';
+  const pendingName = pendingRemove === null ? '' : getValues(`services.${pendingRemove}.name`).trim() || t('profile.services.thisService');
   const listError = errors.services?.message ?? errors.services?.root?.message;
 
   return (
@@ -47,7 +49,7 @@ export function ServicesField() {
         </ul> :
 
       <p className="rounded-xl border border-dashed border-line px-4 py-6 text-center text-sm text-muted">
-          No services yet. Customers can only book what you list here.
+          {t('profile.services.none')}
         </p>
       }
       {listError && <p className={errorText}>{listError}</p>}
@@ -59,7 +61,7 @@ export function ServicesField() {
         disabled={fields.length >= max}
         className="mt-3">
 
-        Add service
+        {t('profile.services.add')}
       </Button>
       {planLimited && limits.plan &&
       <div className="mt-3">
@@ -69,9 +71,9 @@ export function ServicesField() {
 
       <ConfirmDialog
         open={pendingRemove !== null}
-        title={`Remove ${pendingName}?`}
-        description="It comes off your profile when you save. Until then you can still discard your changes."
-        confirmLabel="Remove service"
+        title={t('profile.services.removeTitle', { name: pendingName })}
+        description={t('profile.services.removeText')}
+        confirmLabel={t('profile.services.removeConfirm')}
         destructive
         onConfirm={() => {
           if (pendingRemove !== null) remove(pendingRemove);

@@ -1,5 +1,6 @@
+import i18n from '../../i18n';
 import { z } from 'zod';
-import { isNigerianMobile, stripPhone, toE164 } from './utils/phone';
+import { isNigerianMobile, stripPhone, toE164 } from '../../utils/phone';
 
 /**
  * Notification preferences. A phone number is required for SMS (unless opted out of everything) and,
@@ -15,9 +16,9 @@ object({
 }).
 superRefine((v, ctx) => {
   if (v.phone && !isNigerianMobile(v.phone)) {
-    ctx.addIssue({ code: 'custom', path: ['phone'], message: 'Enter a Nigerian mobile number, like 0803 555 0142 or +234 803 555 0142.' });
+    ctx.addIssue({ code: 'custom', path: ['phone'], message: i18n.t('jobs:prefs.phoneInvalid') });
   } else if (v.sms && !v.optedOut && !v.phone) {
-    ctx.addIssue({ code: 'custom', path: ['phone'], message: 'Add a phone number to get SMS reminders, or turn SMS off.' });
+    ctx.addIssue({ code: 'custom', path: ['phone'], message: i18n.t('jobs:prefs.phoneNeeded') });
   }
 }).
 transform((v) => ({ ...v, phone: v.phone ? toE164(v.phone) : '' }));

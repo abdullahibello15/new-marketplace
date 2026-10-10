@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { formatTime } from '../../../../utils/format';
 import { JobStatusBadge } from '../../../jobs/components/JobStatusBadge';
@@ -6,6 +7,7 @@ import { DASHBOARD_ROUTES } from '../../constants';
 import type { BookedJob } from '../../types';
 
 export function BookingListItem({ booking }: {booking: BookedJob;}) {
+  const { t } = useTranslation();
   return (
     <li>
       <Link
@@ -14,10 +16,10 @@ export function BookingListItem({ booking }: {booking: BookedJob;}) {
 
         <span className="w-16 shrink-0 pt-0.5 text-sm font-bold text-ink">{formatTime(booking.scheduledAt)}</span>
         <span className="min-w-0 flex-1">
-          <span className="block truncate font-bold text-ink">{booking.serviceName ?? `Job #${booking.id}`}</span>
+          <span className="block truncate font-bold text-ink">{booking.serviceName ?? t('jobs:page.title', { id: booking.id })}</span>
           <span className="block truncate text-sm text-muted">
             {booking.customerName} · {booking.address.placeLabel}
-            {booking.quote && ` · ${durationLabel(booking.quote.durationHours).toLowerCase()}`}
+            {booking.quote && ` · ${durationLabel(booking.quote.durationHours)}`}
           </span>
         </span>
         <JobStatusBadge status={booking.status} />

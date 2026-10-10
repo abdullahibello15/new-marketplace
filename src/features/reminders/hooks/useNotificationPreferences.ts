@@ -1,3 +1,4 @@
+import i18n from '../../../i18n';
 import { useCallback, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -6,7 +7,7 @@ import { useToast } from '../../../hooks/useToast';
 import { errorMessage } from '../../../lib/errors';
 import { preferencesSchema, type PreferencesFormData, type PreferencesFormValues } from '../schemas';
 import { getPreferences, savePreferences } from '../services/reminderService';
-import { formatLocalPhone } from '../utils/phone';
+import { formatLocalPhone } from '../../../utils/phone';
 import type { JobParty } from '../../jobs/types';
 import type { NotificationPreferences } from '../types';
 
@@ -33,12 +34,12 @@ export function useNotificationPreferences(party: JobParty, id: string) {
       try {
         const saved = await savePreferences(party, id, data);
         reset(toValues(saved));
-        toast.success(saved.optedOut ? 'Saved. You won’t get booking reminders.' : 'Saved. Your reminders will use these settings.');
+        toast.success(saved.optedOut ? i18n.t('jobs:prefs.savedOff') : i18n.t('jobs:prefs.saved'));
       } catch (e) {
         toast.error(errorMessage(e));
       }
     },
-    () => toast.error('Check the phone number before saving.')
+    () => toast.error(i18n.t('jobs:prefs.checkPhone'))
   );
 
   return { form, save, status: prefs.status, error: prefs.error, reload: prefs.reload, loaded: prefs.data !== null };

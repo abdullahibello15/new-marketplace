@@ -1,4 +1,5 @@
-import { format } from 'date-fns';
+import { useTranslation } from 'react-i18next';
+import { formatDate as formatPattern } from '../../../../utils/format';
 import { FlagIcon, MessageSquareReplyIcon } from 'lucide-react';
 import { Badge } from '../../../../components/ui/Badge';
 import { Button } from '../../../../components/ui/Button';
@@ -15,9 +16,10 @@ interface ReviewCardProps {
   onReport: (review: Review) => void;
 }
 
-const formatDate = (iso: string) => format(new Date(iso), 'd MMM yyyy');
+const formatDate = (iso: string) => formatPattern(iso, 'd MMM yyyy');
 
 export function ReviewCard({ review, replying, onStartReply, onCancelReply, onReply, onReport }: ReviewCardProps) {
+  const { t } = useTranslation('vendor');
   const headingId = `review-${review.id}`;
   return (
     <article aria-labelledby={headingId} className="rounded-2xl border border-line bg-white p-4 lg:p-5">
@@ -34,19 +36,19 @@ export function ReviewCard({ review, replying, onStartReply, onCancelReply, onRe
       {review.comment ?
       <p className="mt-3 whitespace-pre-line text-[15px] text-ink">{review.comment}</p> :
 
-      <p className="mt-3 text-sm italic text-muted">No comment, rating only.</p>
+      <p className="mt-3 text-sm italic text-muted">{t('reviews.noComment')}</p>
       }
 
       {review.report &&
       <Badge tone="warning" dot className="mt-3">
-          Reported {formatDate(review.report.reportedAt)} · under review
+          {t('reviews.reported', { date: formatDate(review.report.reportedAt) })}
         </Badge>
       }
 
       {review.reply &&
       <div className="mt-4 rounded-xl bg-sand px-4 py-3">
           <p className="text-xs font-bold uppercase tracking-wider text-muted">
-            Your reply · <time dateTime={review.reply.createdAt}>{formatDate(review.reply.createdAt)}</time>
+            {t('reviews.yourReply')} · <time dateTime={review.reply.createdAt}>{formatDate(review.reply.createdAt)}</time>
           </p>
           <p className="mt-1 whitespace-pre-line text-[15px] text-ink">{review.reply.body}</p>
         </div>
@@ -60,12 +62,12 @@ export function ReviewCard({ review, replying, onStartReply, onCancelReply, onRe
       <div className="mt-4 flex flex-wrap gap-2">
           {!review.reply &&
         <Button variant="secondary" size="sm" icon={MessageSquareReplyIcon} onClick={() => onStartReply(review.id)}>
-              Reply publicly
+              {t('reviews.replyPublicly')}
             </Button>
         }
           {!review.report &&
-        <Button variant="ghost" size="sm" icon={FlagIcon} onClick={() => onReport(review)} aria-label={`Report review from ${review.customerName}`}>
-              Report
+        <Button variant="ghost" size="sm" icon={FlagIcon} onClick={() => onReport(review)} aria-label={t('reviews.reportFrom', { name: review.customerName })}>
+              {t('reviews.report')}
             </Button>
         }
         </div>

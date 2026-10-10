@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React, { useId } from 'react';
 import { MinusIcon, PlusIcon } from 'lucide-react';
 import { errorText } from './formStyles';
@@ -15,6 +16,7 @@ const stepButton =
 
 /** −/+ buttons and an exact-number field. Typed values save on Enter or when the field loses focus; Esc undoes. */
 export function StockStepper({ value, onChange, productName }: StockStepperProps) {
+  const { t } = useTranslation('vendor');
   const uid = useId();
   const inputId = `${uid}-stock`;
   const errorId = `${uid}-stock-error`;
@@ -36,7 +38,7 @@ export function StockStepper({ value, onChange, productName }: StockStepperProps
     <div>
       <div className="flex items-center gap-2">
         <label htmlFor={inputId} className="text-sm font-bold text-muted">
-          Stock<span className="sr-only"> for {productName}</span>
+          {t('products.qty.stock')}<span className="sr-only"> {t('products.stockFor', { name: productName })}</span>
         </label>
         <div
           className={`flex items-center overflow-hidden rounded-xl border bg-white ${q.error ? 'border-clay' : 'border-line'}`}>
@@ -45,7 +47,7 @@ export function StockStepper({ value, onChange, productName }: StockStepperProps
             type="button"
             onClick={() => q.step(-1)}
             disabled={!q.canDecrease}
-            aria-label={`Decrease stock of ${productName}`}
+            aria-label={t('products.decrease', { name: productName })}
             className={stepButton}>
 
             <MinusIcon className="h-4 w-4" aria-hidden="true" />
@@ -67,7 +69,7 @@ export function StockStepper({ value, onChange, productName }: StockStepperProps
             type="button"
             onClick={() => q.step(1)}
             disabled={!q.canIncrease}
-            aria-label={`Increase stock of ${productName}`}
+            aria-label={t('products.increase', { name: productName })}
             className={stepButton}>
 
             <PlusIcon className="h-4 w-4" aria-hidden="true" />
@@ -76,11 +78,11 @@ export function StockStepper({ value, onChange, productName }: StockStepperProps
       </div>
       {q.error &&
       <p id={errorId} className={errorText}>
-          {q.error} Not saved.
+          {q.error} {t('products.notSaved')}
         </p>
       }
       <span className="sr-only" aria-live="polite">
-        {productName}: {value.toLocaleString('en-NG')} in stock
+        {t('products.inStockLive', { name: productName, count: value, formatted: value.toLocaleString('en-NG') })}
       </span>
     </div>);
 

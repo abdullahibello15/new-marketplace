@@ -1,6 +1,17 @@
 /** Who subscription payments go to (the platform, not a vendor). */
 export const GWANI_PAYEE = { id: 'gwani', name: 'Gwani' } as const;
 
+/**
+ * The platform as printed on every receipt (screen and PDF).
+ * ⚠️ PLACEHOLDER: address, website and email are not confirmed business details.
+ */
+export const RECEIPT_ISSUER = {
+  name: GWANI_PAYEE.name,
+  address: 'Minna, Niger State, Nigeria',
+  website: 'gwani.ng',
+  email: 'support@gwani.ng'
+} as const;
+
 /** Payment timings and limits. Change them here only. */
 export const PAYMENT_CONFIG = {
   /** A one-time transfer account stays open this long. */

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
 import { CheckIcon, XIcon } from 'lucide-react';
 
@@ -22,8 +23,9 @@ const DOT: Record<StepState, string> = {
  * A progress trail: done steps ticked, the current one highlighted, and a crossed-out step where a
  * flow stopped early. Vertical on phones, horizontal from tablet up. Shared by jobs and orders.
  */
-export function StatusSteps({ steps, label, stoppedText = 'ended here' }: {steps: StatusStep[];label: string;stoppedText?: string;}) {
-  const spoken: Record<StepState, string> = { done: 'done', current: 'current step', upcoming: 'not yet', stopped: stoppedText };
+export function StatusSteps({ steps, label, stoppedText }: {steps: StatusStep[];label: string;stoppedText?: string;}) {
+  const { t } = useTranslation();
+  const spoken: Record<StepState, string> = { done: t('steps.done'), current: t('steps.current'), upcoming: t('steps.upcoming'), stopped: stoppedText ?? t('steps.stopped') };
   return (
     <ol aria-label={label} className="flex flex-col gap-3 sm:grid sm:gap-0" style={{ gridTemplateColumns: `repeat(${steps.length}, minmax(0, 1fr))` }}>
       {steps.map((step, i) =>

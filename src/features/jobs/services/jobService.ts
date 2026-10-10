@@ -1,13 +1,15 @@
+import i18n from '../../../i18n';
 import { findTradeCategory } from '../../../data/tradeCategories';
 import { ApiError, mockResponse } from '../../../services/mockApi';
+import { formatNaira } from '../../../utils/format';
 import { getAllVendors, incrementVendorCancellations } from '../../../services/vendorStore';
-import { withListingRestrictions } from '../../vendor-dashboard/services/subscriptionService';
-import { user } from '../../../data/user';
-import { CURRENT_CUSTOMER_ID, DISPUTE_OUTCOME, DISPUTE_OUTCOME_LABELS, JOB_ACTOR, JOB_STATUS, RESCHEDULE_CUTOFF_HOURS, RESCHEDULE_STATUS } from '../constants';
+import { isVendorSuspended, suspensionMessage, withListingRestrictions } from '../../vendor-dashboard/services/subscriptionService';
+import { currentCustomerId, requireUser } from '../../auth/session';
+import { DISPUTE_OUTCOME, DISPUTE_OUTCOME_LABELS, JOB_ACTOR, JOB_STATUS, RESCHEDULE_CUTOFF_HOURS, RESCHEDULE_STATUS } from '../constants';
 import { CANCELLATION_POLICY, getCancellationTerms } from '../cancellationPolicy';
 import { mockJobs } from '../mock/jobs';
 import { pendingReschedule, rescheduleBlockedReason, rescheduleResponseBlockedReason } from '../reschedule';
-import { JobTransitionError, applyTransition, transitionBlockedReason } from '../stateMachine';
+import { JobTransitionError, applyTransition, statusBeforeDispute, transitionBlockedReason } from '../stateMachine';
 import { recordJobEvent } from './notificationService';
 import { onJobRescheduled, onJobStatusChanged, onJobsLoaded } from '../../reminders/jobReminderEvents';
 import { deliverDueReminders } from '../../reminders/services/reminderService';
@@ -39,7 +41,7 @@ const newestFirst = (a: Job, b: Job) => b.updatedAt.localeCompare(a.updatedAt);
 
 function findJob(id: string): Job {
   const job = jobs.find((j) => j.id === id);
-  if (!job) throw new ApiError('We couldn’t find that job.', 404);
+  if (!job) throw new ApiError(i18n.t('jobs:error.notFound'), 404);
   return job;
 }
 
@@ -95,7 +97,7 @@ export function runScheduledJobTasks(now = new Date()): void {
 export function listCustomerJobs(): Promise<Job[]> {
   return mockResponse(() => {
     runScheduledJobTasks();
-    return jobs.filter((j) => j.customerId === CURRENT_CUSTOMER_ID).sort(newestFirst);
+    return jobs.filter((j) => j.customerId === currentCustomerId()).sort(newestFirst);
   });
 }
 
@@ -129,17 +131,17 @@ export function createJobRequest(input: NewJobRequest): Promise<Job> {
   return mockResponse(() => {
     const found = getAllVendors().find((v) => v.id === input.vendorId);
     const vendor = found && withListingRestrictions(found);
-    if (!vendor) throw new ApiError('We couldn’t find that vendor.', 404);
-    if (findTradeCategory(vendor.tradeCategory)?.kind === 'retail') throw new ApiError('This vendor takes product requests, not job bookings.', 400);
-    if (vendor.unavailable) throw new ApiError(`${vendor.name} isn’t taking new bookings right now.`, 409);
+    if (!vendor) throw new ApiError(i18n.t('discovery:profile.errors.notFound'), 404);
+    if (findTradeCategory(vendor.tradeCategory)?.kind === 'retail') throw new ApiError(i18n.t('jobs:error.retailVendor'), 400);
+    if (vendor.unavailable) throw new ApiError(i18n.t('jobs:error.notTaking', { name: vendor.name }), 409);
 
     const now = new Date().toISOString();
     const job: Job = {
       ...input,
       id: String(nextId++),
       vendorName: vendor.name,
-      customerId: CURRENT_CUSTOMER_ID,
-      customerName: user.fullName,
+      customerId: currentCustomerId(),
+      customerName: requireUser().name,
       status: JOB_STATUS.Requested,
       history: [{ status: JOB_STATUS.Requested, at: now, by: JOB_ACTOR.Customer }],
       quote: null,
@@ -162,10 +164,13 @@ export function createJobRequest(input: NewJobRequest): Promise<Job> {
 /** POST /vendor/jobs/:id/quote — Requested → Quoted. */
 export function sendQuote(jobId: string, input: QuoteInput): Promise<Job> {
   return mockResponse(() => {
+    // Soft suspension: existing bookings carry on, but no new quotes until the subscription is renewed.
+    const vendorId = findJob(jobId).vendorId;
+    if (isVendorSuspended(vendorId)) throw new ApiError(suspensionMessage(vendorId), 403);
     const now = new Date();
     const expiresAt = new Date(now.getTime() + input.expiresInHours * 3_600_000);
-    if (new Date(input.proposedStart) <= now) throw new ApiError('The proposed start time has already passed.', 400);
-    if (expiresAt > new Date(input.proposedStart)) throw new ApiError('The quote must expire before the proposed start time.', 400);
+    if (new Date(input.proposedStart) <= now) throw new ApiError(i18n.t('jobs:error.startPassed'), 400);
+    if (expiresAt > new Date(input.proposedStart)) throw new ApiError(i18n.t('jobs:error.expiryAfterStart'), 400);
     return transition(jobId, JOB_STATUS.Quoted, JOB_ACTOR.Vendor, {
       changes: {
         quote: {
@@ -272,9 +277,9 @@ export function requestReschedule(jobId: string, by: JobParty, input: {proposedS
     if (blocked) throw new ApiError(blocked, 409);
     const proposed = new Date(input.proposedStart);
     if (proposed.getTime() < Date.now() + RESCHEDULE_CUTOFF_HOURS * 3_600_000) {
-      throw new ApiError(`The new time must be at least ${RESCHEDULE_CUTOFF_HOURS} hours from now.`, 400);
+      throw new ApiError(i18n.t('jobs:form.newTimeCutoff', { hours: RESCHEDULE_CUTOFF_HOURS }), 400);
     }
-    if (job.scheduledAt && proposed.getTime() === new Date(job.scheduledAt).getTime()) throw new ApiError('That’s the time it’s already booked for.', 400);
+    if (job.scheduledAt && proposed.getTime() === new Date(job.scheduledAt).getTime()) throw new ApiError(i18n.t('jobs:form.sameTime'), 400);
 
     const now = new Date().toISOString();
     const request = {
@@ -301,7 +306,7 @@ export function respondToReschedule(jobId: string, requestId: string, by: JobPar
     const blocked = rescheduleResponseBlockedReason(job, requestId, by);
     if (blocked) throw new ApiError(blocked, 409);
     const request = job.reschedules.find((r) => r.id === requestId);
-    if (!request) throw new ApiError('That reschedule request doesn’t exist.', 404);
+    if (!request) throw new ApiError(i18n.t('jobs:error.noReschedule'), 404);
     const now = new Date().toISOString();
     const answered = { ...request, status: accept ? RESCHEDULE_STATUS.Accepted : RESCHEDULE_STATUS.Declined, respondedAt: now };
     const reschedules = job.reschedules.map((r) => r.id === requestId ? answered : r);
@@ -344,14 +349,30 @@ export function cancelJob(jobId: string, by: JobParty, reason: string): Promise<
  * platform-only moves: Disputed → Completed (release, or split) or Disputed → Cancelled (refund).
  * `refundAmount` is what goes back to the customer from escrow; escrow applies it on the transition.
  */
-export function resolveDispute(jobId: string, outcome: DisputeOutcome, refundAmount: number): Promise<Job> {
+export function resolveDispute(jobId: string, outcome: DisputeOutcome, refundAmount: number, reason?: string): Promise<Job> {
   return mockResponse(() => {
     const job = findJob(jobId);
-    if (job.status !== JOB_STATUS.Disputed || !job.dispute) throw new ApiError('This job isn’t in dispute.', 409);
-    const resolution = { outcome, refundAmount: Math.max(0, Math.round(refundAmount)), at: new Date().toISOString() };
-    return transition(jobId, outcome === DISPUTE_OUTCOME.RefundCustomer ? JOB_STATUS.Cancelled : JOB_STATUS.Completed, JOB_ACTOR.System, {
-      note: DISPUTE_OUTCOME_LABELS[outcome],
+    if (job.status !== JOB_STATUS.Disputed || !job.dispute) throw new ApiError(i18n.t('jobs:error.notDisputed'), 409);
+    // The refund is worked out here from the agreed price; only a partial refund's amount comes from the mediator.
+    const price = job.agreedPrice ?? 0;
+    const refund = outcome === DISPUTE_OUTCOME.RefundCustomer ? price : outcome === DISPUTE_OUTCOME.Split ? Math.round(refundAmount) : 0;
+    if (outcome === DISPUTE_OUTCOME.Split && (!(refund > 0) || refund >= price)) {
+      throw new ApiError(i18n.t('common:error.partialRefund', { max: formatNaira(price) }), 400);
+    }
+    // Dismissed: back to where the job was when the problem was reported; the money is held again.
+    const to =
+    outcome === DISPUTE_OUTCOME.RefundCustomer ? JOB_STATUS.Cancelled : outcome === DISPUTE_OUTCOME.Dismiss ? statusBeforeDispute(job) : JOB_STATUS.Completed;
+    if (!to) throw new ApiError(i18n.t('jobs:error.beforeDispute'), 409);
+    const resolution = { outcome, refundAmount: refund, at: new Date().toISOString(), ...(reason ? { reason } : {}) };
+    return transition(jobId, to, JOB_ACTOR.System, {
+      note: reason ? `${DISPUTE_OUTCOME_LABELS[outcome]}: ${reason}` : DISPUTE_OUTCOME_LABELS[outcome],
       changes: { dispute: { ...job.dispute, resolution } }
     });
   }, 700);
+}
+
+/** Every job as stored right now (read-only), for Gwani's admin tools (disputes). Runs the scheduled tasks first. */
+export function jobsSnapshot(): readonly Job[] {
+  runScheduledJobTasks();
+  return jobs;
 }

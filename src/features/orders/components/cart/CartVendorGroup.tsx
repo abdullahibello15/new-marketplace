@@ -1,6 +1,8 @@
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { StoreIcon, Trash2Icon } from 'lucide-react';
 import { Price } from '../../../../components/ui/Price';
+import { formatNaira } from '../../../../utils/format';
 import { vendorProfilePath } from '../../../public-profile/constants';
 import { lineTotal } from '../../utils/cart';
 import { ItemThumb } from '../ItemThumb';
@@ -15,6 +17,7 @@ interface CartVendorGroupProps {
 
 /** One vendor's part of the cart: their items, quantity steppers, remove, and a subtotal. */
 export function CartVendorGroup({ group, onQuantityChange, onRemove }: CartVendorGroupProps) {
+  const { t } = useTranslation('jobs');
   const headingId = `cart-vendor-${group.vendorId}`;
   return (
     <section aria-labelledby={headingId} className="rounded-2xl border border-line bg-white">
@@ -26,7 +29,7 @@ export function CartVendorGroup({ group, onQuantityChange, onRemove }: CartVendo
           </Link>
         </h2>
         <span className="shrink-0 text-sm text-muted">
-          {group.itemCount} {group.itemCount === 1 ? 'item' : 'items'}
+          {t('order.items', { count: group.itemCount })}
         </span>
       </header>
       <ul className="divide-y divide-line">
@@ -38,7 +41,7 @@ export function CartVendorGroup({ group, onQuantityChange, onRemove }: CartVendo
                 <div className="min-w-0">
                   <h3 className="text-sm font-bold text-ink">{item.name}</h3>
                   <p className="text-sm text-muted">
-                    <Price amount={item.unitPrice} /> each
+                    {t('order.cart.each', { price: formatNaira(item.unitPrice) })}
                   </p>
                 </div>
                 <Price amount={lineTotal(item)} className="shrink-0 font-bold text-ink" />
@@ -51,18 +54,18 @@ export function CartVendorGroup({ group, onQuantityChange, onRemove }: CartVendo
                 className="inline-flex items-center gap-1.5 rounded-lg px-2 py-2 text-sm font-semibold text-muted transition-colors duration-150 hover:bg-sand hover:text-clay-dark focus:outline-none focus-visible:ring-2 focus-visible:ring-pine/40">
 
                   <Trash2Icon className="h-4 w-4" aria-hidden="true" />
-                  Remove<span className="sr-only"> {item.name}</span>
+                  {t('order.cart.remove')}<span className="sr-only"> {item.name}</span>
                 </button>
               </div>
               {item.quantity >= item.maxQuantity &&
-            <p className="mt-1 text-xs font-semibold text-mustard-dark">Only {item.maxQuantity} in stock.</p>
+            <p className="mt-1 text-xs font-semibold text-mustard-dark">{t('order.cart.onlyInStock', { count: item.maxQuantity })}</p>
             }
             </div>
           </li>
         )}
       </ul>
       <footer className="flex items-center justify-between gap-3 border-t border-line px-4 py-3 text-sm lg:px-5">
-        <span className="font-semibold text-muted">Subtotal from {group.vendorName}</span>
+        <span className="font-semibold text-muted">{t('order.cart.subtotalFrom', { name: group.vendorName })}</span>
         <Price amount={group.subtotal} className="text-base font-extrabold text-ink" />
       </footer>
     </section>);

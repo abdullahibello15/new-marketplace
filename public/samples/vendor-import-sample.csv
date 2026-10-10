@@ -1,0 +1,26 @@
+full_name,business_name,phone,email,trade_category,lga,town_landmark,years_experience,bio,service_areas
+Aisha Bello,Aisha Tailoring Hub,0803 214 5501,aisha.bello@example.com,Tailor,Chanchaga,"Tunga, near Kure Market gate",8,"Ankara, kaftans and school uniforms. Alterations in 2 days.",Chanchaga; Bosso
+Ibrahim Sule,Sule Power Fix,+234 813 552 1902,,Electrician,Bosso,Maitumbi junction,11,House wiring and inverter installs.,Bosso; Chanchaga
+Grace Okafor,Grace Braids Studio,0905 663 1703,grace.braids@example.com,Hair stylist,Chanchaga,"Shop 4, Mobil roundabout",6,Braids and wigs. Home service on weekends.,
+Usman Danjuma,Danjuma Auto Works,08067741804,,Mechanic,Suleja,Madalla motor park,15,Toyota and Honda specialist.,Suleja; Tafa
+Hadiza Musa,Hadiza Fresh Foods,0703 118 2205,hadiza.fresh@example.com,Grocer,Chanchaga LGA,Kure Market,4,"Fresh tomatoes, peppers and grains.",
+Peter Audu,Audu Plumbing Services,0816 337 4406,,Plumbr,Bosso,Bosso Estate,9,Borehole pumps and leaking pipes.,Bosso
+Zainab Lawal,,0901 224 5507,zainab.l@example.com,Tailor,Bida,Bida old market,3,,
+Yakubu Garba,Garba Carpentry,0803 12,,Carpenter,Lapai,Lapai central,20,Doors and wardrobes.,
+Halima Idris,Idris Paint & Decor,0812 446 7708,,Painter,Abuja,Wuse,7,Interior painting.,
+Chinedu Eze,Eze Electricals,0803 214 5501,chinedu.eze@example.com,Electrician,Chanchaga,Tunga,5,Duplicate phone of row 2.,
+Bala Danladi,Bala Plumbing Services,0803 111 2233,,Plumber,Chanchaga,Sauka Kahuta,14,Already on Gwani (same phone).,
+Hauwa Abdullahi,Hauwa Tailoring & Ankara,0902 000 1111,hauwa@ankara.ng,Tailor,Chanchaga,Tunga,10,Already on Gwani (same email).,
+Musa Ahmed,Ahmed Dispatch,0814 556 9909,musa.gmail.com,Dispatch rider,Bosso,Bosso campus gate,2,Same-day delivery in Minna.,Bosso; Chanchaga
+Ruth Joseph,Joseph Fashion,07031 227 710,,Tailor,Suleja,Suleja main market,ten,Bridal and occasion wear.,Suleja; Kaduna
+Abdul Kareem,Kareem Wood Works,0818 220 0000,,Carpenter,Kontagora,Kontagora sawmill,12,Roofing and furniture. (Mock server failure: phone ends 0000),
+Esther Daniel,Daniel Hair Palace,234 903 445 1112,,Hair stylist,Bosso,Maitumbi,5,Natural hair care.,
+Sani Mohammed,Sani Auto Clinic,0806 778 1213,sani.auto@example.com,Mechanic,Shiroro,Kuta,18,Engine and gearbox repairs.,Shiroro; Bosso
+Blessing Nwosu,Blessing Grocery Corner,0704 991 1314,,Grocer,Bida,Bida GRA,3,Foodstuff and provisions.,
+Aminu Bako,Bako Electrical,0909 334 1415,aminu.bako@example.com,Electricain,Lapai,Lapai GRA,8,Solar and wiring.,
+Fatima Yusuf,Yusuf Fabrics & Tailoring,0815 662 1516,,Tailor,Mokwa,Mokwa central mosque,9,"Very long bio: we do everything from school uniforms to bridal gowns, aso-ebi for weddings, naming ceremonies and funerals, corporate wear for banks and schools, alterations while you wait, embroidery in Nupe and Hausa styles, and we train apprentices every year. Customers come from Mokwa, Jebba, Bida and even Ilorin for our work, and we deliver anywhere in Niger State.",
+Joseph Ali,Ali Paint Masters,0802 559 1617,,Painter,Suleija,Suleja road,6,Exterior painting and screeding.,
+Kabiru Lawal,Kabiru Plumbing,0805 220 1188,,Plumber,Bosso,Bosso,7,Same phone as an existing member of Minna Artisans.,
+Ngozi Obi,Obi Hair & Beauty,0813 774 1819,ngozi.obi@example.com,Hair stylist,Chanchaga,Bay Market,4,Braids and makeup.,Chanchaga
+Musa Gana,Gana Stitches,0816 123 0002,,Tailor,Bida,Bida Old Market road,7,Already invited in an earlier import.,
+Ladi Shehu,Shehu Dispatch,0907 115 2021,,Dispatch rider,Tafa,Sabon Wuse,3,Parcels between Suleja and Abuja border.,Tafa; Suleja

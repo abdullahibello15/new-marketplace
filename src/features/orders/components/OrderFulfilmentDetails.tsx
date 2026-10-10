@@ -1,34 +1,37 @@
+import { useTranslation } from 'react-i18next';
 import { MapPinIcon, PhoneIcon, StoreIcon, TruckIcon } from 'lucide-react';
-import { FULFILMENT_METHOD } from '../constants';
+import { fulfilmentMethodLabel, lgaLabel } from '../../../i18n/labels';
+import { FULFILMENT_METHOD, FULFILMENT_METHOD_LABELS } from '../constants';
 import type { Order } from '../types';
 
 /** Pickup point and instructions, or the delivery address and phone. Same card on both sides. */
 export function OrderFulfilmentDetails({ order }: {order: Order;}) {
+  const { t } = useTranslation('jobs');
   const isDelivery = order.method === FULFILMENT_METHOD.Delivery;
   return (
     <section aria-labelledby="order-fulfilment-heading" className="rounded-2xl border border-line bg-white p-4 lg:p-5">
       <h2 id="order-fulfilment-heading" className="flex items-center gap-2 text-base font-bold text-ink">
         {isDelivery ? <TruckIcon className="h-4 w-4 text-muted" aria-hidden="true" /> : <StoreIcon className="h-4 w-4 text-muted" aria-hidden="true" />}
-        {isDelivery ? 'Delivery' : 'Pickup'}
+        {fulfilmentMethodLabel(order.method, FULFILMENT_METHOD_LABELS[order.method])}
       </h2>
       {isDelivery && order.delivery &&
       <dl className="mt-3 space-y-2 text-sm">
           <div className="flex gap-2">
             <dt>
               <MapPinIcon className="mt-0.5 h-4 w-4 text-muted" aria-hidden="true" />
-              <span className="sr-only">Address</span>
+              <span className="sr-only">{t('order.fulfilment.address')}</span>
             </dt>
             <dd className="text-ink">
               {order.delivery.landmark}
               <span className="block text-muted">
-                {order.delivery.placeLabel} · {order.delivery.lga} LGA
+                {order.delivery.placeLabel} · {t('order.fulfilment.lga', { lga: lgaLabel(order.delivery.lga) })}
               </span>
             </dd>
           </div>
           <div className="flex gap-2">
             <dt>
               <PhoneIcon className="mt-0.5 h-4 w-4 text-muted" aria-hidden="true" />
-              <span className="sr-only">Phone</span>
+              <span className="sr-only">{t('order.fulfilment.phone')}</span>
             </dt>
             <dd>
               <a href={`tel:${order.delivery.phone.replace(/\s/g, '')}`} className="rounded font-semibold text-pine hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-pine/40">

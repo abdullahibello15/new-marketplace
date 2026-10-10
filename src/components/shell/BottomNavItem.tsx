@@ -1,3 +1,4 @@
+import i18n from '../../i18n';
 import React from 'react';
 import { Link } from 'react-router-dom';
 import type { LucideIcon } from 'lucide-react';
@@ -28,16 +29,16 @@ export function BottomNavItem({ icon: Icon, label, active, badge, badgeStyle = '
 
         <Icon className="h-4 w-4" aria-hidden="true" />
       </span>
-      <span className={`text-[11px] ${active ? 'font-bold text-ink' : 'font-semibold text-muted'}`}>{label}</span>
+      <span className={`text-center text-[11px] leading-tight ${active ? 'font-bold text-ink' : 'font-semibold text-muted'}`}>{label}</span>
       {badge && badgeStyle === 'count' ?
     <span className="absolute left-[calc(50%+4px)] top-1 min-w-[18px] rounded-full border-2 border-cream bg-clay px-1 text-center text-[10px] font-bold leading-[14px] text-white">
           <span aria-hidden="true">{badge > 99 ? '99+' : badge}</span>
-          <span className="sr-only">{badgeLabel ?? `${badge} new`}</span>
+          <span className="sr-only">{badgeLabel ?? i18n.t('common:shell.newCount', { count: badge })}</span>
         </span> :
     badge ?
     <span
       className="absolute right-[calc(50%-18px)] top-2 h-2.5 w-2.5 rounded-full border-2 border-cream bg-clay"
-      aria-label={badgeLabel ?? `${badge} new`} /> :
+      aria-label={badgeLabel ?? i18n.t('common:shell.newCount', { count: badge })} /> :
 
     null}
     </>;

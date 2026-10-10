@@ -1,4 +1,5 @@
 import { differenceInMinutes } from 'date-fns';
+import i18n from '../../i18n';
 import { formatNaira } from '../../utils/format';
 import { JOB_STATUS } from './constants';
 import type { Job, JobActor, JobParty, JobStatus } from './types';
@@ -77,14 +78,14 @@ export function getCancellationTerms(job: Pick<Job, 'status' | 'scheduledAt' | '
   if (actor === 'system') return { allowed: true, fee: 0, warning: null, reasonRequired: false, rule: 'before_acceptance', summary: '', blockedReason: null };
 
   if (actor === 'customer' && CANCELLATION_POLICY.reportInsteadFrom.includes(job.status)) {
-    return blocked('report_instead', 'The job has started, so it can’t be cancelled. Use “Report a problem” if something is wrong.');
+    return blocked('report_instead', i18n.t('jobs:policy.blockedStarted'));
   }
   if (!CANCELLATION_POLICY.cancellableFrom[actor].some((s) => s === job.status)) {
     return blocked(
       'not_allowed',
       actor === 'vendor' && job.status === JOB_STATUS.Requested ?
-      'Use Decline to turn down a new request.' :
-      'This job can’t be cancelled at this stage.'
+      i18n.t('jobs:policy.blockedVendorDecline') :
+      i18n.t('jobs:policy.blockedStage')
     );
   }
 
@@ -99,7 +100,7 @@ export function getCancellationTerms(job: Pick<Job, 'status' | 'scheduledAt' | '
       warning: null,
       reasonRequired,
       rule: 'before_acceptance',
-      summary: 'Free cancellation: no quote has been accepted yet.',
+      summary: i18n.t('jobs:policy.freeBefore'),
       blockedReason: null
     };
   }
@@ -109,10 +110,10 @@ export function getCancellationTerms(job: Pick<Job, 'status' | 'scheduledAt' | '
     return {
       allowed: true,
       fee: 0,
-      warning: actor === 'vendor' && CANCELLATION_POLICY.countVendorCancellationsAfterAcceptance ? 'This cancellation will be recorded on your profile.' : null,
+      warning: actor === 'vendor' && CANCELLATION_POLICY.countVendorCancellationsAfterAcceptance ? i18n.t('jobs:policy.vendorRecorded') : null,
       reasonRequired,
       rule: 'free_window',
-      summary: `Free cancellation: it’s more than ${HOURS} hours before the start.`,
+      summary: i18n.t('jobs:policy.freeWindow', { hours: HOURS }),
       blockedReason: null
     };
   }
@@ -122,20 +123,20 @@ export function getCancellationTerms(job: Pick<Job, 'status' | 'scheduledAt' | '
     return {
       allowed: true,
       fee,
-      warning: `Late cancellation: it’s less than ${HOURS} hours before the start${fee ? `, so a ${formatNaira(fee)} fee applies` : ''}.`,
+      warning: fee ? i18n.t('jobs:policy.lateCustomerFee', { hours: HOURS, fee: formatNaira(fee) }) : i18n.t('jobs:policy.lateCustomer', { hours: HOURS }),
       reasonRequired,
       rule: 'late',
-      summary: `Cancelling within ${HOURS} hours of the start counts as a late cancellation.`,
+      summary: i18n.t('jobs:policy.lateSummary', { hours: HOURS }),
       blockedReason: null
     };
   }
   return {
     allowed: true,
     fee: 0,
-    warning: `Late cancellation: the customer is expecting you within ${HOURS} hours. This will be recorded on your profile.`,
+    warning: i18n.t('jobs:policy.lateVendor', { hours: HOURS }),
     reasonRequired,
     rule: 'late',
-    summary: `Cancelling within ${HOURS} hours of the start counts as a late cancellation.`,
+    summary: i18n.t('jobs:policy.lateSummary', { hours: HOURS }),
     blockedReason: null
   };
 }
@@ -144,9 +145,9 @@ export function getCancellationTerms(job: Pick<Job, 'status' | 'scheduledAt' | '
 export function cancellationPolicyLines(): string[] {
   const { percent, minimum } = CANCELLATION_POLICY.lateFee;
   return [
-  'Free to cancel until you accept a quote.',
-  `After that, free to cancel up to ${HOURS} hours before the start.`,
-  `Within ${HOURS} hours, a late fee of ${percent}% of the price (at least ${formatNaira(minimum)}) applies.`,
-  'Once the vendor has started, you can’t cancel, but you can report a problem.'];
+  i18n.t('jobs:policy.line1'),
+  i18n.t('jobs:policy.line2', { hours: HOURS }),
+  i18n.t('jobs:policy.line3', { hours: HOURS, percent, minimum: formatNaira(minimum) }),
+  i18n.t('jobs:policy.line4')];
 
 }

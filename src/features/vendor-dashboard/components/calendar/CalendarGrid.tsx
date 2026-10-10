@@ -1,5 +1,7 @@
+import { useTranslation } from 'react-i18next';
 import React, { useEffect, useRef } from 'react';
 import { weekdays } from '../../../../data/weekdays';
+import { weekdayLabel, weekdayShort } from '../../../../i18n/labels';
 import { CalendarDayCell } from './CalendarDayCell';
 import type { CalendarDay, CalendarView } from '../../types';
 
@@ -27,6 +29,7 @@ interface CalendarGridProps {
  * Home/End jump to the start or end of the week.
  */
 export function CalendarGrid({ days, view, selectedKey, labelledBy, onSelect, onMove, onWeekEdge }: CalendarGridProps) {
+  useTranslation();
   const gridRef = useRef<HTMLDivElement>(null);
   const focusAfterMove = useRef(false);
 
@@ -54,8 +57,8 @@ export function CalendarGrid({ days, view, selectedKey, labelledBy, onSelect, on
     <div ref={gridRef} role="grid" aria-labelledby={labelledBy} onKeyDown={handleKeyDown}>
       <div role="row" className="grid grid-cols-7 gap-1 sm:gap-1.5">
         {weekdays.map((w) =>
-        <div key={w.id} role="columnheader" aria-label={w.label} className="py-1 text-center text-xs font-bold text-muted">
-            {w.short}
+        <div key={w.id} role="columnheader" aria-label={weekdayLabel(w.id, w.label)} className="py-1 text-center text-xs font-bold text-muted">
+            {weekdayShort(w.id, w.short)}
           </div>
         )}
       </div>

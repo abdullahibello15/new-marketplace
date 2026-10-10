@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeftRightIcon } from 'lucide-react';
 import { Dialog } from '../ui/Dialog';
@@ -8,17 +10,20 @@ interface MobileMoreMenuProps {
   onClose: () => void;
   items: NavItem[];
   pathname: string;
-  switchLink: {to: string;label: string;};
+  switchLink?: {to: string;label: string;};
+  /** The signed-in user's panel (role switcher, sign out). */
+  account?: ReactNode;
 }
 
 const rowClass =
 'flex items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-semibold transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-pine/40';
 
 /** Phone-only menu for the nav items that don't fit in the bottom bar. */
-export function MobileMoreMenu({ open, onClose, items, pathname, switchLink }: MobileMoreMenuProps) {
+export function MobileMoreMenu({ open, onClose, items, pathname, switchLink, account }: MobileMoreMenuProps) {
+  const { t } = useTranslation();
   return (
-    <Dialog open={open} onClose={onClose} title="More">
-      <nav aria-label="More">
+    <Dialog open={open} onClose={onClose} title={t('shell.more')}>
+      <nav aria-label={t('shell.more')}>
         <ul className="space-y-1">
           {items.map((item) => {
             const active = item.match(pathname);
@@ -38,10 +43,13 @@ export function MobileMoreMenu({ open, onClose, items, pathname, switchLink }: M
 
           })}
         </ul>
+        {switchLink &&
         <Link to={switchLink.to} onClick={onClose} className={`${rowClass} mt-3 border-t border-line pt-4 text-muted hover:text-ink`}>
-          <ArrowLeftRightIcon className="h-5 w-5" aria-hidden="true" />
-          {switchLink.label}
-        </Link>
+            <ArrowLeftRightIcon className="h-5 w-5" aria-hidden="true" />
+            {switchLink.label}
+          </Link>
+        }
+        {account && <div className="mt-3 border-t border-line pt-4">{account}</div>}
       </nav>
     </Dialog>);
 

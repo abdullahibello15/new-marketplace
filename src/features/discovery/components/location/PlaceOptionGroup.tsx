@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+import { useId } from 'react';
 import { CheckIcon } from 'lucide-react';
 import type { Place } from '../../types';
 
@@ -9,8 +11,9 @@ interface PlaceOptionGroupProps {
 }
 
 export function PlaceOptionGroup({ title, places, currentId, onChoose }: PlaceOptionGroupProps) {
+  const { t } = useTranslation('discovery');
+  const headingId = `place-group-${useId().replace(/:/g, '')}`;
   if (places.length === 0) return null;
-  const headingId = `place-group-${title.toLowerCase().replace(/\W+/g, '-')}`;
 
   return (
     <section aria-labelledby={headingId}>
@@ -36,7 +39,7 @@ export function PlaceOptionGroup({ title, places, currentId, onChoose }: PlaceOp
                 {selected &&
                 <>
                     <CheckIcon className="h-4 w-4 shrink-0 text-pine" aria-hidden="true" />
-                    <span className="sr-only">(selected)</span>
+                    <span className="sr-only">{t('place.selected')}</span>
                   </>
                 }
               </button>

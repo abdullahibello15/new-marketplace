@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useId } from 'react';
 import { Link } from 'react-router-dom';
 import { ShoppingCartIcon } from 'lucide-react';
@@ -13,13 +14,14 @@ interface AddToCartButtonProps {
 
 /** "Add to cart" under a product. Never adds more than the vendor has in stock, and says so. */
 export function AddToCartButton({ vendor, product }: AddToCartButtonProps) {
+  const { t } = useTranslation('jobs');
   const messageId = useId();
   const a = useAddToCart(vendor, product);
 
   if (a.soldOut) {
     return (
       <Button variant="secondary" size="sm" fullWidth disabled>
-        Out of stock
+        {t('order.cart.outOfStock')}
       </Button>);
 
   }
@@ -34,16 +36,16 @@ export function AddToCartButton({ vendor, product }: AddToCartButtonProps) {
         onClick={a.add}
         disabled={Boolean(a.blockedReason) || a.atMax}
         aria-describedby={a.message || a.blockedReason ? messageId : undefined}
-        aria-label={`Add ${product.name} to cart`}>
+        aria-label={t('order.cart.addLabel', { name: product.name })}>
 
-        {a.inCart ? 'Add another' : 'Add to cart'}
+        {a.inCart ? t('order.cart.addAnother') : t('order.cart.add')}
       </Button>
       {a.inCart > 0 &&
       <Link
         to={ORDER_ROUTES.cart}
         className="mt-1.5 block rounded text-center text-xs font-bold text-pine hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-pine/40">
 
-          {a.inCart} in your cart · View cart
+          {t('order.cart.inCart', { count: a.inCart })}
         </Link>
       }
       <p id={messageId} aria-live="polite" className="mt-1.5 text-xs font-semibold text-clay-dark empty:hidden">

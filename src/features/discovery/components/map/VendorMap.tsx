@@ -1,3 +1,4 @@
+import i18n from '../../../../i18n';
 import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 // Must come after 'leaflet': the plugin extends the global L that Leaflet sets.
@@ -19,9 +20,9 @@ interface VendorMapProps {
   onSelect: (id: string | null) => void;
 }
 
-const pinLabel = (pin: MappableVendorListing) => pin.reviews === 0 ? 'New' : pin.rating.toFixed(1);
+const pinLabel = (pin: MappableVendorListing) => pin.reviews === 0 ? i18n.t('discovery:map.pinNew') : pin.rating.toFixed(1);
 const pinTitle = (pin: MappableVendorListing) =>
-`${pin.name}, ${pin.reviews === 0 ? 'no reviews yet' : `rated ${pin.rating.toFixed(1)} from ${pin.reviews} reviews`}`;
+pin.reviews === 0 ? i18n.t('discovery:map.pinNoReviews', { name: pin.name }) : i18n.t('discovery:map.pinRated', { name: pin.name, rating: pin.rating.toFixed(1), count: pin.reviews });
 
 /**
  * Leaflet + OpenStreetMap, driven imperatively from effects so React never re-creates the map.
@@ -119,7 +120,7 @@ export function VendorMap({ center, centerLabel, pins, selectedId, hoveredId, on
     <div
       ref={containerRef}
       role="region"
-      aria-label={`Map of matching vendors around ${centerLabel}. Use Tab to reach vendor markers and Enter to preview one.`}
+      aria-label={i18n.t('discovery:map.label', { place: centerLabel })}
       onKeyDown={(e) => e.key === 'Escape' && onSelectRef.current(null)}
       className="h-full w-full bg-sand" />);
 

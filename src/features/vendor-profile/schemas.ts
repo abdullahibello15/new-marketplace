@@ -1,4 +1,6 @@
+import { formatNaira } from '../../utils/format';
 import { z } from 'zod';
+import i18n from '../../i18n';
 import { sanitizeText } from '../../lib/sanitize';
 import { nigerLgas } from '../../data/nigerLgas';
 import { BIO_MAX_LENGTH, TRADE_OTHER_MAX_LENGTH, tradeCategories } from '../../data/tradeCategories';
@@ -25,41 +27,41 @@ export const isTradeCategory = (v: unknown): v is TradeCategory => tradeCategori
 const isLga = (v: unknown): v is NigerLga => nigerLgas.some((l) => l === v);
 
 /** "₦2,000", "2000" → 2000. Blank or non-numeric input gets a clear message instead of NaN. */
-function priceField(what: string) {
+function priceField(what: 'starting' | 'top') {
   return z.
   string().
   transform((raw, ctx) => {
     const digits = raw.replace(/[₦,\s]/g, '');
     if (!digits) {
-      ctx.addIssue({ code: 'custom', message: `Add a ${what}.` });
+      ctx.addIssue({ code: 'custom', message: what === 'starting' ? i18n.t('vendor:profile.form.addStarting') : i18n.t('vendor:profile.form.addTop') });
       return z.NEVER;
     }
     if (!/^\d+$/.test(digits)) {
-      ctx.addIssue({ code: 'custom', message: 'Use whole Naira, like 5,000.' });
+      ctx.addIssue({ code: 'custom', message: i18n.t('vendor:profile.form.wholeNaira', { example: '5,000' }) });
       return z.NEVER;
     }
     return Number(digits);
   }).
-  pipe(z.number().min(1, 'Price must be more than ₦0.').max(SERVICE_PRICE_MAX, 'That price looks too high. Check for extra zeros.'));
+  pipe(z.number().min(1, { error: () => i18n.t('vendor:profile.form.priceZero') }).max(SERVICE_PRICE_MAX, { error: () => i18n.t('jobs:form.priceHigh') }));
 }
 
 const serviceSchema = z.
 object({
   id: z.string(),
   name: cleanText.pipe(
-    z.string().min(2, 'Give the service a name.').max(SERVICE_NAME_MAX, `Keep the name to ${SERVICE_NAME_MAX} characters.`)
+    z.string().min(2, { error: () => i18n.t('vendor:profile.form.serviceName') }).max(SERVICE_NAME_MAX, { error: () => i18n.t('vendor:profile.form.nameMax', { max: SERVICE_NAME_MAX }) })
   ),
-  minPrice: priceField('starting price'),
-  maxPrice: priceField('top price'),
-  duration: z.string().refine((d) => serviceDurations.includes(d), 'Choose a typical duration.'),
+  minPrice: priceField('starting'),
+  maxPrice: priceField('top'),
+  duration: z.string().refine((d) => serviceDurations.includes(d), { error: () => i18n.t('vendor:profile.form.duration') }),
   description: cleanText.pipe(
-    z.string().max(SERVICE_DESCRIPTION_MAX, `Keep the description to ${SERVICE_DESCRIPTION_MAX} characters.`)
+    z.string().max(SERVICE_DESCRIPTION_MAX, { error: () => i18n.t('jobs:form.descriptionMax', { max: SERVICE_DESCRIPTION_MAX }) })
   ),
   photo: z.string().nullable()
 }).
 refine((s) => s.maxPrice >= s.minPrice, {
   path: ['maxPrice'],
-  message: 'The top price can’t be less than the starting price.'
+  error: () => i18n.t('vendor:profile.form.topBelowStart')
 });
 
 const dayHoursSchema = z.
@@ -75,49 +77,49 @@ string().
 transform((raw, ctx) => {
   const digits = raw.replace(/[₦,\s]/g, '');
   if (!digits) {
-    ctx.addIssue({ code: 'custom', message: 'Add a delivery fee, or 0 for free delivery.' });
+    ctx.addIssue({ code: 'custom', message: i18n.t('vendor:profile.form.addFee') });
     return z.NEVER;
   }
   if (!/^\d+$/.test(digits)) {
-    ctx.addIssue({ code: 'custom', message: 'Use whole Naira, like 1,500.' });
+    ctx.addIssue({ code: 'custom', message: i18n.t('vendor:profile.form.wholeNaira', { example: '1,500' }) });
     return z.NEVER;
   }
   return Number(digits);
 }).
-pipe(z.number().max(DELIVERY_FEE_MAX, `Keep the delivery fee to ₦${DELIVERY_FEE_MAX.toLocaleString('en-NG')} or less.`));
+pipe(z.number().max(DELIVERY_FEE_MAX, { error: () => i18n.t('vendor:profile.form.feeMax', { max: formatNaira(DELIVERY_FEE_MAX) }) }));
 
 /** Pickup and delivery for product orders: at least one on, and each one that's on fully filled in. */
 const fulfilmentSchema = z.
 object({
   pickupEnabled: z.boolean(),
-  pickupAddress: cleanText.pipe(z.string().max(PICKUP_ADDRESS_MAX, `Keep the address to ${PICKUP_ADDRESS_MAX} characters.`)),
-  pickupInstructions: cleanText.pipe(z.string().max(PICKUP_INSTRUCTIONS_MAX, `Keep instructions to ${PICKUP_INSTRUCTIONS_MAX} characters.`)),
+  pickupAddress: cleanText.pipe(z.string().max(PICKUP_ADDRESS_MAX, { error: () => i18n.t('vendor:profile.form.addressMax', { max: PICKUP_ADDRESS_MAX }) })),
+  pickupInstructions: cleanText.pipe(z.string().max(PICKUP_INSTRUCTIONS_MAX, { error: () => i18n.t('vendor:profile.form.instructionsMax', { max: PICKUP_INSTRUCTIONS_MAX }) })),
   deliveryEnabled: z.boolean(),
   deliveryFee: deliveryFeeField,
-  deliveryAreas: z.array(z.string().pipe(z.custom<NigerLga>(isLga, 'That isn’t a Niger State LGA.')))
+  deliveryAreas: z.array(z.string().pipe(z.custom<NigerLga>(isLga, { error: () => i18n.t('vendor:profile.form.notLga') })))
 }).
 superRefine((f, ctx) => {
   if (!f.pickupEnabled && !f.deliveryEnabled) {
-    ctx.addIssue({ code: 'custom', path: ['pickupEnabled'], message: 'Turn on pickup, delivery or both so customers can get their orders.' });
+    ctx.addIssue({ code: 'custom', path: ['pickupEnabled'], message: i18n.t('vendor:profile.form.turnOn') });
   }
   if (f.pickupEnabled && f.pickupAddress.length < PICKUP_ADDRESS_MIN) {
-    ctx.addIssue({ code: 'custom', path: ['pickupAddress'], message: 'Add the address or landmark customers collect from.' });
+    ctx.addIssue({ code: 'custom', path: ['pickupAddress'], message: i18n.t('vendor:profile.form.pickupAddress') });
   }
   if (f.deliveryEnabled && f.deliveryAreas.length === 0) {
-    ctx.addIssue({ code: 'custom', path: ['deliveryAreas'], message: 'Pick at least one LGA you deliver to.' });
+    ctx.addIssue({ code: 'custom', path: ['deliveryAreas'], message: i18n.t('vendor:profile.form.deliveryAreas') });
   }
 });
 
 export const profileSchema = z.
 object({
   name: cleanText.pipe(
-    z.string().min(NAME_MIN, 'Add the name customers know you by.').max(NAME_MAX, `Keep your name to ${NAME_MAX} characters.`)
+    z.string().min(NAME_MIN, { error: () => i18n.t('vendor:profile.form.nameMin') }).max(NAME_MAX, { error: () => i18n.t('vendor:profile.form.nameMax', { max: NAME_MAX }) })
   ),
-  tradeCategory: z.string().pipe(z.custom<TradeCategory>(isTradeCategory, 'Choose the trade customers will find you under.')),
-  tradeCategoryOther: cleanText.pipe(z.string().max(TRADE_OTHER_MAX_LENGTH, `Keep it under ${TRADE_OTHER_MAX_LENGTH} characters.`)),
-  bio: cleanText.pipe(z.string().max(BIO_MAX_LENGTH, `Keep your bio to ${BIO_MAX_LENGTH} characters.`)),
-  gallery: z.array(z.string()).max(PORTFOLIO_MAX, `Use ${PORTFOLIO_MAX} photos or fewer.`),
-  services: z.array(serviceSchema).max(SERVICES_MAX, `You can list up to ${SERVICES_MAX} services.`),
+  tradeCategory: z.string().pipe(z.custom<TradeCategory>(isTradeCategory, { error: () => i18n.t('vendor:profile.form.trade') })),
+  tradeCategoryOther: cleanText.pipe(z.string().max(TRADE_OTHER_MAX_LENGTH, { error: () => i18n.t('jobs:form.keepTo', { max: TRADE_OTHER_MAX_LENGTH }) })),
+  bio: cleanText.pipe(z.string().max(BIO_MAX_LENGTH, { error: () => i18n.t('vendor:profile.form.bioMax', { max: BIO_MAX_LENGTH }) })),
+  gallery: z.array(z.string()).max(PORTFOLIO_MAX, { error: () => i18n.t('jobs:form.photoMax', { max: PORTFOLIO_MAX }) }),
+  services: z.array(serviceSchema).max(SERVICES_MAX, { error: () => i18n.t('vendor:profile.form.servicesMax', { max: SERVICES_MAX }) }),
   workingHours: z.object({
     mon: dayHoursSchema,
     tue: dayHoursSchema,
@@ -127,12 +129,12 @@ object({
     sat: dayHoursSchema,
     sun: dayHoursSchema
   }),
-  serviceAreas: z.array(z.string().pipe(z.custom<NigerLga>(isLga, 'That isn’t a Niger State LGA.'))).min(1, 'Pick at least one LGA you serve.'),
+  serviceAreas: z.array(z.string().pipe(z.custom<NigerLga>(isLga, { error: () => i18n.t('vendor:profile.form.notLga') }))).min(1, { error: () => i18n.t('vendor:profile.form.serviceAreas') }),
   fulfilment: fulfilmentSchema,
   acceptsCash: z.boolean()
 }).
 superRefine((v, ctx) => {
   if (v.tradeCategory === 'other' && !v.tradeCategoryOther) {
-    ctx.addIssue({ code: 'custom', path: ['tradeCategoryOther'], message: 'Tell customers what your trade is.' });
+    ctx.addIssue({ code: 'custom', path: ['tradeCategoryOther'], message: i18n.t('vendor:profile.form.tradeOther') });
   }
 });

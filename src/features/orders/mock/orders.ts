@@ -1,7 +1,6 @@
-import { user } from '../../../data/user';
-import { CURRENT_CUSTOMER_ID } from '../../jobs/constants';
+import { DEMO_CUSTOMER } from '../../auth/mock/users';
 import { FULFILMENT_METHOD, ORDER_ACTOR } from '../constants';
-import type { FulfilmentMethod, Order, OrderDeliveryDetails, OrderItem, OrderPickupDetails, OrderReview, OrderStatus, OrderStatusChange } from '../types';
+import type { FulfilmentMethod, Order, OrderDeliveryDetails, OrderDispute, OrderItem, OrderPickupDetails, OrderReview, OrderStatus, OrderStatusChange } from '../types';
 
 /** ISO time `minutes` ago, so the mock data stays current. */
 const ago = (minutes: number) => new Date(Date.now() - minutes * 60_000).toISOString();
@@ -59,23 +58,24 @@ interface Seed {
   deliveryFee?: number;
   history: OrderStatusChange[];
   review?: OrderReview;
+  dispute?: OrderDispute;
 }
 
 /** Statuses after the vendor confirmed, i.e. stock was taken (and is put back if the order is cancelled). */
-const RESERVED_AFTER: OrderStatus[] = ['confirmed', 'preparing', 'dispatched', 'delivered', 'ready_for_pickup', 'collected', 'completed', 'cancelled'];
+const RESERVED_AFTER: OrderStatus[] = ['confirmed', 'preparing', 'dispatched', 'delivered', 'ready_for_pickup', 'collected', 'completed', 'cancelled', 'disputed'];
 
 function order(seed: Seed): Order {
   const last = seed.history[seed.history.length - 1];
   const itemsTotal = seed.items.filter((i) => !i.outOfStock).reduce((sum, i) => sum + i.unitPrice * i.quantity, 0);
   const deliveryFee = seed.method === FULFILMENT_METHOD.Delivery ? seed.deliveryFee ?? 0 : 0;
-  const isAisha = seed.customerName === user.fullName;
+  const isAisha = seed.customerName === DEMO_CUSTOMER.name;
   const wasConfirmed = seed.history.some((h) => h.status === 'confirmed');
   return {
     id: seed.id,
     checkoutRef: seed.checkoutRef,
     vendorId: seed.vendorId,
     vendorName: seed.vendorName,
-    customerId: isAisha ? CURRENT_CUSTOMER_ID : `cust-${seed.customerName.toLowerCase().replace(/[^a-z]+/g, '-')}`,
+    customerId: isAisha ? DEMO_CUSTOMER.id : `cust-${seed.customerName.toLowerCase().replace(/[^a-z]+/g, '-')}`,
     customerName: seed.customerName,
     items: seed.items,
     method: seed.method,
@@ -90,6 +90,7 @@ function order(seed: Seed): Order {
     stockReserved: wasConfirmed && RESERVED_AFTER.includes(last.status) && last.status !== 'cancelled',
     review: seed.review ?? null,
     reviewSkipped: false,
+    dispute: seed.dispute ?? null,
     createdAt: seed.history[0].at,
     updatedAt: last.at
   };
@@ -101,7 +102,7 @@ order({
   id: '5012',
   checkoutRef: 'CHK-731904',
   ...BALA,
-  customerName: user.fullName,
+  customerName: DEMO_CUSTOMER.name,
   items: [item('p1', 'Kitchen mixer tap (chrome)', IMG.tap, 9500, 2)],
   method: FULFILMENT_METHOD.Delivery,
   delivery: AISHA_DELIVERY,
@@ -112,7 +113,7 @@ order({
   id: '5011',
   checkoutRef: 'CHK-731904',
   ...FATIMA,
-  customerName: user.fullName,
+  customerName: DEMO_CUSTOMER.name,
   items: [item('fatima-fresh-foods-p1', 'Local rice, 5kg', IMG.bike, 7500, 2), item('fatima-fresh-foods-p5', 'Fresh pepper mix (bag)', IMG.bike, 2500, 1)],
   method: FULFILMENT_METHOD.Delivery,
   delivery: AISHA_DELIVERY,
@@ -145,7 +146,7 @@ order({
   id: '5007',
   checkoutRef: 'CHK-588410',
   ...HAUWA,
-  customerName: user.fullName,
+  customerName: DEMO_CUSTOMER.name,
   items: [item('p13', 'Gele head tie', IMG.fabric, 4500, 2), item('p12', 'Ready-made kaftan', IMG.fabric, 18500, 1, true)],
   method: FULFILMENT_METHOD.Pickup,
   pickup: { address: 'Hauwa Tailoring, opposite Chanchaga Primary School', instructions: 'Call when you arrive and I’ll bring your order out.' },
@@ -161,7 +162,7 @@ order({
   id: '5006',
   checkoutRef: 'CHK-588410',
   ...FATIMA,
-  customerName: user.fullName,
+  customerName: DEMO_CUSTOMER.name,
   items: [item('fatima-fresh-foods-p2', 'Honey beans, 5kg', IMG.bike, 9000, 1)],
   method: FULFILMENT_METHOD.Delivery,
   delivery: AISHA_DELIVERY,
@@ -179,7 +180,7 @@ order({
   id: '5004',
   checkoutRef: 'CHK-511093',
   ...BALA,
-  customerName: user.fullName,
+  customerName: DEMO_CUSTOMER.name,
   items: [item('p4', 'Pipe wrench, 14 inch', IMG.tools, 7500, 1), item('p1', 'Kitchen mixer tap (chrome)', IMG.tap, 9500, 1)],
   method: FULFILMENT_METHOD.Pickup,
   pickup: BALA_PICKUP,
@@ -216,7 +217,7 @@ order({
   id: '5002',
   checkoutRef: 'CHK-470552',
   ...FATIMA,
-  customerName: user.fullName,
+  customerName: DEMO_CUSTOMER.name,
   items: [item('fatima-fresh-foods-p4', 'Groundnut oil, 3L', IMG.bike, 8500, 2)],
   method: FULFILMENT_METHOD.Pickup,
   pickup: { address: 'Stall 31, Kure Market (foodstuff line), Minna', instructions: 'Collect before 5pm. Show your order number at the stall.' },
@@ -232,4 +233,78 @@ order({
   delivery: { landmark: 'Behind Bosso market', placeId: 'lga-bosso', placeLabel: 'Bosso, Minna', lga: 'Bosso', phone: '0803 118 2290' },
   deliveryFee: 1500,
   history: [step('placed', 15 * DAY, Customer), step('confirmed', 15 * DAY - 20, Vendor), step('cancelled', 15 * DAY - 60, Customer, 'I found it elsewhere')]
+}),
+/* ---------- Disputed orders (Gwani's dispute workspace); payments and escrow in payments/mock ---------- */
+order({
+  id: '5020',
+  checkoutRef: 'CHK-801144',
+  ...FATIMA,
+  customerName: 'Ngozi Adeyemi',
+  items: [item('fatima-fresh-foods-p1', 'Local rice, 5kg', IMG.bike, 7500, 2), item('fatima-fresh-foods-p4', 'Groundnut oil, 3L', IMG.bike, 8500, 1)],
+  method: FULFILMENT_METHOD.Delivery,
+  delivery: { landmark: 'Maitumbi, behind the primary school', placeId: 'town-maitumbi', placeLabel: 'Maitumbi, Minna', lga: 'Bosso', phone: '0806 221 4410' },
+  deliveryFee: 1000,
+  history: [step('placed', 3 * DAY, Customer), step('confirmed', 3 * DAY - 30, Vendor), step('preparing', 3 * DAY - 60, Vendor), step('dispatched', 2 * DAY, Vendor), step('delivered', 2 * DAY - 90, Vendor), step('disputed', 18 * HOUR, Customer, 'The rice has weevils in both bags.')],
+  dispute: { reason: 'poor_quality', details: 'The rice has weevils in both bags. I opened one and the second one is the same.', at: ago(18 * HOUR) }
+}),
+order({
+  id: '5021',
+  checkoutRef: 'CHK-799310',
+  ...BALA,
+  customerName: 'Musa Kabiru',
+  items: [item('p3', '1HP surface pump', IMG.tank, 65000, 1)],
+  method: FULFILMENT_METHOD.Pickup,
+  pickup: BALA_PICKUP,
+  history: [step('placed', 5 * DAY, Customer), step('confirmed', 5 * DAY - 40, Vendor), step('preparing', 5 * DAY - 90, Vendor), step('ready_for_pickup', 4 * DAY, Vendor), step('collected', 3 * DAY, Vendor), step('disputed', 40 * HOUR, Customer, 'The pump does not start.')],
+  dispute: { reason: 'poor_quality', details: 'The pump does not start at all. It hums for a second and the breaker trips. I think it is faulty from the shop.', at: ago(40 * HOUR) }
+}),
+order({
+  id: '5022',
+  checkoutRef: 'CHK-797005',
+  vendorId: 'kure-market-grocery',
+  vendorName: 'Kure Market Provisions',
+  customerName: 'Halima Yusuf',
+  items: [item('kure-market-grocery-p1', 'Malt drink, carton of 24', IMG.bike, 9800, 2), item('kure-market-grocery-p2', 'Bottled water, pack of 12', IMG.bike, 2200, 1)],
+  method: FULFILMENT_METHOD.Delivery,
+  delivery: { landmark: 'Tunga, opposite the mosque, green gate', placeId: 'town-tunga', placeLabel: 'Tunga, Minna', lga: 'Chanchaga', phone: '0809 330 1188' },
+  deliveryFee: 1000,
+  history: [step('placed', 2 * DAY, Customer), step('confirmed', 2 * DAY - 20, Vendor), step('preparing', 2 * DAY - 40, Vendor), step('dispatched', DAY, Vendor), step('delivered', DAY - 60, Vendor), step('disputed', 6 * HOUR, Customer, 'Bottles broken.')],
+  dispute: { reason: 'damage', details: 'Three bottles of malt were broken in one carton and the carton was soaked.', at: ago(6 * HOUR) }
+}),
+order({
+  id: '5023',
+  checkoutRef: 'CHK-790812',
+  vendorId: 'bosso-greens',
+  vendorName: 'Bosso Greens & Grains',
+  customerName: DEMO_CUSTOMER.name,
+  items: [item('bosso-greens-p1', 'Tomatoes, small basket', IMG.bike, 4000, 1), item('bosso-greens-p2', 'Onions, 2kg', IMG.bike, 2800, 1)],
+  method: FULFILMENT_METHOD.Delivery,
+  delivery: AISHA_DELIVERY,
+  deliveryFee: 1000,
+  history: [step('placed', 5 * DAY, Customer), step('confirmed', 5 * DAY - 30, Vendor), step('preparing', 5 * DAY - 50, Vendor), step('dispatched', 4 * DAY, Vendor), step('delivered', 4 * DAY - 60, Vendor), step('disputed', 75 * HOUR, Customer, 'Only half the onions arrived.')],
+  dispute: { reason: 'not_finished', details: 'Only about 1kg of onions arrived, not 2kg, and the tomatoes were soft.', at: ago(75 * HOUR) }
+}),
+order({
+  id: '5024',
+  checkoutRef: 'CHK-760020',
+  ...HAUWA,
+  customerName: 'Grace Ibrahim',
+  items: [item('p11', 'Ankara fabric, 6 yards', IMG.fabric, 12000, 2)],
+  method: FULFILMENT_METHOD.Pickup,
+  pickup: { address: 'Shop 12, Kure Market, Minna', instructions: 'Ask for Hauwa at the fabric section.' },
+  history: [
+  step('placed', 14 * DAY, Customer),
+  step('confirmed', 14 * DAY - 30, Vendor),
+  step('preparing', 14 * DAY - 60, Vendor),
+  step('ready_for_pickup', 13 * DAY, Vendor),
+  step('collected', 12 * DAY, Vendor),
+  step('disputed', 12 * DAY - 300, Customer, 'Different pattern.'),
+  step('completed', 9 * DAY, ORDER_ACTOR.System, 'One of the two pieces didn’t match the photo; refunding that piece.')],
+
+  dispute: {
+    reason: 'other',
+    details: 'One of the two pieces is a different pattern from the photo in the shop.',
+    at: ago(12 * DAY - 300),
+    resolution: { outcome: 'split', refundAmount: 6000, at: ago(9 * DAY), reason: 'One of the two pieces didn’t match the photo; refunding half of that piece as agreed with the vendor.' }
+  }
 })];

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 import { SearchXIcon } from 'lucide-react';
 import { PageHeader } from '../../../components/PageHeader';
@@ -8,13 +9,14 @@ import { isSubjectKind } from '../utils/subject';
 
 /** /pay/:kind/:id — validates the URL, then shows the payment screen. */
 export function PaymentCheckoutSection() {
+  const { t } = useTranslation('payments');
   const { kind, id = '' } = useParams();
   if (!isSubjectKind(kind)) {
     return (
       <>
-        <PageHeader title="Payment" />
+        <PageHeader title={t('checkout.payment')} />
         <PageContainer width="narrow">
-          <EmptyState icon={SearchXIcon} title="We couldn’t find that payment page" />
+          <EmptyState icon={SearchXIcon} title={t('checkout.pageNotFound')} />
         </PageContainer>
       </>);
 

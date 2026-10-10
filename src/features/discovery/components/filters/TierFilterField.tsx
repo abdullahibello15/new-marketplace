@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+import { tierDescription } from '../../../../i18n/labels';
 import { useFormContext } from 'react-hook-form';
 import { VerificationBadge } from '../../../../components/VerificationBadge';
 import { verificationTiers } from '../../../../data/verificationTiers';
@@ -6,9 +8,10 @@ import type { FilterFormData, FilterFormValues } from '../../schemas';
 
 /** Checkbox per verification tier, with the same badge customers see on vendor cards. */
 export function TierFilterField() {
+  const { t } = useTranslation('discovery');
   const { register } = useFormContext<FilterFormValues, unknown, FilterFormData>();
   return (
-    <FilterSection title="Verification">
+    <FilterSection title={t('filters.verification')}>
       <div className="space-y-1">
         {verificationTiers.map((tier) =>
         <label
@@ -18,7 +21,7 @@ export function TierFilterField() {
             <input type="checkbox" value={tier.id} {...register('tiers')} className="mt-1 h-4 w-4 shrink-0 accent-pine" />
             <span className="min-w-0">
               <VerificationBadge verification={tier.id} />
-              <span className="mt-0.5 block text-sm text-muted">{tier.description}</span>
+              <span className="mt-0.5 block text-sm text-muted">{tierDescription(tier.id, tier.description)}</span>
             </span>
           </label>
         )}

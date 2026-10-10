@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+import { paymentMethodDescription, paymentMethodLabel } from '../../../i18n/labels';
 import { useId } from 'react';
 import { PAYMENT_METHOD_META } from '../constants';
 import type { PaymentMethod } from '../types';
@@ -14,10 +16,11 @@ interface PaymentMethodSelectorProps {
 
 /** Radio list of payment methods. Native radios: arrow keys work and screen readers announce the choice. */
 export function PaymentMethodSelector({ methods, value, onChange, disabled = false, note }: PaymentMethodSelectorProps) {
+  const { t } = useTranslation('payments');
   const name = useId();
   return (
     <fieldset disabled={disabled}>
-      <legend className="mb-2 text-sm font-bold text-muted">How would you like to pay?</legend>
+      <legend className="mb-2 text-sm font-bold text-muted">{t('checkout.how')}</legend>
       <div className="space-y-2">
         {methods.map((m) =>
         <label
@@ -26,8 +29,8 @@ export function PaymentMethodSelector({ methods, value, onChange, disabled = fal
 
             <input type="radio" name={name} value={m} checked={value === m} onChange={() => onChange(m)} className="mt-1 h-4 w-4 accent-pine" />
             <span>
-              <span className="block font-bold text-ink">{PAYMENT_METHOD_META[m].label}</span>
-              <span className="block text-sm text-muted">{PAYMENT_METHOD_META[m].description}</span>
+              <span className="block font-bold text-ink">{paymentMethodLabel(m, PAYMENT_METHOD_META[m].label)}</span>
+              <span className="block text-sm text-muted">{paymentMethodDescription(m, PAYMENT_METHOD_META[m].description)}</span>
             </span>
           </label>
         )}

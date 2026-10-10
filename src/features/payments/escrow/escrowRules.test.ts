@@ -193,3 +193,41 @@ describe('vendor earnings', () => {
     expect(payOutEscrow(once, T2)).toBe(once);
   });
 });
+
+describe('dismissed disputes and order disputes', () => {
+  const disputedJob = () => applyEscrowDecision(held(), jobEscrowDecision(jobChange(JOB_STATUS.InProgress, JOB_STATUS.Disputed), 10_000), T1);
+
+  it('holds the money normally again when a job dispute is dismissed', () => {
+    const e = disputedJob();
+    expect(e.status).toBe(ESCROW_STATUS.Disputed);
+    const decision = jobEscrowDecision(jobChange(JOB_STATUS.Disputed, JOB_STATUS.AwaitingConfirmation), 10_000);
+    expect(decision.kind).toBe('resume');
+    const resumed = applyEscrowDecision(e, decision, T2);
+    expect(resumed.status).toBe(ESCROW_STATUS.Held);
+    expect(escrowTotals(resumed)).toMatchObject({ held: 10_000, released: 0, refunded: 0 });
+    // And it can still be released normally afterwards.
+    const done = applyEscrowDecision(resumed, jobEscrowDecision(jobChange(JOB_STATUS.AwaitingConfirmation, JOB_STATUS.Completed), 10_000), T2);
+    expect(done.status).toBe(ESCROW_STATUS.Released);
+  });
+
+  it('does not resume for normal moves into In progress', () => {
+    expect(jobEscrowDecision(jobChange(JOB_STATUS.Scheduled, JOB_STATUS.InProgress), 10_000).kind).toBe('none');
+  });
+
+  const order = (from: Parameters<typeof orderEscrowDecision>[0]['from'], to: Parameters<typeof orderEscrowDecision>[0]['to'], disputeRefund: number | null = null) =>
+  orderEscrowDecision({ from, to, orderTotal: 10_000, disputeRefund }, 10_000);
+
+  it('holds an order’s money while a problem is reviewed', () => {
+    expect(order(ORDER_STATUS.Delivered, ORDER_STATUS.Disputed).kind).toBe('dispute');
+  });
+
+  it('resolves an order dispute: release, part refund, full refund or dismiss', () => {
+    expect(order(ORDER_STATUS.Disputed, ORDER_STATUS.Completed)).toMatchObject({ kind: 'release' });
+    expect(order(ORDER_STATUS.Disputed, ORDER_STATUS.Completed, 4_000)).toMatchObject({ kind: 'settle', refund: 4_000 });
+    expect(order(ORDER_STATUS.Disputed, ORDER_STATUS.Cancelled)).toMatchObject({ kind: 'refund', amount: 10_000 });
+    expect(order(ORDER_STATUS.Disputed, ORDER_STATUS.Collected).kind).toBe('resume');
+    const settled = applyEscrowDecision(held(), order(ORDER_STATUS.Disputed, ORDER_STATUS.Completed, 4_000), T2);
+    expect(escrowTotals(settled)).toMatchObject({ refunded: 4_000, released: 6_000, held: 0 });
+    expect(settled.status).toBe(ESCROW_STATUS.PartiallyRefunded);
+  });
+});

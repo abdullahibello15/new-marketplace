@@ -1,3 +1,4 @@
+import { Trans, useTranslation } from 'react-i18next';
 import { useEffect } from 'react';
 import { Button } from '../../../../components/ui/Button';
 import { formatNaira } from '../../../../utils/format';
@@ -22,9 +23,7 @@ interface UssdPaymentPanelProps {
   onPaid: (p: Payment) => void;
 }
 
-const SIMULATIONS: {id: UssdSimulation;label: string;}[] = [
-{ id: 'approve', label: 'Approve on phone' },
-{ id: 'decline', label: 'Cancel on phone' }];
+const SIMULATIONS: UssdSimulation[] = ['approve', 'decline'];
 
 
 /**
@@ -32,6 +31,7 @@ const SIMULATIONS: {id: UssdSimulation;label: string;}[] = [
  * it's quick on low-end phones and slow connections. The PIN is typed on the phone's USSD screen, never here.
  */
 export function UssdPaymentPanel({ amount, payment, starting, initiate, onPayment, onPaid }: UssdPaymentPanelProps) {
+  const { t } = useTranslation('payments');
   const u = useUssdPayment(payment, onPayment);
   const ended = payment !== null && (payment.status === PAYMENT_STATUS.Expired || payment.status === PAYMENT_STATUS.Failed);
 
@@ -47,7 +47,7 @@ export function UssdPaymentPanel({ amount, payment, starting, initiate, onPaymen
         {payment && <PaymentOutcome payment={payment} />}
         <div>
           <label htmlFor="ussd-bank" className={label}>
-            Your bank
+            {t('ussd.bank')}
           </label>
           <select id="ussd-bank" value={u.bankId} onChange={(e) => u.setBankId(e.target.value)} className={`${field} ${ok}`}>
             {NIGERIAN_BANKS.map((b) =>
@@ -58,9 +58,9 @@ export function UssdPaymentPanel({ amount, payment, starting, initiate, onPaymen
           </select>
         </div>
         <Button fullWidth loading={starting} onClick={getCode}>
-          {ended ? 'Get a new code' : 'Get USSD code'}
+          {ended ? t('ussd.newCode') : t('ussd.getCode')}
         </Button>
-        <p className="text-xs text-muted">The code works for {PAYMENT_CONFIG.ussdExpiryMinutes} minutes. Use the phone number registered with your bank.</p>
+        <p className="text-xs text-muted">{t('ussd.codeNote', { minutes: PAYMENT_CONFIG.ussdExpiryMinutes })}</p>
       </div>);
 
   }
@@ -68,28 +68,28 @@ export function UssdPaymentPanel({ amount, payment, starting, initiate, onPaymen
   return (
     <div className="space-y-3">
       {payment.expiresAt && <ExpiryCountdown expiresAt={payment.expiresAt} what="code" />}
-      <CopyField label={`${payment.ussd.bankName} USSD code`} display={payment.ussd.code} large />
+      <CopyField label={t('ussd.codeLabel', { bank: payment.ussd.bankName })} display={payment.ussd.code} large />
       <a
         href={`tel:${payment.ussd.code.replace(/#/g, '%23')}`}
         className="block rounded-xl bg-pine-deep px-4 py-3 text-center font-bold text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-pine focus-visible:ring-offset-2">
 
-        Dial {payment.ussd.code}
+        {t('ussd.dial', { code: payment.ussd.code })}
       </a>
       <ol className="list-decimal space-y-1 pl-5 text-sm text-ink">
-        <li>Dial the code from the phone number registered with {payment.ussd.bankName}.</li>
+        <li>{t('ussd.step1', { bank: payment.ussd.bankName })}</li>
         <li>
-          Confirm the payment of <strong>{formatNaira(amount)}</strong> to Gwani and enter your PIN on your phone’s screen.
+          <Trans t={t} i18nKey="ussd.step2" values={{ amount: formatNaira(amount) }} components={{ strong: <strong /> }} />
         </li>
-        <li>Come back here. We’ll confirm it automatically.</li>
+        <li>{t('ussd.step3')}</li>
       </ol>
-      <p className="text-xs text-muted">Your bank may charge a small USSD fee. Never share your PIN, including with Gwani or the vendor.</p>
+      <p className="text-xs text-muted">{t('ussd.fee')}</p>
 
       <PaymentOutcome payment={payment} />
       {SHOW_PAYMENT_SIMULATOR &&
       <div className="space-y-2">
-          <DemoSimulator title="what you do on your phone" options={SIMULATIONS} value={u.simulation} onChange={u.setSimulation} />
+          <DemoSimulator title={t('ussd.simulatorTitle')} options={SIMULATIONS.map((id) => ({ id, label: t(`ussd.${id}`) }))} value={u.simulation} onChange={u.setSimulation} />
           <Button variant="outline" size="sm" onClick={u.simulate}>
-            Demo: send that response
+            {t('ussd.send')}
           </Button>
         </div>
       }

@@ -1,4 +1,6 @@
 import { addHours } from 'date-fns';
+import i18n from '../../i18n';
+import { orderStatusLabel } from '../../i18n/labels';
 import { FULFILMENT_METHOD, ORDER_ACTOR, ORDER_AUTO_COMPLETE_HOURS, ORDER_PATHS, ORDER_SIDE_BRANCHES, ORDER_STATUS, ORDER_STATUS_META } from './constants';
 import type { Order, OrderActor, OrderStatus } from './types';
 
@@ -11,6 +13,9 @@ import type { Order, OrderActor, OrderStatus } from './types';
  *     │ │ └──────┴─▶ Cancelled (customer, only before Preparing)
  *     │ └─▶ Out of stock (vendor: nothing could be supplied)
  *     └─▶ Declined (vendor)
+ *
+ *   Delivered / Collected ─▶ Disputed (customer reports a problem) ──(Gwani)──▶ Completed / Cancelled,
+ *                                                                    or back to Delivered / Collected (dismissed)
  *
  * Delivery orders can only take the Dispatched branch and pickup orders only Ready for pickup (GUARDS).
  */
@@ -36,13 +41,23 @@ export const ORDER_TRANSITIONS: Record<OrderStatus, Partial<Record<OrderStatus, 
   },
   delivered: {
     // "I've received it", or the platform after ORDER_AUTO_COMPLETE_HOURS.
-    completed: [Customer, System]
+    completed: [Customer, System],
+    // "Report a problem" instead of confirming receipt.
+    disputed: [Customer]
   },
   ready_for_pickup: {
     collected: [Vendor]
   },
   collected: {
-    completed: [Customer, System]
+    completed: [Customer, System],
+    disputed: [Customer]
+  },
+  disputed: {
+    // Gwani's team only: release (with or without a part refund), refund in full, or dismiss (back where it was).
+    completed: [System],
+    cancelled: [System],
+    delivered: [System],
+    collected: [System]
   },
   completed: {},
   declined: {},
@@ -52,11 +67,11 @@ export const ORDER_TRANSITIONS: Record<OrderStatus, Partial<Record<OrderStatus, 
 
 type Guard = (order: Order, now: Date) => string | null;
 
-const deliveryOnly: Guard = (order) => order.method === FULFILMENT_METHOD.Delivery ? null : 'This is a pickup order, so it isn’t dispatched.';
-const pickupOnly: Guard = (order) => order.method === FULFILMENT_METHOD.Pickup ? null : 'This is a delivery order, so it isn’t collected from you.';
+const deliveryOnly: Guard = (order) => order.method === FULFILMENT_METHOD.Delivery ? null : i18n.t('jobs:order.error.pickupNotDispatched');
+const pickupOnly: Guard = (order) => order.method === FULFILMENT_METHOD.Pickup ? null : i18n.t('jobs:order.error.deliveryNotCollected');
 const autoCompleteDue = (from: OrderStatus): Guard => (order, now) => {
   const at = orderReachedAt(order, from);
-  return at && now >= addHours(new Date(at), ORDER_AUTO_COMPLETE_HOURS) ? null : 'The customer still has time to confirm receipt.';
+  return at && now >= addHours(new Date(at), ORDER_AUTO_COMPLETE_HOURS) ? null : i18n.t('jobs:order.error.stillTime');
 };
 
 /** Rules on top of the table: a move can be allowed in principle but not for this order, or not yet. */
@@ -64,8 +79,17 @@ const GUARDS: Partial<Record<`${OrderStatus}>${OrderStatus}`, Partial<Record<Ord
   'preparing>dispatched': { vendor: deliveryOnly },
   'preparing>ready_for_pickup': { vendor: pickupOnly },
   'delivered>completed': { system: autoCompleteDue(ORDER_STATUS.Delivered) },
-  'collected>completed': { system: autoCompleteDue(ORDER_STATUS.Collected) }
+  'collected>completed': { system: autoCompleteDue(ORDER_STATUS.Collected) },
+  // Dismissing a dispute returns the order to the status it had when the problem was reported.
+  'disputed>delivered': { system: (order) => statusBeforeOrderDispute(order) === ORDER_STATUS.Delivered ? null : i18n.t('jobs:order.error.wasntDelivered') },
+  'disputed>collected': { system: (order) => statusBeforeOrderDispute(order) === ORDER_STATUS.Collected ? null : i18n.t('jobs:order.error.wasntCollected') }
 };
+
+/** The status an order had just before its latest dispute (where a dismissed dispute returns it). */
+export function statusBeforeOrderDispute(order: Pick<Order, 'history'>): OrderStatus | null {
+  const i = order.history.map((h) => h.status).lastIndexOf(ORDER_STATUS.Disputed);
+  return i > 0 ? order.history[i - 1].status : null;
+}
 
 export class OrderTransitionError extends Error {
   constructor(message: string) {
@@ -83,13 +107,14 @@ export const isOrderEndState = (status: OrderStatus) => Object.keys(ORDER_TRANSI
 
 /** Why `by` can't move the order to `to` right now, or null if they can. */
 export function orderTransitionBlockedReason(order: Order, to: OrderStatus, by: OrderActor, now = new Date()): string | null {
-  const from = ORDER_STATUS_META[order.status].label;
-  if (isOrderEndState(order.status)) return `This order is already ${from.toLowerCase()} and can’t change.`;
+  const from = orderStatusLabel(order.status, ORDER_STATUS_META[order.status].label);
+  if (isOrderEndState(order.status)) return i18n.t('jobs:order.error.ended', { status: from.toLowerCase() });
   if (to === ORDER_STATUS.Cancelled && by === Customer && !ORDER_TRANSITIONS[order.status].cancelled) {
-    return 'The vendor has started preparing your order, so it can’t be cancelled now. Contact them if there’s a problem.';
+    return i18n.t('jobs:order.error.preparing');
   }
   if (!ORDER_TRANSITIONS[order.status][to]?.includes(by)) {
-    return `An order can’t go from ${from} to ${ORDER_STATUS_META[to].label}${by === System ? '' : ` by the ${by}`}.`;
+    const toLabel = orderStatusLabel(to, ORDER_STATUS_META[to].label);
+    return by === System ? i18n.t('jobs:order.error.cantMove', { from, to: toLabel }) : i18n.t('jobs:order.error.cantMoveBy', { from, to: toLabel, by: i18n.t(`jobs:actor.${by}`).toLowerCase() });
   }
   return GUARDS[`${order.status}>${to}`]?.[by]?.(order, now) ?? null;
 }

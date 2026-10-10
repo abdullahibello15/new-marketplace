@@ -1,3 +1,4 @@
+import i18n from '../i18n';
 import React, { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -85,7 +86,7 @@ export function Lightbox({ photos, index, onIndexChange, onClose, altPrefix }: L
         ref={dialogRef}
         role="dialog"
         aria-modal="true"
-        aria-label={`${altPrefix}, photo ${current + 1} of ${count}`}
+        aria-label={i18n.t('common:photos.photoOf', { name: altPrefix, n: current + 1, total: count })}
         onKeyDown={handleKeyDown}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -97,7 +98,7 @@ export function Lightbox({ photos, index, onIndexChange, onClose, altPrefix }: L
             <p className="text-sm font-semibold tabular-nums text-white/80">
               {current + 1} / {count}
             </p>
-            <button ref={closeRef} type="button" onClick={onClose} aria-label="Close photo viewer" className={control}>
+            <button ref={closeRef} type="button" onClick={onClose} aria-label={i18n.t('common:photos.closeViewer')} className={control}>
               <XIcon className="h-5 w-5" aria-hidden="true" />
             </button>
           </div>
@@ -110,7 +111,7 @@ export function Lightbox({ photos, index, onIndexChange, onClose, altPrefix }: L
             <img
             key={photos[current]}
             src={photos[current]}
-            alt={`${altPrefix}, photo ${current + 1}`}
+            alt={i18n.t('common:photos.photoAlt', { name: altPrefix, n: current + 1 })}
             onClick={(e) => e.stopPropagation()}
             className="max-h-full max-w-full rounded-xl object-contain" />
 
@@ -118,10 +119,10 @@ export function Lightbox({ photos, index, onIndexChange, onClose, altPrefix }: L
 
           {count > 1 &&
         <div className="flex items-center justify-center gap-4">
-              <button type="button" onClick={() => go(-1)} aria-label="Previous photo" className={control}>
+              <button type="button" onClick={() => go(-1)} aria-label={i18n.t('common:photos.previous')} className={control}>
                 <ChevronLeftIcon className="h-5 w-5" aria-hidden="true" />
               </button>
-              <button type="button" onClick={() => go(1)} aria-label="Next photo" className={control}>
+              <button type="button" onClick={() => go(1)} aria-label={i18n.t('common:photos.next')} className={control}>
                 <ChevronRightIcon className="h-5 w-5" aria-hidden="true" />
               </button>
             </div>

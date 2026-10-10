@@ -1,3 +1,5 @@
+import i18n from '../../../i18n';
+import { lgaLabel, tierLabel, tradeBrowseLabel } from '../../../i18n/labels';
 import { nigerLgas } from '../../../data/nigerLgas';
 import { browseCategories } from '../../../data/tradeCategories';
 import { findVerificationTier } from '../../../data/verificationTiers';
@@ -128,32 +130,32 @@ export function countActiveFilters(f: SearchFilters): number {
 
 function priceLabel(min: number | null, max: number | null): string {
   if (min !== null && max !== null) return `${formatNaira(min)} – ${formatNaira(max)}`;
-  return min !== null ? `From ${formatNaira(min)}` : `Up to ${formatNaira(max ?? 0)}`;
+  return min !== null ? i18n.t('discovery:filters.chip.priceFrom', { amount: formatNaira(min) }) : i18n.t('discovery:filters.chip.priceUpTo', { amount: formatNaira(max ?? 0) });
 }
 
 export function activeFilterChips(f: SearchFilters): ActiveFilterChip[] {
   const chips: ActiveFilterChip[] = [];
   if (f.query) {
-    chips.push({ key: 'q', label: `“${f.query}”`, removeLabel: `Remove search “${f.query}”`, remove: (x) => ({ ...x, query: '' }) });
+    chips.push({ key: 'q', label: `“${f.query}”`, removeLabel: i18n.t('discovery:filters.chip.removeSearch', { query: f.query }), remove: (x) => ({ ...x, query: '' }) });
   }
   f.categories.forEach((id: TradeCategory) => {
-    const label = browseCategories.find((c) => c.id === id)?.browseLabel ?? id;
-    chips.push({ key: `c-${id}`, label, removeLabel: `Remove ${label}`, remove: (x) => ({ ...x, categories: x.categories.filter((c) => c !== id) }) });
+    const label = tradeBrowseLabel(id);
+    chips.push({ key: `c-${id}`, label, removeLabel: i18n.t('discovery:filters.chip.remove', { label }), remove: (x) => ({ ...x, categories: x.categories.filter((c) => c !== id) }) });
   });
   f.tiers.forEach((id: Verification) => {
-    const label = findVerificationTier(id)?.label ?? id;
-    chips.push({ key: `t-${id}`, label, removeLabel: `Remove ${label}`, remove: (x) => ({ ...x, tiers: x.tiers.filter((t) => t !== id) }) });
+    const label = tierLabel(id, findVerificationTier(id)?.label ?? id);
+    chips.push({ key: `t-${id}`, label, removeLabel: i18n.t('discovery:filters.chip.remove', { label }), remove: (x) => ({ ...x, tiers: x.tiers.filter((t) => t !== id) }) });
   });
   if (f.area.mode === AREA_MODE.Distance && f.area.radiusKm !== null) {
-    const label = `Within ${f.area.radiusKm} km`;
-    chips.push({ key: 'radius', label, removeLabel: `Remove ${label}`, remove: (x) => ({ ...x, area: DEFAULT_FILTERS.area }) });
+    const label = i18n.t('discovery:filters.chip.within', { km: f.area.radiusKm });
+    chips.push({ key: 'radius', label, removeLabel: i18n.t('discovery:filters.chip.remove', { label }), remove: (x) => ({ ...x, area: DEFAULT_FILTERS.area }) });
   }
   if (f.area.mode === AREA_MODE.Lga) {
     f.area.lgas.forEach((lga) => {
       chips.push({
         key: `l-${lga}`,
-        label: `${lga} LGA`,
-        removeLabel: `Remove ${lga} LGA`,
+        label: i18n.t('discovery:filters.chip.lga', { lga: lgaLabel(lga) }),
+        removeLabel: i18n.t('discovery:filters.chip.remove', { label: i18n.t('discovery:filters.chip.lga', { lga: lgaLabel(lga) }) }),
         remove: (x) => {
           if (x.area.mode !== AREA_MODE.Lga) return x;
           const lgas = x.area.lgas.filter((l) => l !== lga);
@@ -164,7 +166,7 @@ export function activeFilterChips(f: SearchFilters): ActiveFilterChip[] {
   }
   if (f.price.min !== null || f.price.max !== null) {
     const label = priceLabel(f.price.min, f.price.max);
-    chips.push({ key: 'price', label, removeLabel: `Remove price ${label}`, remove: (x) => ({ ...x, price: DEFAULT_FILTERS.price }) });
+    chips.push({ key: 'price', label, removeLabel: i18n.t('discovery:filters.chip.removePrice', { label }), remove: (x) => ({ ...x, price: DEFAULT_FILTERS.price }) });
   }
   return chips;
 }

@@ -1,13 +1,16 @@
-import { format } from 'date-fns';
+import { useTranslation } from 'react-i18next';
+import { orderDeclineReasonLabel, orderStatusDescription, orderStatusLabel, orderStepText } from '../../../../i18n/labels';
+import { formatDate } from '../../../../utils/format';
 import { Button } from '../../../../components/ui/Button';
 import { ConfirmDialog } from '../../../../components/ui/ConfirmDialog';
 import { ReasonDialog } from '../../../jobs/components/ReasonDialog';
 import { PublicReviewCard } from '../../../public-profile/components/reviews/PublicReviewCard';
-import { ORDER_DECLINE_REASONS, ORDER_STATUS_META, ORDER_VENDOR_STEPS } from '../../constants';
+import { ORDER_AUTO_COMPLETE_HOURS, ORDER_DECLINE_REASONS, ORDER_STATUS_META, ORDER_VENDOR_STEPS } from '../../constants';
 import { useVendorOrderActions } from '../../hooks/useVendorOrderActions';
 import { orderAutoCompleteAt } from '../../stateMachine';
 import { PaymentCard } from '../../../payments/components/PaymentCard';
 import { OrderOutcomeNotice } from '../OrderOutcomeNotice';
+import { DisputeNotice } from '../../../jobs/components/lifecycle/DisputeNotice';
 import { ConfirmOrderDialog } from './ConfirmOrderDialog';
 import type { Order } from '../../types';
 
@@ -18,6 +21,7 @@ interface VendorOrderPanelProps {
 
 /** The vendor's next step on an order: confirm or decline a new one, then one button per allowed step. */
 export function VendorOrderPanel({ order, onUpdated }: VendorOrderPanelProps) {
+  const { t } = useTranslation('vendor');
   const a = useVendorOrderActions(order, onUpdated);
   const autoAt = orderAutoCompleteAt(order);
   const pending = a.pendingStep ? ORDER_VENDOR_STEPS[a.pendingStep] : undefined;
@@ -25,19 +29,20 @@ export function VendorOrderPanel({ order, onUpdated }: VendorOrderPanelProps) {
   return (
     <div className="space-y-4">
       <OrderOutcomeNotice order={order} />
+      {order.dispute && <DisputeNotice dispute={order.dispute} viewer="vendor" />}
 
       {a.canRespond &&
       <section aria-labelledby="respond-heading" className="rounded-2xl border border-mustard bg-white p-4 lg:p-5">
-          <h2 id="respond-heading" className="text-base font-bold text-ink">New order</h2>
+          <h2 id="respond-heading" className="text-base font-bold text-ink">{t('orders.newTitle')}</h2>
           <p className="mt-1 text-sm text-muted">
-            Confirm what you can supply, or decline. If you’re out of some items, untick them when confirming and the customer isn’t charged for them.
+            {t('orders.newText')}
           </p>
           <div className="mt-4 flex flex-col gap-2 sm:flex-row lg:flex-col">
             <Button fullWidth onClick={() => a.openDialog('confirm')}>
-              Confirm order
+              {t('orders.confirm')}
             </Button>
             <Button variant="ghost" fullWidth onClick={() => a.openDialog('decline')}>
-              Decline
+              {t('orders.decline')}
             </Button>
           </div>
         </section>
@@ -45,12 +50,12 @@ export function VendorOrderPanel({ order, onUpdated }: VendorOrderPanelProps) {
 
       {a.steps.length > 0 &&
       <section aria-labelledby="next-step-heading" className="rounded-2xl border border-mustard bg-white p-4 lg:p-5">
-          <h2 id="next-step-heading" className="text-base font-bold text-ink">Next step</h2>
-          <p className="mt-1 text-sm text-muted">{ORDER_STATUS_META[order.status].description}</p>
+          <h2 id="next-step-heading" className="text-base font-bold text-ink">{t('orders.nextStep')}</h2>
+          <p className="mt-1 text-sm text-muted">{orderStatusDescription(order.status, ORDER_STATUS_META[order.status].description)}</p>
           <div className="mt-4 space-y-2">
             {a.steps.map((to) =>
           <Button key={to} fullWidth loading={a.busy === to} disabled={a.busy !== null} onClick={() => a.requestStep(to)}>
-                {ORDER_VENDOR_STEPS[to]?.label ?? ORDER_STATUS_META[to].label}
+                {ORDER_VENDOR_STEPS[to] ? orderStepText(to, 'label', ORDER_VENDOR_STEPS[to].label) : orderStatusLabel(to, ORDER_STATUS_META[to].label)}
               </Button>
           )}
           </div>
@@ -61,14 +66,14 @@ export function VendorOrderPanel({ order, onUpdated }: VendorOrderPanelProps) {
 
       {autoAt &&
       <p className="rounded-2xl border border-line bg-white p-4 text-sm text-muted">
-          Waiting for {order.customerName} to confirm receipt. It completes automatically on {format(autoAt, 'EEE d MMM, h:mm a')}.
+          {t('orders.waitingReceipt', { name: order.customerName, date: formatDate(autoAt, 'EEE d MMM, h:mm a') })}
         </p>
       }
 
       {order.review &&
       <section aria-labelledby="vendor-order-review-heading">
           <h2 id="vendor-order-review-heading" className="mb-2 text-xs font-bold uppercase tracking-wider text-muted">
-            Customer review
+            {t('orders.customerReview')}
           </h2>
           <PublicReviewCard
           vendorName={order.vendorName}
@@ -88,21 +93,21 @@ export function VendorOrderPanel({ order, onUpdated }: VendorOrderPanelProps) {
       <ConfirmOrderDialog open={a.dialog === 'confirm'} order={order} busy={a.busy === 'confirm'} onConfirm={a.confirm} onClose={a.closeDialog} />
       <ReasonDialog
         open={a.dialog === 'decline'}
-        title={`Decline order #${order.id}?`}
-        description={`${order.customerName} will be told you can’t fill this order. This can’t be undone.`}
-        reasonLabel="Why are you declining?"
-        confirmLabel="Decline order"
-        presets={ORDER_DECLINE_REASONS}
+        title={t('orders.declineTitle', { id: order.id })}
+        description={t('orders.declineText', { name: order.customerName })}
+        reasonLabel={t('orders.declineReason')}
+        confirmLabel={t('orders.declineConfirm')}
+        presets={ORDER_DECLINE_REASONS.map((p) => ({ id: p.id, label: orderDeclineReasonLabel(p.id, p.label) }))}
         required
         onConfirm={a.decline}
         onCancel={a.closeDialog} />
 
       <ConfirmDialog
         open={pending?.confirm !== undefined}
-        title={pending?.confirm?.title ?? ''}
-        description={pending?.confirm?.description}
-        confirmLabel={pending?.label ?? 'Confirm'}
-        cancelLabel="Not yet"
+        title={a.pendingStep && pending?.confirm ? orderStepText(a.pendingStep, 'confirmTitle', pending.confirm.title) : ''}
+        description={a.pendingStep && pending?.confirm ? orderStepText(a.pendingStep, 'confirmText', pending.confirm.description, { hours: ORDER_AUTO_COMPLETE_HOURS }) : undefined}
+        confirmLabel={a.pendingStep && pending ? orderStepText(a.pendingStep, 'label', pending.label) : t('orders.confirmFallback')}
+        cancelLabel={t('orders.notYet')}
         loading={a.pendingStep !== null && a.busy === a.pendingStep}
         onConfirm={() => {
           if (a.pendingStep) void a.advance(a.pendingStep);

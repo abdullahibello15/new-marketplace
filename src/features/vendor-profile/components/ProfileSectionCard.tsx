@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+import { profileSectionDescription, profileSectionLabel } from '../../../i18n/labels';
 import React from 'react';
 import { Badge } from '../../../components/ui/Badge';
 import { PROFILE_SECTIONS, profileSectionAnchor } from '../constants';
@@ -11,6 +13,7 @@ interface ProfileSectionCardProps {
 
 /** One titled group of fields. The id is the target of the section nav and of deep links. */
 export function ProfileSectionCard({ section, hasError, children }: ProfileSectionCardProps) {
+  const { t } = useTranslation('vendor');
   const meta = PROFILE_SECTIONS.find((s) => s.id === section);
   const anchor = profileSectionAnchor(section);
   return (
@@ -20,10 +23,10 @@ export function ProfileSectionCard({ section, hasError, children }: ProfileSecti
       className={`scroll-mt-20 rounded-2xl border bg-white p-4 focus:outline-none lg:p-5 ${hasError ? 'border-clay/60' : 'border-line'}`}>
 
       <div className="flex items-start justify-between gap-3">
-        <h2 id={`${anchor}-heading`} className="text-base font-bold text-ink">{meta?.label}</h2>
-        {hasError && <Badge tone="danger">Needs attention</Badge>}
+        <h2 id={`${anchor}-heading`} className="text-base font-bold text-ink">{profileSectionLabel(section, meta?.label)}</h2>
+        {hasError && <Badge tone="danger">{t('profile.needsAttention')}</Badge>}
       </div>
-      {meta?.description && <p className="mt-0.5 text-sm text-muted">{meta.description}</p>}
+      {meta?.description && <p className="mt-0.5 text-sm text-muted">{profileSectionDescription(section, meta.description)}</p>}
       <div className="mt-4">{children}</div>
     </section>);
 

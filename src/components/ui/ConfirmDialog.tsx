@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React from 'react';
 import { Button } from './Button';
 import { Dialog } from './Dialog';
@@ -20,18 +21,19 @@ export function ConfirmDialog({
   title,
   description,
   confirmLabel,
-  cancelLabel = 'Cancel',
+  cancelLabel,
   destructive = false,
   loading = false,
   onConfirm,
   onCancel
 }: ConfirmDialogProps) {
+  const { t } = useTranslation();
   return (
     <Dialog open={open} onClose={onCancel} dismissible={!loading} title={title} description={description}>
       {/* Cancel is first in the DOM so it gets initial focus; Enter on open never confirms by accident. */}
       <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
         <Button variant="secondary" onClick={onCancel} disabled={loading}>
-          {cancelLabel}
+          {cancelLabel ?? t('action.cancel')}
         </Button>
         <Button variant={destructive ? 'danger' : 'primary'} onClick={onConfirm} loading={loading}>
           {confirmLabel}

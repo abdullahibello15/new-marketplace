@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Link, useParams } from 'react-router-dom';
 import { SearchXIcon } from 'lucide-react';
 import { PageHeader } from '../../../components/PageHeader';
@@ -6,8 +7,9 @@ import { EmptyState } from '../../../components/ui/EmptyState';
 import { ErrorState } from '../../../components/ui/ErrorState';
 import { LoadingState } from '../../../components/ui/LoadingState';
 import { PageContainer } from '../../../components/ui/PageContainer';
-import { CURRENT_CUSTOMER_ID } from '../../jobs/constants';
+import { useAuth } from '../../auth/hooks/useAuth';
 import { vendorProfilePath } from '../../public-profile/constants';
+import { orderStatusDescription } from '../../../i18n/labels';
 import { ORDER_ACTOR, ORDER_ROUTES, ORDER_STATUS_META } from '../constants';
 import { CustomerOrderPanel } from '../components/customer/CustomerOrderPanel';
 import { OrderFulfilmentDetails } from '../components/OrderFulfilmentDetails';
@@ -17,17 +19,19 @@ import { OrderStatusHistory } from '../components/OrderStatusHistory';
 import { OrderTimeline } from '../components/OrderTimeline';
 import { useOrder } from '../hooks/useOrder';
 
-const BACK = { to: ORDER_ROUTES.myOrders, label: 'My Orders' };
 
 /** Customer's order page: timeline for the order's path, items, pickup/delivery details, actions and history. */
 export function OrderDetailsSection() {
+  const { t } = useTranslation('jobs');
+  const BACK = { to: ORDER_ROUTES.myOrders, label: t('order.page.back') };
+  const { user } = useAuth();
   const { orderId = '' } = useParams();
   const { order, notFound, status, error, reload, replace } = useOrder(orderId);
 
   if (status === 'error') {
     return (
       <>
-        <PageHeader title={`Order #${orderId}`} backTo={BACK} />
+        <PageHeader title={t('order.page.title', { id: orderId })} backTo={BACK} />
         <PageContainer width="narrow">
           <ErrorState message={error ?? ''} onRetry={reload} />
         </PageContainer>
@@ -35,17 +39,17 @@ export function OrderDetailsSection() {
 
   }
   // An order that isn't this customer's is treated as not found.
-  if (notFound || order && order.customerId !== CURRENT_CUSTOMER_ID) {
+  if (notFound || order && order.customerId !== user?.id) {
     return (
       <>
-        <PageHeader title="Order not found" backTo={BACK} />
+        <PageHeader title={t('order.page.notFoundTitle')} backTo={BACK} />
         <PageContainer width="narrow">
           <EmptyState
             icon={SearchXIcon}
-            title="We couldn’t find that order"
+            title={t('order.page.notFoundHeading')}
             action={
             <Link to={ORDER_ROUTES.myOrders} className={buttonClasses({ variant: 'secondary', size: 'sm' })}>
-                Back to My Orders
+                {t('order.page.backToMine')}
               </Link>
             } />
 
@@ -56,9 +60,9 @@ export function OrderDetailsSection() {
   if (!order) {
     return (
       <>
-        <PageHeader title={`Order #${orderId}`} backTo={BACK} />
+        <PageHeader title={t('order.page.title', { id: orderId })} backTo={BACK} />
         <PageContainer width="narrow">
-          <LoadingState label="Loading order" rows={3} rowClassName="h-40" />
+          <LoadingState label={t('order.page.loading')} rows={3} rowClassName="h-40" />
         </PageContainer>
       </>);
 
@@ -66,14 +70,14 @@ export function OrderDetailsSection() {
 
   return (
     <>
-      <PageHeader title={`Order #${order.id}`} subtitle={`${order.vendorName} · checkout ${order.checkoutRef}`} backTo={BACK}>
+      <PageHeader title={t('order.page.title', { id: order.id })} subtitle={t('order.page.subtitle', { name: order.vendorName, ref: order.checkoutRef })} backTo={BACK}>
         <div className="flex flex-wrap items-center gap-2">
           <OrderStatusBadge status={order.status} />
-          <span className="text-sm text-white/85">{ORDER_STATUS_META[order.status].description}</span>
+          <span className="text-sm text-white/85">{orderStatusDescription(order.status, ORDER_STATUS_META[order.status].description)}</span>
         </div>
       </PageHeader>
       <PageContainer className="space-y-5">
-        <section aria-label="Progress" className="rounded-2xl border border-line bg-white p-4 lg:p-6">
+        <section aria-label={t('order.page.progress')} className="rounded-2xl border border-line bg-white p-4 lg:p-6">
           <OrderTimeline order={order} />
         </section>
         <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
@@ -81,11 +85,11 @@ export function OrderDetailsSection() {
             <OrderItemsList order={order} />
             <OrderFulfilmentDetails order={order} />
           </div>
-          <aside className="space-y-5 lg:sticky lg:top-6 lg:self-start" aria-label="Actions and activity">
+          <aside className="space-y-5 lg:sticky lg:top-6 lg:self-start" aria-label={t('order.page.aside')}>
             <CustomerOrderPanel order={order} onUpdated={replace} />
             <OrderStatusHistory order={order} viewer={ORDER_ACTOR.Customer} />
             <Link to={vendorProfilePath(order.vendorId)} className={buttonClasses({ variant: 'secondary', fullWidth: true })}>
-              View {order.vendorName}
+              {t('order.page.viewVendor', { name: order.vendorName })}
             </Link>
           </aside>
         </div>

@@ -162,17 +162,22 @@ export const DISPUTE_REASON_LABELS: Record<DisputeReason, string> = {
   other: 'Something else'
 };
 
-/** How Gwani's team can resolve a dispute. Release → Completed, refund → Cancelled, split → Completed with part refunded. */
+/**
+ * How Gwani's team can resolve a dispute. Release → Completed, refund → Cancelled, split → Completed with part
+ * refunded, dismiss → back to the status it had before the problem was reported (the money is held again).
+ */
 export const DISPUTE_OUTCOME = {
   ReleaseToVendor: 'release',
   RefundCustomer: 'refund',
-  Split: 'split'
+  Split: 'split',
+  Dismiss: 'dismiss'
 } as const;
 
 export const DISPUTE_OUTCOME_LABELS: Record<DisputeOutcome, string> = {
   release: 'Resolved in the vendor’s favour',
   refund: 'Resolved in the customer’s favour: full refund',
-  split: 'Resolved with a partial refund'
+  split: 'Resolved with a partial refund',
+  dismiss: 'Dispute dismissed: the job carries on'
 };
 
 export const DISPUTE_DETAILS_MIN = 10;
@@ -240,8 +245,6 @@ export const QUOTE_EXPIRY_OPTIONS: {hours: number;label: string;}[] = [
 { hours: 168, label: '1 week' }];
 
 
-/** The signed-in customer in this front-end-only build. A real app gets this from the session. */
-export const CURRENT_CUSTOMER_ID = 'cust-aisha';
 
 /** How often an open job page checks for changes made by the other side. */
 export const JOB_POLL_INTERVAL_MS = 20_000;

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useId } from 'react';
 
 interface DemoSimulatorProps<T extends string> {
@@ -12,10 +13,11 @@ interface DemoSimulatorProps<T extends string> {
  * for part of the real flow. Hidden when SHOW_PAYMENT_SIMULATOR is off.
  */
 export function DemoSimulator<T extends string>({ title, options, value, onChange }: DemoSimulatorProps<T>) {
+  const { t } = useTranslation('payments');
   const name = useId();
   return (
     <fieldset className="rounded-xl border border-dashed border-mustard bg-[#FBF3DC]/60 px-3 py-2.5 text-sm">
-      <legend className="px-1 text-xs font-bold uppercase tracking-wider text-mustard-dark">Demo · {title}</legend>
+      <legend className="px-1 text-xs font-bold uppercase tracking-wider text-mustard-dark">{t('demo', { title })}</legend>
       <div className="flex flex-wrap gap-x-4 gap-y-1">
         {options.map((o) =>
         <label key={o.id} className="flex items-center gap-1.5 text-ink">

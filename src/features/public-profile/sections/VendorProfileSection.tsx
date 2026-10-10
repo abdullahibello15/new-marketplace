@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { SearchXIcon } from 'lucide-react';
@@ -8,7 +9,6 @@ import { ErrorState } from '../../../components/ui/ErrorState';
 import { PageContainer } from '../../../components/ui/PageContainer';
 import { SEARCH_ROUTE } from '../../discovery/constants';
 import { JOB_ROUTES } from '../../jobs/constants';
-import { BOOK_ACTION_LABEL } from '../constants';
 import { AboutSection } from '../components/AboutSection';
 import { BookButton } from '../components/booking/BookButton';
 import { BookingDialog } from '../components/booking/BookingDialog';
@@ -22,10 +22,10 @@ import { useVendorProfile } from '../hooks/useVendorProfile';
 import { bookableItems } from '../utils/bookableItems';
 import { bookingBlockedReason } from '../utils/profileText';
 
-const HOME = { to: '/', label: 'Home' };
-
 /** Customer-facing vendor profile at /vendors/:vendorId. */
 export function VendorProfileSection() {
+  const { t } = useTranslation('discovery');
+  const HOME = { to: '/', label: t('profile.home') };
   const { vendorId = '' } = useParams();
   const { profile, notFound, status, error, reload } = useVendorProfile(vendorId);
   const [bookingOpen, setBookingOpen] = useState(false);
@@ -35,7 +35,7 @@ export function VendorProfileSection() {
   if (status === 'error') {
     return (
       <>
-        <PageHeader title="Vendor profile" backTo={HOME} />
+        <PageHeader title={t('profile.title')} backTo={HOME} />
         <PageContainer width="narrow">
           <ErrorState message={error ?? ''} onRetry={reload} />
         </PageContainer>
@@ -45,15 +45,15 @@ export function VendorProfileSection() {
   if (notFound) {
     return (
       <>
-        <PageHeader title="Vendor not found" backTo={HOME} />
+        <PageHeader title={t('profile.notFoundTitle')} backTo={HOME} />
         <PageContainer width="narrow">
           <EmptyState
             icon={SearchXIcon}
-            title="We couldn’t find that vendor"
-            description="They may have closed their account, or the link is wrong."
+            title={t('profile.notFoundHeading')}
+            description={t('profile.notFoundText')}
             action={
             <Link to={SEARCH_ROUTE} className={buttonClasses({ variant: 'secondary', size: 'sm' })}>
-                Browse vendors
+                {t('profile.browse')}
               </Link>
             } />
 
@@ -64,7 +64,7 @@ export function VendorProfileSection() {
   if (!profile) return <ProfileSkeleton />;
 
   const { vendor, kind } = profile;
-  const label = BOOK_ACTION_LABEL[kind];
+  const label = t(`profile.action.${kind}`);
   const blockedReason = bookingBlockedReason(vendor, kind, items.length > 0);
   // Service vendors get the full job request flow; retail vendors keep the quick Request dialog.
   const startBooking = () => kind === 'service' ? navigate(JOB_ROUTES.request(vendor.id)) : setBookingOpen(true);

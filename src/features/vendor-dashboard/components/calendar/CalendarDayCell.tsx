@@ -1,14 +1,17 @@
-import { format } from 'date-fns';
+import { useTranslation } from 'react-i18next';
+import i18n from '../../../../i18n';
+import { formatDate as format } from '../../../../utils/format';
 import { formatTime } from '../../../../utils/format';
 import { CALENDAR_VIEW } from '../../constants';
 import type { CalendarDay, CalendarView, DayAvailability } from '../../types';
 
 const WEEK_PREVIEW_LIMIT = 3;
 
+/** `label` is the short word on the cell (none when open); `spoken` is read out by screen readers. Both are translation keys. */
 const AVAILABILITY: Record<DayAvailability, {label: string;spoken: string;cell: string;}> = {
-  open: { label: '', spoken: 'Open', cell: 'bg-white text-ink hover:bg-cream' },
-  closed: { label: 'Closed', spoken: 'Outside working hours', cell: 'bg-sand text-muted' },
-  blocked: { label: 'Day off', spoken: 'Day off', cell: 'bg-clay-soft text-clay-dark' }
+  open: { label: '', spoken: 'vendor:calendar.open', cell: 'bg-white text-ink hover:bg-cream' },
+  closed: { label: 'vendor:calendar.closedShort', spoken: 'vendor:calendar.outsideHours', cell: 'bg-sand text-muted' },
+  blocked: { label: 'vendor:calendar.dayOff', spoken: 'vendor:calendar.dayOff', cell: 'bg-clay-soft text-clay-dark' }
 };
 
 interface CalendarDayCellProps {
@@ -20,11 +23,15 @@ interface CalendarDayCellProps {
 
 function spokenLabel(day: CalendarDay): string {
   const n = day.bookings.length;
-  const bookings = n === 0 ? 'no bookings' : `${n} ${n === 1 ? 'booking' : 'bookings'}`;
-  return `${format(day.date, 'EEEE d MMMM')}${day.isToday ? ', today' : ''}. ${AVAILABILITY[day.availability].spoken}, ${bookings}.`;
+  return i18n.t(day.isToday ? 'vendor:calendar.spokenToday' : 'vendor:calendar.spoken', {
+    date: format(day.date, 'EEEE d MMMM'),
+    availability: i18n.t(AVAILABILITY[day.availability].spoken),
+    bookings: n === 0 ? i18n.t('vendor:calendar.noBookingsLower') : i18n.t('vendor:calendar.bookings', { count: n })
+  });
 }
 
 export function CalendarDayCell({ day, view, selected, onSelect }: CalendarDayCellProps) {
+  const { t } = useTranslation();
   const a = AVAILABILITY[day.availability];
   const n = day.bookings.length;
   const isWeek = view === CALENDAR_VIEW.Week;
@@ -49,7 +56,7 @@ export function CalendarDayCell({ day, view, selected, onSelect }: CalendarDayCe
         {format(day.date, 'd')}
       </span>
 
-      {a.label && <span className="mt-0.5 hidden text-[11px] font-bold sm:block">{a.label}</span>}
+      {a.label && <span className="mt-0.5 hidden text-[11px] font-bold sm:block">{t(a.label)}</span>}
 
       {n > 0 &&
       <>
@@ -68,12 +75,12 @@ export function CalendarDayCell({ day, view, selected, onSelect }: CalendarDayCe
                 </span>
           )}
               {n > WEEK_PREVIEW_LIMIT &&
-          <span className="block px-1.5 text-[11px] font-semibold text-muted">+{n - WEEK_PREVIEW_LIMIT} more</span>
+          <span className="block px-1.5 text-[11px] font-semibold text-muted">{t('vendor:calendar.more', { count: n - WEEK_PREVIEW_LIMIT })}</span>
           }
             </span> :
 
         <span className="mt-auto hidden rounded bg-pine px-1.5 text-[11px] font-bold leading-5 text-white sm:inline-block" aria-hidden="true">
-              {n} {n === 1 ? 'job' : 'jobs'}
+              {t('vendor:calendar.jobs', { count: n })}
             </span>
         }
         </>

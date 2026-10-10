@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useFormContext, useWatch } from 'react-hook-form';
 import { FormField } from '../../../../components/ui/FormField';
 import { bad, field, ok } from '../../../../components/vendor/formStyles';
@@ -6,6 +7,7 @@ import type { JobRequestFormData, JobRequestFormValues } from '../../schemas';
 import type { ServiceItem } from '../../../../types/vendorPortal';
 
 export function JobDescriptionFields({ services }: {services: ServiceItem[];}) {
+  const { t } = useTranslation('jobs');
   const {
     register,
     control,
@@ -17,10 +19,10 @@ export function JobDescriptionFields({ services }: {services: ServiceItem[];}) {
   return (
     <>
       {services.length > 0 &&
-      <FormField id="job-service" label="Service (optional)" hint="Not sure? Leave it and describe the problem below.">
+      <FormField id="job-service" label={t('request.service')} hint={t('request.serviceHint')}>
           {(describedBy) =>
         <select id="job-service" {...register('serviceName')} aria-describedby={describedBy} className={`${field} ${ok}`}>
-              <option value="">I’m not sure</option>
+              <option value="">{t('request.notSure')}</option>
               {services.map((s) =>
           <option key={s.id} value={s.name}>
                   {s.name}
@@ -33,12 +35,12 @@ export function JobDescriptionFields({ services }: {services: ServiceItem[];}) {
 
       <FormField
         id="job-description"
-        label="Describe the job"
-        hint="What’s wrong, where it is, and anything the vendor should bring."
+        label={t('request.describe')}
+        hint={t('request.describeHint')}
         error={errors.description?.message}
         aside={
         <span className={`text-xs font-semibold tabular-nums ${short || length > JOB_DESCRIPTION_MAX ? 'text-clay-dark' : 'text-muted'}`}>
-            {length < JOB_DESCRIPTION_MIN ? `${length}/${JOB_DESCRIPTION_MIN} min` : `${length}/${JOB_DESCRIPTION_MAX}`}
+            {length < JOB_DESCRIPTION_MIN ? t('request.minCount', { n: length, min: JOB_DESCRIPTION_MIN }) : `${length}/${JOB_DESCRIPTION_MAX}`}
           </span>
         }>
 
@@ -50,7 +52,7 @@ export function JobDescriptionFields({ services }: {services: ServiceItem[];}) {
           aria-invalid={Boolean(errors.description)}
           aria-required="true"
           aria-describedby={describedBy}
-          placeholder="e.g. Kitchen tap drips even when fully closed. It’s a single-lever mixer, about 5 years old."
+          placeholder={t('request.descriptionPlaceholder')}
           className={`${field} resize-y ${errors.description ? bad : ok}`} />
 
         }

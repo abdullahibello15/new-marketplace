@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { SegmentedControl, type SegmentOption } from '../../../../components/ui/SegmentedControl';
 import { STAR_LEVELS } from '../../constants';
 import type { RatingFilter as RatingFilterValue, ReviewStats } from '../../types';
@@ -13,15 +14,16 @@ const toId = (v: RatingFilterValue) => String(v);
 const fromId = (id: string): RatingFilterValue => id === 'all' ? 'all' : Number(id) as RatingFilterValue;
 
 export function RatingFilter({ value, onChange, stats }: RatingFilterProps) {
+  const { t } = useTranslation();
   const options: SegmentOption<string>[] = [
-  { id: 'all', label: 'All', count: stats.total },
+  { id: 'all', label: t('jobs:filter.all'), count: stats.total },
   ...STAR_LEVELS.map((level) => ({
     id: toId(level),
     label: `${level}★`,
-    ariaLabel: `${level} ${level === 1 ? 'star' : 'stars'}`,
+    ariaLabel: t('stars.count', { count: level }),
     count: stats.counts[level]
   }))];
 
 
-  return <SegmentedControl label="Filter by rating" options={options} value={toId(value)} onChange={(id) => onChange(fromId(id))} />;
+  return <SegmentedControl label={t('vendor:reviews.filter')} options={options} value={toId(value)} onChange={(id) => onChange(fromId(id))} />;
 }

@@ -1,7 +1,6 @@
 import { format } from 'date-fns';
 import { Button } from '../../../../components/ui/Button';
-import { REMINDER_RULES } from '../../config';
-import { REMINDER_STATUS, REMINDER_STATUS_LABELS, SMS_SEGMENT_LENGTH } from '../../constants';
+import { REMINDER_STATUS, REMINDER_STATUS_LABELS, REMINDER_TOPIC, SMS_SEGMENT_LENGTH } from '../../constants';
 import { useNow } from '../../hooks/useNow';
 import { timeToFire } from '../../utils/countdown';
 import type { ScheduledReminder } from '../../types';
@@ -22,7 +21,7 @@ export function DevReminderTable({ reminders, busy, onSendNow }: DevReminderTabl
         <caption className="sr-only">Scheduled reminders</caption>
         <thead className="border-b border-line text-xs uppercase tracking-wider text-muted">
           <tr>
-            <th scope="col" className="px-3 py-2">Job</th>
+            <th scope="col" className="px-3 py-2">About</th>
             <th scope="col" className="px-3 py-2">To</th>
             <th scope="col" className="px-3 py-2">Rule</th>
             <th scope="col" className="px-3 py-2">Fires at</th>
@@ -38,9 +37,9 @@ export function DevReminderTable({ reminders, busy, onSendNow }: DevReminderTabl
             const long = r.message.sms.length > SMS_SEGMENT_LENGTH;
             return (
               <tr key={r.id} className={pending ? '' : 'text-muted'}>
-                <td className="px-3 py-2 font-semibold">#{r.jobId}</td>
+                <td className="px-3 py-2 font-semibold">{r.topic === REMINDER_TOPIC.Booking ? `#${r.jobId}` : r.subscriptionKey}</td>
                 <td className="px-3 py-2">{r.recipient}</td>
-                <td className="px-3 py-2">{REMINDER_RULES.find((x) => x.id === r.ruleId)?.lead} before</td>
+                <td className="px-3 py-2">{r.label}</td>
                 <td className="whitespace-nowrap px-3 py-2">{format(new Date(r.fireAt), 'EEE d MMM, HH:mm:ss')}</td>
                 <td className="whitespace-nowrap px-3 py-2 font-mono">{pending ? timeToFire(r.fireAt, now) : '—'}</td>
                 <td className="px-3 py-2">

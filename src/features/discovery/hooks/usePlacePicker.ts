@@ -1,3 +1,4 @@
+import i18n from '../../../i18n';
 import { useMemo, useState } from 'react';
 import { useAsyncData } from '../../../hooks/useAsyncData';
 import { useToast } from '../../../hooks/useToast';
@@ -36,7 +37,7 @@ export function usePlacePicker() {
     try {
       choose(await detectCurrentPlace());
     } catch (e) {
-      toast.error(errorMessage(e, 'We couldn’t find your location. Pick your area from the list instead.'));
+      toast.error(errorMessage(e, i18n.t('discovery:place.locateFailed')));
     } finally {
       setDetecting(false);
     }

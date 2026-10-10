@@ -1,8 +1,10 @@
+import { useTranslation } from 'react-i18next';
 import { Controller, useFormContext } from 'react-hook-form';
 import { MapPinIcon, StoreIcon, TruckIcon } from 'lucide-react';
 import { Price } from '../../../../components/ui/Price';
 import { SegmentedControl } from '../../../../components/ui/SegmentedControl';
 import { errorText } from '../../../../components/vendor/formStyles';
+import { fulfilmentMethodLabel } from '../../../../i18n/labels';
 import { FULFILMENT_METHOD, FULFILMENT_METHOD_LABELS } from '../../constants';
 import { deliveryBlockedReason, enabledMethods, listAreas } from '../../utils/fulfilment';
 import { ItemThumb } from '../ItemThumb';
@@ -21,6 +23,7 @@ interface CheckoutVendorCardProps {
 
 /** One vendor's order at checkout: its items, pickup or delivery, what that means, and the order total. */
 export function CheckoutVendorCard({ index, group, vendor, totals, deliveryLga }: CheckoutVendorCardProps) {
+  const { t } = useTranslation('jobs');
   const { control, formState } = useFormContext<CheckoutFormValues, unknown, CheckoutFormData>();
   const methods = enabledMethods(vendor.fulfilment);
   const { pickup, delivery } = vendor.fulfilment;
@@ -35,7 +38,7 @@ export function CheckoutVendorCard({ index, group, vendor, totals, deliveryLga }
           <StoreIcon className="h-4 w-4 shrink-0 text-muted" aria-hidden="true" />
           <span className="truncate">{group.vendorName}</span>
         </h2>
-        <span className="shrink-0 text-xs font-bold uppercase tracking-wider text-muted">Order {index + 1}</span>
+        <span className="shrink-0 text-xs font-bold uppercase tracking-wider text-muted">{t('order.checkout.orderN', { n: index + 1 })}</span>
       </div>
 
       <ul className="mt-3 space-y-2">
@@ -58,19 +61,19 @@ export function CheckoutVendorCard({ index, group, vendor, totals, deliveryLga }
           const problem = fieldError ?? liveProblem;
           return (
             <div className="mt-4" aria-describedby={problem ? errorId : undefined}>
-              <p className="mb-1.5 text-sm font-bold text-muted">How do you want to get it?</p>
+              <p className="mb-1.5 text-sm font-bold text-muted">{t('order.checkout.how')}</p>
               {methods.length > 1 ?
               <SegmentedControl
-                label={`Pickup or delivery for ${group.vendorName}`}
-                options={methods.map((m) => ({ id: m, label: FULFILMENT_METHOD_LABELS[m] }))}
+                label={t('order.checkout.methodFor', { name: group.vendorName })}
+                options={methods.map((m) => ({ id: m, label: fulfilmentMethodLabel(m, FULFILMENT_METHOD_LABELS[m]) }))}
                 value={field.value}
                 onChange={field.onChange}
                 fill /> :
 
 
               <p className="rounded-xl bg-sand px-3 py-2 text-sm font-bold text-ink">
-                  {FULFILMENT_METHOD_LABELS[field.value]} only
-                  <span className="font-normal text-muted"> · {group.vendorName} doesn’t offer {field.value === FULFILMENT_METHOD.Delivery ? 'pickup' : 'delivery'}.</span>
+                  {t('order.checkout.onlyMethod', { method: fulfilmentMethodLabel(field.value, FULFILMENT_METHOD_LABELS[field.value]) })}
+                  <span className="font-normal text-muted">{field.value === FULFILMENT_METHOD.Delivery ? t('order.checkout.noPickup', { name: group.vendorName }) : t('order.checkout.noDelivery', { name: group.vendorName })}</span>
                 </p>
               }
 
@@ -78,9 +81,9 @@ export function CheckoutVendorCard({ index, group, vendor, totals, deliveryLga }
               <div className="mt-3 flex gap-2 rounded-xl bg-[#E3EEEC] px-3 py-2.5 text-sm text-ink">
                   <MapPinIcon className="mt-0.5 h-4 w-4 shrink-0 text-pine" aria-hidden="true" />
                   <div>
-                    <p className="font-bold">Collect from {pickup.address}</p>
+                    <p className="font-bold">{t('order.checkout.collectFrom', { address: pickup.address })}</p>
                     {pickup.instructions && <p className="text-muted">{pickup.instructions}</p>}
-                    <p className="mt-1 text-muted">You’ll be told when it’s ready for pickup.</p>
+                    <p className="mt-1 text-muted">{t('order.checkout.readyTold')}</p>
                   </div>
                 </div> :
 
@@ -88,9 +91,9 @@ export function CheckoutVendorCard({ index, group, vendor, totals, deliveryLga }
                   <TruckIcon className="mt-0.5 h-4 w-4 shrink-0 text-pine" aria-hidden="true" />
                   <div>
                     <p className="font-bold">
-                      Delivery fee: {delivery.fee ? <Price amount={delivery.fee} /> : 'Free'}
+                      {t('order.checkout.deliveryFee')} {delivery.fee ? <Price amount={delivery.fee} /> : t('order.checkout.free')}
                     </p>
-                    <p className="text-muted">Delivers to {listAreas(delivery.areas)} LGA{delivery.areas.length === 1 ? '' : 's'}. Uses the delivery details below.</p>
+                    <p className="text-muted">{t('order.checkout.deliversTo', { areas: listAreas(delivery.areas), count: delivery.areas.length })}</p>
                   </div>
                 </div>
               }
@@ -106,17 +109,17 @@ export function CheckoutVendorCard({ index, group, vendor, totals, deliveryLga }
 
       <dl className="mt-4 space-y-1 border-t border-line pt-3 text-sm">
         <div className="flex justify-between gap-3">
-          <dt className="text-muted">Items</dt>
+          <dt className="text-muted">{t('order.checkout.items')}</dt>
           <dd>
             <Price amount={totals.subtotal} className="text-ink" />
           </dd>
         </div>
         <div className="flex justify-between gap-3">
-          <dt className="text-muted">Delivery</dt>
-          <dd className="text-ink">{totals.deliveryFee ? <Price amount={totals.deliveryFee} /> : 'Free'}</dd>
+          <dt className="text-muted">{t('order.checkout.delivery')}</dt>
+          <dd className="text-ink">{totals.deliveryFee ? <Price amount={totals.deliveryFee} /> : t('order.checkout.free')}</dd>
         </div>
         <div className="flex justify-between gap-3">
-          <dt className="font-bold text-ink">Order total</dt>
+          <dt className="font-bold text-ink">{t('order.checkout.orderTotal')}</dt>
           <dd>
             <Price amount={totals.total} className="font-extrabold text-ink" />
           </dd>

@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useAsyncData } from '../../../hooks/useAsyncData';
 import { usePhotoListField } from '../../../hooks/usePhotoListField';
 import { useToast } from '../../../hooks/useToast';
+import i18n from '../../../i18n';
 import { errorMessage } from '../../../lib/errors';
 import { placeLabel } from '../../discovery/constants';
 import { usePlace } from '../../discovery/hooks/usePlace';
@@ -45,7 +46,7 @@ export function useJobRequestForm(vendor: Vendor) {
     async (data) => {
       const chosen = places.data?.find((p) => p.id === data.placeId);
       if (!chosen) {
-        form.setError('placeId', { message: 'Choose your town or LGA.' }, { shouldFocus: true });
+        form.setError('placeId', { message: i18n.t('jobs:form.choosePlace') }, { shouldFocus: true });
         return;
       }
       try {
@@ -59,12 +60,12 @@ export function useJobRequestForm(vendor: Vendor) {
           address: { landmark: data.landmark, placeId: chosen.id, placeLabel: placeLabel(chosen), lga: chosen.lga, coordinates: data.coordinates }
         });
         setCreated(job);
-        toast.success(`Request sent to ${vendor.name}.`);
+        toast.success(i18n.t('jobs:toast.requestSent', { name: vendor.name }));
       } catch (e) {
         toast.error(errorMessage(e));
       }
     },
-    () => toast.error('Some details need fixing before you can send the request.')
+    () => toast.error(i18n.t('jobs:toast.fixDetails'))
   );
 
   /** MOCK: the real version would use navigator.geolocation; see placeService.detectCurrentPlace. */
@@ -74,9 +75,9 @@ export function useJobRequestForm(vendor: Vendor) {
       const found = await detectCurrentPlace();
       form.setValue('placeId', found.id, { shouldDirty: true, shouldValidate: true });
       form.setValue('coordinates', found.coordinates, { shouldDirty: true });
-      toast.success(`Area set to ${placeLabel(found)}. Add your street or a landmark too.`);
+      toast.success(i18n.t('jobs:toast.areaSet', { place: placeLabel(found) }));
     } catch (e) {
-      toast.error(errorMessage(e, 'We couldn’t find your location. Choose your area from the list.'));
+      toast.error(errorMessage(e, i18n.t('jobs:toast.locateFailed')));
     } finally {
       setLocating(false);
     }

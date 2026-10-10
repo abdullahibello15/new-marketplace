@@ -1,4 +1,7 @@
-import { format } from 'date-fns';
+import { useTranslation } from 'react-i18next';
+import i18n from '../../../../i18n';
+import { planName } from '../../../../i18n/labels';
+import { formatDate } from '../../../../utils/format';
 import { Loader2Icon } from 'lucide-react';
 import { ConfirmDialog } from '../../../../components/ui/ConfirmDialog';
 import { Price } from '../../../../components/ui/Price';
@@ -13,27 +16,36 @@ interface PlanActionDialogProps {
   onCancel: () => void;
 }
 
-const day = (iso: string) => format(new Date(iso), 'EEE d MMM yyyy');
+const day = (iso: string) => formatDate(iso, 'EEE d MMM yyyy');
+const tt = (key: string, options: Record<string, unknown>) => i18n.t(`vendor:subscription.effect.${key}`, options);
 
 /** When the change applies, in words. */
-function effectText(q: InvoiceQuote, planName: string): string {
+function effectText(q: InvoiceQuote, name: string): string {
   switch (q.kind) {
     case INVOICE_KIND.Upgrade:
-      return `${planName} starts as soon as the payment goes through. Your renewal date stays ${day(q.periodEnd)}.`;
+      return tt('upgrade', { plan: name, date: day(q.periodEnd) });
     case INVOICE_KIND.Downgrade:
-      return `You keep your current plan until it ends. ${planName} starts on ${day(q.effectiveAt)} and runs until ${day(q.periodEnd)}.`;
+      return tt('downgrade', { plan: name, start: day(q.effectiveAt), end: day(q.periodEnd) });
     case INVOICE_KIND.Subscribe:
-      return `${planName} starts as soon as the payment goes through, and your profile is visible again. It runs until ${day(q.periodEnd)}.`;
+      return tt('subscribe', { plan: name, date: day(q.periodEnd) });
     case INVOICE_KIND.Renew:
-      return `Adds a month: ${planName} then runs until ${day(q.periodEnd)}.`;
+    case INVOICE_KIND.BundleRenewal:
+      return tt('renew', { plan: name, date: day(q.periodEnd) });
+    case INVOICE_KIND.BundleMembers:
+      return tt('members', { date: day(q.periodEnd) });
   }
 }
 
 /** Shows exactly what will be charged (with the proration working for upgrades) before going to payment. */
 export function PlanActionDialog({ action, loading, onConfirm, onCancel }: PlanActionDialogProps) {
+  const { t } = useTranslation('vendor');
   const q = action?.quote ?? null;
-  const name = action?.plan.name ?? '';
-  const title = action?.kind === 'renew' ? `Renew ${name}?` : q?.kind === INVOICE_KIND.Upgrade ? `Upgrade to ${name}?` : `Switch to ${name}?`;
+  const name = action ? planName(action.plan.id, action.plan.name) : '';
+  const title = action?.kind === 'renew' ?
+  t('subscription.dialog.renew', { plan: name }) :
+  q?.kind === INVOICE_KIND.Upgrade ?
+  t('subscription.dialog.upgrade', { plan: name }) :
+  t('subscription.dialog.switch', { plan: name });
 
   return (
     <ConfirmDialog
@@ -43,7 +55,7 @@ export function PlanActionDialog({ action, loading, onConfirm, onCancel }: PlanA
       !q ?
       <span role="status" className="flex items-center gap-2">
             <Loader2Icon className="h-4 w-4 animate-spin" aria-hidden="true" />
-            Working out the price…
+            {t('subscription.dialog.working')}
           </span> :
 
       <span className="block space-y-3">
@@ -59,14 +71,14 @@ export function PlanActionDialog({ action, loading, onConfirm, onCancel }: PlanA
                 </span>
           )}
               <span className="mt-2 flex justify-between gap-3 border-t border-line pt-2 font-bold text-ink">
-                <span>To pay now</span>
+                <span>{t('subscription.dialog.toPay')}</span>
                 <Price amount={q.amount} />
               </span>
             </span>
-            <span className="block text-xs">You’ll pay by card, bank transfer or USSD on the next screen.</span>
+            <span className="block text-xs">{t('subscription.dialog.payNext')}</span>
           </span>
       }
-      confirmLabel="Continue to payment"
+      confirmLabel={t('subscription.dialog.continue')}
       loading={loading || !q}
       onConfirm={onConfirm}
       onCancel={onCancel} />);

@@ -1,3 +1,4 @@
+import i18n from '../i18n';
 /**
  * The seam between mock data and a real backend. Every service resolves through `mockResponse`, so
  * swapping a service body for a `fetch` call later doesn't change any caller: they already await a
@@ -26,7 +27,7 @@ export function mockResponse<T>(produce: () => T, latencyMs = MOCK_LATENCY_MS): 
       try {
         resolve(structuredClone(produce()));
       } catch (error) {
-        reject(error instanceof Error ? error : new ApiError('Something went wrong. Please try again.'));
+        reject(error instanceof Error ? error : new ApiError(i18n.t('common:error.generic')));
       }
     }, latencyMs);
   });

@@ -1,4 +1,5 @@
 import { productCategories } from '../data/productCategories';
+import i18n from '../i18n';
 import type { Product, ProductCategory, StockFilter, StockStatus } from '../types/marketplace';
 
 /** Rules shared by the product form and the spreadsheet import, so both reject the same things. */
@@ -64,17 +65,17 @@ interface ProductFields {
 export function validateProductFields(p: ProductFields, { requireImage }: {requireImage: boolean;}): ProductFieldErrors {
   const e: ProductFieldErrors = {};
   const name = p.name.trim();
-  if (!name) e.name = 'Name is missing.';else
-  if (name.length > PRODUCT_NAME_MAX) e.name = `Name is longer than ${PRODUCT_NAME_MAX} characters.`;
-  if (!p.category) e.category = 'Choose a category.';
-  if (p.price === null) e.price = 'Price must be a number, like 6500.';else
-  if (p.price <= 0) e.price = 'Price must be more than ₦0.';else
-  if (p.price > PRODUCT_PRICE_MAX) e.price = 'Price looks too high. Check for extra zeros.';
-  if (p.stock === null) e.stock = 'Stock must be a whole number, like 12.';else
-  if (p.stock > PRODUCT_STOCK_MAX) e.stock = 'Stock looks too high. Check for extra zeros.';
-  if (p.description.trim().length > PRODUCT_DESCRIPTION_MAX) e.description = `Description is longer than ${PRODUCT_DESCRIPTION_MAX} characters.`;
-  if (p.images.length > PRODUCT_IMAGES_MAX) e.images = `Use ${PRODUCT_IMAGES_MAX} photos or fewer.`;else
-  if (requireImage && p.images.length === 0) e.images = 'Add at least one photo.';
+  if (!name) e.name = i18n.t('vendor:products.err.nameMissing');else
+  if (name.length > PRODUCT_NAME_MAX) e.name = i18n.t('vendor:products.err.nameLong', { max: PRODUCT_NAME_MAX });
+  if (!p.category) e.category = i18n.t('vendor:products.err.category');
+  if (p.price === null) e.price = i18n.t('vendor:products.err.priceNumber');else
+  if (p.price <= 0) e.price = i18n.t('vendor:profile.form.priceZero');else
+  if (p.price > PRODUCT_PRICE_MAX) e.price = i18n.t('jobs:form.priceHigh');
+  if (p.stock === null) e.stock = i18n.t('vendor:products.qty.notNumber', { what: i18n.t('vendor:products.qty.stock') });else
+  if (p.stock > PRODUCT_STOCK_MAX) e.stock = i18n.t('vendor:products.qty.tooHigh', { what: i18n.t('vendor:products.qty.stock') });
+  if (p.description.trim().length > PRODUCT_DESCRIPTION_MAX) e.description = i18n.t('vendor:products.err.descriptionLong', { max: PRODUCT_DESCRIPTION_MAX });
+  if (p.images.length > PRODUCT_IMAGES_MAX) e.images = i18n.t('jobs:form.photoMax', { max: PRODUCT_IMAGES_MAX });else
+  if (requireImage && p.images.length === 0) e.images = i18n.t('vendor:products.err.photo');
   return e;
 }
 
@@ -122,13 +123,14 @@ export const clampStock = (n: number) => Math.min(PRODUCT_STOCK_MAX, Math.max(0,
  * whole number from 0 to PRODUCT_STOCK_MAX. Negatives and decimals get their own message so the
  * vendor knows what to fix instead of having characters silently dropped.
  */
-export function quantityError(raw: string, what = 'Stock'): string | null {
+export function quantityError(raw: string, kind: 'stock' | 'threshold' = 'stock'): string | null {
   const v = raw.trim();
-  if (!v) return `${what} is missing.`;
-  if (v.startsWith('-')) return `${what} can't be negative.`;
-  if (/[.]/.test(v)) return `${what} must be a whole number, no decimals.`;
+  const what = i18n.t(`vendor:products.qty.${kind}`);
+  if (!v) return i18n.t('vendor:products.qty.missing', { what });
+  if (v.startsWith('-')) return i18n.t('vendor:products.qty.negative', { what });
+  if (/[.]/.test(v)) return i18n.t('vendor:products.qty.decimal', { what });
   const n = parseStock(v);
-  if (n === null) return `${what} must be a whole number, like 12.`;
-  if (n > PRODUCT_STOCK_MAX) return `${what} looks too high. Check for extra zeros.`;
+  if (n === null) return i18n.t('vendor:products.qty.notNumber', { what });
+  if (n > PRODUCT_STOCK_MAX) return i18n.t('vendor:products.qty.tooHigh', { what });
   return null;
 }

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Button } from '../../../../components/ui/Button';
 import { ErrorState } from '../../../../components/ui/ErrorState';
 import { LoadingState } from '../../../../components/ui/LoadingState';
@@ -18,13 +19,14 @@ interface ReviewListProps {
 }
 
 export function ReviewList({ items, total, status, error, hasMore, onLoadMore, onRetry, vendorName }: ReviewListProps) {
-  if (status === 'loading') return <LoadingState label="Loading reviews" rows={3} rowClassName="h-32" />;
+  const { t } = useTranslation('discovery');
+  if (status === 'loading') return <LoadingState label={t('profile.loadingReviews')} rows={3} rowClassName="h-32" />;
   if (status === 'error' && items.length === 0) return <ErrorState message={error ?? ''} onRetry={onRetry} />;
 
   return (
     <div>
       <p className="sr-only" aria-live="polite">
-        Showing {items.length} of {total} reviews
+        {t('profile.showingReviews', { shown: items.length, total })}
       </p>
       <ul className="space-y-3">
         {items.map((r) =>
@@ -41,14 +43,14 @@ export function ReviewList({ items, total, status, error, hasMore, onLoadMore, o
         }
         {status === 'error' ?
         <Button variant="outline" onClick={onRetry}>
-            Try again
+            {t('common:action.retry')}
           </Button> :
         hasMore ?
         <Button variant="outline" onClick={onLoadMore} loading={status === 'loadingMore'}>
-            Load more reviews
+            {t('profile.loadMoreReviews')}
           </Button> :
 
-        items.length > 0 && <p className="text-sm text-muted">You’ve seen all {total} reviews.</p>
+        items.length > 0 && <p className="text-sm text-muted">{t('profile.allReviews', { count: total })}</p>
         }
       </div>
     </div>);

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { XIcon } from 'lucide-react';
 import type { ActiveFilterChip } from '../../types';
 
@@ -8,10 +9,11 @@ interface ActiveFilterChipsProps {
 }
 
 export function ActiveFilterChips({ chips, onRemove, onClearAll }: ActiveFilterChipsProps) {
+  const { t } = useTranslation('discovery');
   if (chips.length === 0) return null;
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <ul className="contents" aria-label="Active filters">
+      <ul className="contents" aria-label={t('filters.title')}>
         {chips.map((chip) =>
         <li key={chip.key}>
             <button
@@ -31,7 +33,7 @@ export function ActiveFilterChips({ chips, onRemove, onClearAll }: ActiveFilterC
         onClick={onClearAll}
         className="rounded px-1 text-sm font-semibold text-clay-dark hover:text-clay focus:outline-none focus-visible:ring-2 focus-visible:ring-clay/40">
 
-        Clear all
+        {t('filters.clearAll')}
       </button>
     </div>);
 

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Link, useParams } from 'react-router-dom';
 import { SearchXIcon } from 'lucide-react';
 import { PageHeader } from '../../../components/PageHeader';
@@ -7,7 +8,9 @@ import { ErrorState } from '../../../components/ui/ErrorState';
 import { LoadingState } from '../../../components/ui/LoadingState';
 import { PageContainer } from '../../../components/ui/PageContainer';
 import { vendorProfilePath } from '../../public-profile/constants';
-import { CURRENT_CUSTOMER_ID, JOB_ROUTES, JOB_STATUS_META } from '../constants';
+import { jobStatusDescription } from '../../../i18n/labels';
+import { JOB_ROUTES, JOB_STATUS_META } from '../constants';
+import { useAuth } from '../../auth/hooks/useAuth';
 import { JobActivity } from '../components/JobActivity';
 import { JobDetails } from '../components/JobDetails';
 import { JobStatusBadge } from '../components/JobStatusBadge';
@@ -17,17 +20,19 @@ import { CustomerJobPanel } from '../components/customer/CustomerJobPanel';
 import { useJob } from '../hooks/useJob';
 import { JobRemindersLine } from '../../reminders/components/JobRemindersLine';
 
-const BACK = { to: JOB_ROUTES.myJobs, label: 'My Jobs' };
 
 /** Customer's job page: timeline, quote (accept/reject), details, history and messages. */
 export function JobDetailsSection() {
+  const { t } = useTranslation('jobs');
+  const BACK = { to: JOB_ROUTES.myJobs, label: t('page.back') };
+  const { user } = useAuth();
   const { jobId = '' } = useParams();
   const { job, notFound, status, error, reload, replace } = useJob(jobId);
 
   if (status === 'error') {
     return (
       <>
-        <PageHeader title={`Job #${jobId}`} backTo={BACK} />
+        <PageHeader title={t('page.title', { id: jobId })} backTo={BACK} />
         <PageContainer width="narrow">
           <ErrorState message={error ?? ''} onRetry={reload} />
         </PageContainer>
@@ -35,17 +40,17 @@ export function JobDetailsSection() {
 
   }
   // A job that isn't this customer's is treated as not found.
-  if (notFound || job && job.customerId !== CURRENT_CUSTOMER_ID) {
+  if (notFound || job && job.customerId !== user?.id) {
     return (
       <>
-        <PageHeader title="Job not found" backTo={BACK} />
+        <PageHeader title={t('page.notFoundTitle')} backTo={BACK} />
         <PageContainer width="narrow">
           <EmptyState
             icon={SearchXIcon}
-            title="We couldn’t find that job"
+            title={t('page.notFoundHeading')}
             action={
             <Link to={JOB_ROUTES.myJobs} className={buttonClasses({ variant: 'secondary', size: 'sm' })}>
-                Back to My Jobs
+                {t('page.backToMyJobs')}
               </Link>
             } />
 
@@ -56,9 +61,9 @@ export function JobDetailsSection() {
   if (!job) {
     return (
       <>
-        <PageHeader title={`Job #${jobId}`} backTo={BACK} />
+        <PageHeader title={t('page.title', { id: jobId })} backTo={BACK} />
         <PageContainer width="narrow">
-          <LoadingState label="Loading job" rows={3} rowClassName="h-40" />
+          <LoadingState label={t('page.loading')} rows={3} rowClassName="h-40" />
         </PageContainer>
       </>);
 
@@ -66,14 +71,14 @@ export function JobDetailsSection() {
 
   return (
     <>
-      <PageHeader title={`Job #${job.id}`} subtitle={job.vendorName} backTo={BACK}>
+      <PageHeader title={t('page.title', { id: job.id })} subtitle={job.vendorName} backTo={BACK}>
         <div className="flex flex-wrap items-center gap-2">
           <JobStatusBadge status={job.status} />
-          <span className="text-sm text-white/85">{JOB_STATUS_META[job.status].description}</span>
+          <span className="text-sm text-white/85">{jobStatusDescription(job.status, JOB_STATUS_META[job.status].description)}</span>
         </div>
       </PageHeader>
       <PageContainer className="space-y-5">
-        <section aria-label="Progress" className="rounded-2xl border border-line bg-white p-4 lg:p-6">
+        <section aria-label={t('page.progress')} className="rounded-2xl border border-line bg-white p-4 lg:p-6">
           <JobTimeline job={job} />
         </section>
 
@@ -82,12 +87,12 @@ export function JobDetailsSection() {
             <JobDetails job={job} />
             <MessagesPlaceholder otherParty={job.vendorName} />
           </div>
-          <aside className="space-y-5 lg:sticky lg:top-6 lg:self-start" aria-label="Quote and activity">
+          <aside className="space-y-5 lg:sticky lg:top-6 lg:self-start" aria-label={t('page.aside')}>
             <CustomerJobPanel job={job} onUpdated={replace} />
             <JobRemindersLine job={job} viewer="customer" />
             <JobActivity job={job} viewer="customer" />
             <Link to={vendorProfilePath(job.vendorId)} className={buttonClasses({ variant: 'secondary', fullWidth: true })}>
-              View {job.vendorName}
+              {t('page.viewVendor', { name: job.vendorName })}
             </Link>
           </aside>
         </div>

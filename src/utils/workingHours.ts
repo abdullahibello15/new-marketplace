@@ -1,4 +1,6 @@
+import i18n from '../i18n';
 import { format } from 'date-fns';
+import { dateLocale } from './format';
 import type { DayHours, Weekday, WorkingHours } from '../types/marketplace';
 
 /** Vendors are all in Niger State, so "open now" is judged on West Africa Time, whatever the viewer's clock says. */
@@ -19,11 +21,11 @@ export function toMinutes(hhmm: string): number {
 /** "08:30" → "8:30 AM" */
 export function formatClock(hhmm: string): string {
   const [h, m] = hhmm.split(':').map(Number);
-  return format(new Date(2000, 0, 1, h, m), 'h:mm a');
+  return format(new Date(2000, 0, 1, h, m), 'h:mm a', { locale: dateLocale() });
 }
 
 export function formatDayHours(day: DayHours): string {
-  return day.open ? `${formatClock(day.opensAt)} – ${formatClock(day.closesAt)}` : 'Closed';
+  return day.open ? `${formatClock(day.opensAt)} – ${formatClock(day.closesAt)}` : i18n.t('common:hours.closed');
 }
 
 export function vendorNow(now = new Date()): {day: Weekday;minutes: number;} {
@@ -49,7 +51,7 @@ export function isOpenNow(hours: WorkingHours, now = new Date()): boolean {
 
 export function validateDayHours(day: DayHours): string | undefined {
   if (!day.open) return undefined;
-  if (!day.opensAt || !day.closesAt) return 'Add an opening and a closing time.';
-  if (toMinutes(day.closesAt) <= toMinutes(day.opensAt)) return 'Closing time must be later than opening time.';
+  if (!day.opensAt || !day.closesAt) return i18n.t('common:hours.addTimes');
+  if (toMinutes(day.closesAt) <= toMinutes(day.opensAt)) return i18n.t('common:hours.closeAfterOpen');
   return undefined;
 }

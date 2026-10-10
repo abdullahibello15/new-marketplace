@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+import { serviceDurationLabel } from '../../../i18n/labels';
 import { useId } from 'react';
 import { Controller, useFormContext, useWatch } from 'react-hook-form';
 import { Trash2Icon } from 'lucide-react';
@@ -14,6 +16,7 @@ interface ServiceFieldsetProps {
 }
 
 export function ServiceFieldset({ index, onRemove }: ServiceFieldsetProps) {
+  const { t } = useTranslation('vendor');
   const uid = useId();
   const {
     register,
@@ -22,7 +25,7 @@ export function ServiceFieldset({ index, onRemove }: ServiceFieldsetProps) {
   } = useFormContext<ProfileFormValues, unknown, ProfileFormData>();
   const e = errors.services?.[index];
   const name = useWatch({ control, name: `services.${index}.name` });
-  const title = name.trim() || `Service ${index + 1}`;
+  const title = name.trim() || t('profile.services.untitled', { n: index + 1 });
   const id = (key: string) => `${uid}-${key}`;
 
   return (
@@ -33,7 +36,7 @@ export function ServiceFieldset({ index, onRemove }: ServiceFieldsetProps) {
         <button
           type="button"
           onClick={onRemove}
-          aria-label={`Remove ${title}`}
+          aria-label={t('profile.services.remove', { name: title })}
           className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted transition-colors duration-150 hover:bg-clay-soft hover:text-clay-dark focus:outline-none focus-visible:ring-2 focus-visible:ring-clay/40">
 
           <Trash2Icon className="h-4 w-4" aria-hidden="true" />
@@ -42,12 +45,12 @@ export function ServiceFieldset({ index, onRemove }: ServiceFieldsetProps) {
 
       <div className="grid gap-4 md:grid-cols-2">
         <div className="md:col-span-2">
-          <FormField id={id('name')} label="Service name" error={e?.name?.message}>
+          <FormField id={id('name')} label={t('profile.services.name')} error={e?.name?.message}>
             {(describedBy) =>
             <input
               id={id('name')}
               {...register(`services.${index}.name`)}
-              placeholder="e.g. Toilet cistern repair"
+              placeholder={t('profile.services.namePlaceholder')}
               aria-invalid={Boolean(e?.name)}
               aria-describedby={describedBy}
               className={`${field} ${e?.name ? bad : ok}`} />
@@ -57,7 +60,7 @@ export function ServiceFieldset({ index, onRemove }: ServiceFieldsetProps) {
         </div>
 
         {(['minPrice', 'maxPrice'] as const).map((key) =>
-        <FormField key={key} id={id(key)} label={key === 'minPrice' ? 'From (₦)' : 'To (₦)'} error={e?.[key]?.message}>
+        <FormField key={key} id={id(key)} label={key === 'minPrice' ? t('profile.services.from') : t('profile.services.to')} error={e?.[key]?.message}>
             {(describedBy) =>
           <Controller
             control={control}
@@ -80,7 +83,7 @@ export function ServiceFieldset({ index, onRemove }: ServiceFieldsetProps) {
         )}
 
         <div className="md:col-span-2">
-          <FormField id={id('duration')} label="Typical duration" error={e?.duration?.message}>
+          <FormField id={id('duration')} label={t('profile.services.duration')} error={e?.duration?.message}>
             {(describedBy) =>
             <select
               id={id('duration')}
@@ -90,7 +93,7 @@ export function ServiceFieldset({ index, onRemove }: ServiceFieldsetProps) {
 
                 {serviceDurations.map((d) =>
               <option key={d} value={d}>
-                    {d}
+                    {serviceDurationLabel(d)}
                   </option>
               )}
               </select>
@@ -101,8 +104,8 @@ export function ServiceFieldset({ index, onRemove }: ServiceFieldsetProps) {
         <div className="md:col-span-2">
           <FormField
             id={id('description')}
-            label="Short description (optional)"
-            hint={`What’s included, e.g. parts, call-out, clean-up. Up to ${SERVICE_DESCRIPTION_MAX} characters.`}
+            label={t('profile.services.description')}
+            hint={t('profile.services.descriptionHint', { max: SERVICE_DESCRIPTION_MAX })}
             error={e?.description?.message}>
 
             {(describedBy) =>

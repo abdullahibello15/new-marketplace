@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React from 'react';
 import { StoreIcon } from 'lucide-react';
 import { Button } from '../../../../components/ui/Button';
@@ -33,12 +34,13 @@ interface VendorListingResultsProps {
 /** A paginated vendor list with skeleton, empty, error and "Load more" states. Used by the feed and search. */
 export function VendorListingResults(props: VendorListingResultsProps) {
   const { items, total, status, error, hasMore, onLoadMore, onRetry, highlightedId, onItemHover } = props;
+  const { t } = useTranslation('discovery');
   const grid = props.singleColumn ? 'grid gap-3' : 'grid gap-3 md:grid-cols-2 xl:grid-cols-3';
 
   if (status === 'loading') {
     return (
       <div role="status" className={grid}>
-        <span className="sr-only">Loading vendors…</span>
+        <span className="sr-only">{t('results.loading')}</span>
         {Array.from({ length: SKELETON_COUNT }, (_, i) =>
         <VendorListingSkeleton key={i} />
         )}
@@ -53,7 +55,7 @@ export function VendorListingResults(props: VendorListingResultsProps) {
   return (
     <div>
       <p className="sr-only" aria-live="polite">
-        Showing {items.length} of {total} vendors
+        {t('results.showing', { shown: items.length, total })}
       </p>
       <ul className={grid} onMouseLeave={onItemHover && (() => onItemHover(null))}>
         {items.map((listing) =>
@@ -78,15 +80,15 @@ export function VendorListingResults(props: VendorListingResultsProps) {
         }
         {status === 'error' ?
         <Button variant="outline" onClick={onRetry}>
-            Try again
+            {t('common:action.retry')}
           </Button> :
         hasMore ?
         <Button variant="outline" onClick={onLoadMore} loading={status === 'loadingMore'}>
-            Load more
+            {t('results.loadMore')}
           </Button> :
 
         <p className="text-sm text-muted">
-            {total === 1 ? 'That’s the only vendor' : `That’s all ${total} vendors`} here.
+            {total === 1 ? t('results.onlyOne') : t('results.all', { count: total })}
           </p>
         }
       </div>

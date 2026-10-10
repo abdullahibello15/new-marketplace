@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { MapPinIcon } from 'lucide-react';
 import { Button } from '../../../../components/ui/Button';
 import { placeLabel } from '../../constants';
@@ -7,12 +8,13 @@ import { VendorListingResults } from '../listings/VendorListingResults';
 
 export function NearbyVendorFeed() {
   const { place, openPicker } = usePlace();
+  const { t } = useTranslation('discovery');
   const feed = useVendorFeed();
 
   return (
     <section aria-labelledby="feed-heading">
       <h2 id="feed-heading" className="text-xs font-bold uppercase tracking-wider text-muted">
-        Near you · {place.name}
+        {t('home.nearYou', { place: place.name })}
       </h2>
       <div className="mt-3">
         <VendorListingResults
@@ -23,11 +25,11 @@ export function NearbyVendorFeed() {
           hasMore={feed.hasMore}
           onLoadMore={feed.loadMore}
           onRetry={feed.retry}
-          emptyTitle="No vendors in this area yet"
-          emptyDescription={`We don’t have vendors near ${placeLabel(place)} yet. Try a nearby town.`}
+          emptyTitle={t('results.emptyAreaTitle')}
+          emptyDescription={t('results.emptyAreaText', { place: placeLabel(place) })}
           emptyAction={
           <Button variant="secondary" size="sm" icon={MapPinIcon} onClick={openPicker}>
-              Change location
+              {t('place.change')}
             </Button>
           } />
 

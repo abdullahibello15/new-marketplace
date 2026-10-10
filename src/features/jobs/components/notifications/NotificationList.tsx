@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { formatDistanceToNowStrict } from 'date-fns';
+import { useTranslation } from 'react-i18next';
 import { BellIcon } from 'lucide-react';
 import { Button } from '../../../../components/ui/Button';
+import { formatAgo } from '../../../../utils/format';
 import { useNotifications } from '../../hooks/useNotifications';
 import type { JobParty } from '../../types';
 
@@ -11,27 +12,28 @@ const COLLAPSED_COUNT = 3;
 interface NotificationListProps {
   recipient: JobParty;
   recipientId: string;
-  /** Where a notification leads: the customer's job page or the vendor's request page. */
+  /** Where a job notification leads: the customer's job page or the vendor's request page. Account notices carry their own link. */
   linkFor: (jobId: string) => string;
 }
 
 /** MOCK in-app notifications: one item per status change or reschedule event on this person's jobs. */
 export function NotificationList({ recipient, recipientId, linkFor }: NotificationListProps) {
+  const { t } = useTranslation();
   const n = useNotifications(recipient, recipientId);
   const [expanded, setExpanded] = useState(false);
 
   if (n.status === 'error') {
     return (
       <p role="alert" className="flex items-center justify-between gap-3 rounded-2xl border border-clay/40 bg-clay-soft px-4 py-3 text-sm text-ink">
-        Couldn’t load updates.
+        {t('jobs:notifications.failed')}
         <Button variant="outline" size="sm" onClick={n.reload}>
-          Try again
+          {t('action.retry')}
         </Button>
       </p>);
 
   }
   if (n.status === 'loading' && n.items.length === 0) {
-    return <div role="status" aria-label="Loading updates" className="h-24 animate-pulse rounded-2xl bg-sand" />;
+    return <div role="status" aria-label={t('jobs:notifications.loading')} className="h-24 animate-pulse rounded-2xl bg-sand" />;
   }
   if (n.items.length === 0) return null;
 
@@ -42,17 +44,17 @@ export function NotificationList({ recipient, recipientId, linkFor }: Notificati
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 id="updates-heading" className="flex items-center gap-2 text-base font-bold text-ink">
           <BellIcon className="h-4 w-4 text-muted" aria-hidden="true" />
-          Updates
+          {t('jobs:notifications.title')}
           {n.unread > 0 &&
           <span className="rounded-full bg-clay px-2 text-xs font-bold leading-5 text-white">
               {n.unread}
-              <span className="sr-only"> unread</span>
+              <span className="sr-only"> {t('jobs:notifications.unread')}</span>
             </span>
           }
         </h2>
         {n.unread > 0 &&
         <Button variant="ghost" size="sm" onClick={n.markAllRead} loading={n.marking}>
-            Mark all read
+            {t('jobs:notifications.markAll')}
           </Button>
         }
       </div>
@@ -60,17 +62,17 @@ export function NotificationList({ recipient, recipientId, linkFor }: Notificati
         {shown.map((item) =>
         <li key={item.id}>
             <Link
-            to={linkFor(item.jobId)}
+            to={item.href ?? linkFor(item.jobId)}
             className="flex gap-3 rounded-lg py-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-pine/40">
 
               <span aria-hidden="true" className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${item.read ? 'bg-transparent' : 'bg-clay'}`} />
               <span className="min-w-0 flex-1">
                 <span className={`block text-sm ${item.read ? 'font-semibold text-ink' : 'font-bold text-ink'}`}>
                   {item.title}
-                  {!item.read && <span className="sr-only"> (unread)</span>}
+                  {!item.read && <span className="sr-only"> {t('jobs:notifications.unreadItem')}</span>}
                 </span>
                 <span className="block text-sm text-muted">{item.body}</span>
-                <span className="block text-xs text-muted">{formatDistanceToNowStrict(new Date(item.createdAt), { addSuffix: true })}</span>
+                <span className="block text-xs text-muted">{formatAgo(item.createdAt, { strict: true })}</span>
               </span>
             </Link>
           </li>
@@ -78,7 +80,7 @@ export function NotificationList({ recipient, recipientId, linkFor }: Notificati
       </ul>
       {n.items.length > COLLAPSED_COUNT &&
       <Button variant="ghost" size="sm" onClick={() => setExpanded((e) => !e)} aria-expanded={expanded} className="mt-1">
-          {expanded ? 'Show fewer' : `Show all ${n.items.length}`}
+          {expanded ? t('jobs:notifications.showFewer') : t('jobs:notifications.showAll', { count: n.items.length })}
         </Button>
       }
     </section>);

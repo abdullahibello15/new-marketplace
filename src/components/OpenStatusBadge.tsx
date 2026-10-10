@@ -1,7 +1,9 @@
+import { useTranslation } from 'react-i18next';
 import { isOpenNow } from '../utils/workingHours';
 import type { WorkingHours } from '../types/marketplace';
 
 export function OpenStatusBadge({ hours }: {hours: WorkingHours;}) {
+  const { t } = useTranslation();
   const open = isOpenNow(hours);
   return (
     <span
@@ -10,7 +12,7 @@ export function OpenStatusBadge({ hours }: {hours: WorkingHours;}) {
       }>
 
       <span aria-hidden="true" className={`h-1.5 w-1.5 rounded-full ${open ? 'bg-pine' : 'bg-clay-dark'}`} />
-      {open ? 'Open now' : 'Closed'}
+      {open ? t('open.now') : t('open.closed')}
     </span>);
 
 }

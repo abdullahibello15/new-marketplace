@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+import { stockFilterText } from '../../i18n/labels';
 import { stockFilters } from '../../data/stockFilters';
 import type { StockFilter } from '../../types/marketplace';
 
@@ -8,8 +10,9 @@ interface StockFilterTabsProps {
 }
 
 export function StockFilterTabs({ value, onChange, counts }: StockFilterTabsProps) {
+  const { t } = useTranslation('vendor');
   return (
-    <div role="group" aria-label="Filter by stock" className="flex w-full rounded-xl bg-sand p-1 sm:w-auto">
+    <div role="group" aria-label={t('products.filterStock')} className="flex w-full rounded-xl bg-sand p-1 sm:w-auto">
       {stockFilters.map((f) => {
         const active = f.id === value;
         return (
@@ -22,7 +25,7 @@ export function StockFilterTabs({ value, onChange, counts }: StockFilterTabsProp
             active ? 'bg-white text-ink' : 'text-muted hover:text-ink'}`
             }>
 
-            {f.label}
+            {stockFilterText(f.id, 'label', f.label)}
             <span className="tabular-nums text-xs font-semibold text-muted">{counts[f.id]}</span>
           </button>);
 

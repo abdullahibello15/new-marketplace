@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+import { productCategoryLabel } from '../i18n/labels';
 import React, { useState } from 'react';
 import { ImageOffIcon, ImagesIcon } from 'lucide-react';
 import { Lightbox } from './Lightbox';
@@ -31,6 +33,7 @@ function ProductImage({ src, dimmed }: {src: string;dimmed: boolean;}) {
  * under each product, e.g. Add to cart.
  */
 export function ProductGrid({ products, renderAction }: {products: Product[];renderAction?: (product: Product) => React.ReactNode;}) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState<{product: Product;index: number;} | null>(null);
   const visible = products.filter((p) => p.available && p.images.length > 0);
   if (visible.length === 0) return null;
@@ -49,7 +52,7 @@ export function ProductGrid({ products, renderAction }: {products: Product[];ren
               <button
                 type="button"
                 onClick={() => setOpen({ product: p, index: 0 })}
-                aria-label={`View photos of ${p.name}`}
+                aria-label={t('photos.viewPhotosOf', { name: p.name })}
                 className="relative block overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-pine">
 
                 <ProductImage key={p.images[0]} src={p.images[0]} dimmed={soldOut} />
@@ -63,7 +66,7 @@ export function ProductGrid({ products, renderAction }: {products: Product[];ren
                 }
               </button>
               <div className="flex flex-1 flex-col p-3">
-                <p className="text-xs font-semibold text-muted">{categoryLabel(p.category)}</p>
+                <p className="text-xs font-semibold text-muted">{productCategoryLabel(p.category, categoryLabel(p.category))}</p>
                 <h3 className="mt-0.5 line-clamp-2 text-sm font-bold text-ink">{p.name}</h3>
                 {p.description && <p className="mt-1 line-clamp-2 text-xs text-muted">{p.description}</p>}
                 <div className="mt-auto flex flex-wrap items-baseline justify-between gap-x-2 pt-2">
@@ -71,9 +74,9 @@ export function ProductGrid({ products, renderAction }: {products: Product[];ren
                     <Price amount={p.price} />
                   </p>
                   {soldOut ?
-                  <p className="text-xs font-bold text-clay-dark">Can’t be ordered</p> :
+                  <p className="text-xs font-bold text-clay-dark">{t('stock.cantOrder')}</p> :
                   status === STOCK_STATUS.low ?
-                  <p className="text-xs font-bold text-mustard-dark">Only {p.stock} left</p> :
+                  <p className="text-xs font-bold text-mustard-dark">{t('stock.onlyLeft', { count: p.stock })}</p> :
                   null}
                 </div>
                 {renderAction && <div className="pt-3">{renderAction(p)}</div>}
@@ -87,7 +90,7 @@ export function ProductGrid({ products, renderAction }: {products: Product[];ren
         index={open ? open.index : null}
         onIndexChange={(index) => setOpen((prev) => prev && { ...prev, index })}
         onClose={() => setOpen(null)}
-        altPrefix={open?.product.name ?? 'Product'} />
+        altPrefix={open?.product.name ?? t('photos.product')} />
 
     </section>);
 

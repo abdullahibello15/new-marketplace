@@ -1,7 +1,9 @@
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { CalendarClockIcon, StoreIcon, TruckIcon } from 'lucide-react';
 import { Price } from '../../../components/ui/Price';
 import { formatDay, formatTime } from '../../../utils/format';
+import { fulfilmentMethodLabel } from '../../../i18n/labels';
 import { FULFILMENT_METHOD, FULFILMENT_METHOD_LABELS } from '../constants';
 import { OrderStatusBadge } from './OrderStatusBadge';
 import type { Order } from '../types';
@@ -16,6 +18,7 @@ interface OrderListItemProps {
 
 /** One order in a list. Same card in My Orders (customer) and Orders (vendor). */
 export function OrderListItem({ order, to, title, actionHint }: OrderListItemProps) {
+  const { t } = useTranslation('jobs');
   const units = order.items.reduce((sum, i) => sum + i.quantity, 0);
   const MethodIcon = order.method === FULFILMENT_METHOD.Delivery ? TruckIcon : StoreIcon;
   return (
@@ -28,7 +31,7 @@ export function OrderListItem({ order, to, title, actionHint }: OrderListItemPro
         <div className="min-w-0">
           <h3 className="truncate text-base font-bold text-ink">{title}</h3>
           <p className="mt-0.5 line-clamp-2 text-sm text-muted">
-            <span className="font-semibold text-ink">#{order.id}</span> · {units} {units === 1 ? 'item' : 'items'}: {order.items.map((i) => i.name).join(', ')}
+            <span className="font-semibold text-ink">#{order.id}</span> · {t('order.itemsList', { items: t('order.items', { count: units }), names: order.items.map((i) => i.name).join(', ') })}
           </p>
         </div>
         <OrderStatusBadge status={order.status} />
@@ -36,13 +39,13 @@ export function OrderListItem({ order, to, title, actionHint }: OrderListItemPro
       <div className="mt-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-sm text-muted">
         <span className="flex items-center gap-1.5">
           <CalendarClockIcon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-          Placed {formatDay(order.createdAt)}, {formatTime(order.createdAt)}
+          {t('order.placedAt', { day: formatDay(order.createdAt), time: formatTime(order.createdAt) })}
         </span>
         <Price amount={order.total} className="text-base font-bold text-ink" />
       </div>
       <p className="mt-1 flex items-center gap-1.5 text-sm text-muted">
         <MethodIcon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-        {FULFILMENT_METHOD_LABELS[order.method]}
+        {fulfilmentMethodLabel(order.method, FULFILMENT_METHOD_LABELS[order.method])}
         {order.delivery && <span className="truncate"> · {order.delivery.placeLabel}</span>}
       </p>
       {actionHint && <p className="mt-3 rounded-lg bg-[#F7EBCB] px-3 py-1.5 text-sm font-bold text-mustard-dark">{actionHint}</p>}

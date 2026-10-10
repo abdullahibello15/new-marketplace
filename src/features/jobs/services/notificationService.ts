@@ -1,4 +1,6 @@
+import { recipientLanguage, tIn } from '../../../i18n/recipient';
 import { mockResponse } from '../../../services/mockApi';
+import type { TFunction } from 'i18next';
 import { JOB_ACTOR } from '../constants';
 import { notificationsFor, type JobEvent } from '../utils/notificationCopy';
 import type { Job, JobNotification, JobParty } from '../types';
@@ -28,6 +30,28 @@ export function recordJobEvent(job: Job, event: JobEvent, at = new Date().toISOS
 /** Adds one ready-written notification about a job, e.g. a booking reminder from the reminder service. */
 export function recordJobNotification(jobId: string, recipient: JobParty, recipientId: string, title: string, body: string, at = new Date().toISOString()): void {
   notifications = [{ id: `n${nextId++}`, recipient, recipientId, jobId, title, body, createdAt: at, read: false }, ...notifications];
+}
+
+/** Adds an account notice that isn't about a job (e.g. a subscription renewal reminder), opening `href`. */
+export function recordAccountNotification(recipient: JobParty, recipientId: string, title: string, body: string, href: string, at = new Date().toISOString()): void {
+  notifications = [{ id: `n${nextId++}`, recipient, recipientId, jobId: '', href, title, body, createdAt: at, read: false }, ...notifications];
+}
+
+/**
+ * An account notice written in the recipient's saved language: `key` names the wording (with .title and
+ * .body in the locale files), and `values` fills it, given a translate function in that language.
+ */
+export function recordAccountMessage(
+recipient: JobParty,
+recipientId: string,
+key: string,
+values: (t: TFunction) => Record<string, unknown>,
+href: string,
+at = new Date().toISOString())
+: void {
+  const t = tIn(recipientLanguage(recipient, recipientId));
+  const v = values(t);
+  recordAccountNotification(recipient, recipientId, t(`${key}.title`, v), t(`${key}.body`, v), href, at);
 }
 
 /** GET /me/notifications */

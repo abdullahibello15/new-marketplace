@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Controller, useWatch, type UseFormReturn } from 'react-hook-form';
 import { Button } from '../../../components/ui/Button';
 import { FormField } from '../../../components/ui/FormField';
@@ -11,10 +12,11 @@ interface NotificationPreferencesFormProps {
   onSubmit: () => void;
 }
 
-const leads = REMINDER_RULES.map((r) => r.lead).join(' and ');
 
 /** Push and SMS toggles, the SMS phone number, and a single switch to opt out of all booking reminders. */
 export function NotificationPreferencesForm({ form, onSubmit }: NotificationPreferencesFormProps) {
+  const { t } = useTranslation('jobs');
+  const leads = REMINDER_RULES.map((r) => t('reminder.lead', { count: Math.round(r.minutesBefore / 60) }));
   const {
     control,
     register,
@@ -23,32 +25,32 @@ export function NotificationPreferencesForm({ form, onSubmit }: NotificationPref
   const [optedOut, sms] = useWatch({ control, name: ['optedOut', 'sms'] });
 
   return (
-    <form onSubmit={onSubmit} noValidate aria-label="Notification preferences" className="space-y-5">
+    <form onSubmit={onSubmit} noValidate aria-label={t('prefs.label')} className="space-y-5">
       <section aria-labelledby="reminders-heading" className="rounded-2xl border border-line bg-white px-4 lg:px-5">
         <h2 id="reminders-heading" className="pt-4 text-base font-bold text-ink">
-          Booking reminders
+          {t('prefs.booking')}
         </h2>
-        <p className="text-sm text-muted">We remind you {leads} before each booked job. You always see them in Updates in the app.</p>
+        <p className="text-sm text-muted">{t('prefs.bookingText', { leads: leads.join(t('prefs.and')) })}</p>
         <div className="divide-y divide-line">
           <Controller
             control={control}
             name="push"
             render={({ field: f }) =>
-            <PreferenceToggle label="Push notifications" description="On your phone, from the Gwani app." checked={f.value} onChange={f.onChange} disabled={optedOut} />
+            <PreferenceToggle label={t('prefs.push')} description={t('prefs.pushText')} checked={f.value} onChange={f.onChange} disabled={optedOut} />
             } />
 
           <Controller
             control={control}
             name="sms"
             render={({ field: f }) =>
-            <PreferenceToggle label="SMS" description="A text message, even without data." checked={f.value} onChange={f.onChange} disabled={optedOut} />
+            <PreferenceToggle label={t('prefs.sms')} description={t('prefs.smsText')} checked={f.value} onChange={f.onChange} disabled={optedOut} />
             } />
 
           <div className="py-4">
             <FormField
               id="pref-phone"
-              label={sms && !optedOut ? 'Phone number for SMS' : 'Phone number for SMS (optional)'}
-              hint="Nigerian mobile: 0803 555 0142 or +234 803 555 0142."
+              label={sms && !optedOut ? t('prefs.phone') : t('prefs.phoneOptional')}
+              hint={t('prefs.phoneHint')}
               error={errors.phone?.message}>
 
               {(describedBy) =>
@@ -73,15 +75,15 @@ export function NotificationPreferencesForm({ form, onSubmit }: NotificationPref
 
       <section aria-labelledby="optout-heading" className="rounded-2xl border border-line bg-white px-4 lg:px-5">
         <h2 id="optout-heading" className="sr-only">
-          Opt out
+          {t('prefs.optOutHeading')}
         </h2>
         <Controller
           control={control}
           name="optedOut"
           render={({ field: f }) =>
           <PreferenceToggle
-            label="Opt out of all booking reminders"
-            description="No reminders by push, SMS or in the app. Other job updates still appear in the app."
+            label={t('prefs.optOut')}
+            description={t('prefs.optOutText')}
             checked={f.value}
             onChange={f.onChange} />
 
@@ -91,7 +93,7 @@ export function NotificationPreferencesForm({ form, onSubmit }: NotificationPref
 
       <div className="flex justify-end">
         <Button type="submit" loading={isSubmitting} disabled={!isDirty}>
-          Save preferences
+          {t('prefs.save')}
         </Button>
       </div>
     </form>);

@@ -12,6 +12,28 @@ export const REMINDER_CHANNEL_LABELS: Record<ReminderChannel, string> = {
   in_app: 'In-app'
 };
 
+/** What a reminder is about. */
+export const REMINDER_TOPIC = {
+  Booking: 'booking',
+  Subscription: 'subscription'
+} as const;
+
+export const SUBSCRIPTION_AUDIENCE = {
+  /** A vendor paying their own subscription. */
+  Vendor: 'vendor',
+  /** A vendor covered by an association's bundle. */
+  Member: 'member',
+  /** The association admin, who pays the bundle. */
+  Admin: 'admin'
+} as const;
+
+export const SUBSCRIPTION_REMINDER_PHASE = {
+  Before: 'before',
+  Today: 'today',
+  Grace: 'grace',
+  Suspended: 'suspended'
+} as const;
+
 export const REMINDER_STATUS = {
   /** Waiting for its fire time. */
   Scheduled: 'scheduled',
@@ -44,12 +66,6 @@ export const DELIVERY_OUTCOME_LABELS: Record<DeliveryOutcome, string> = {
 
 /** One SMS segment. Longer messages are split (and cost more), so templates aim to fit in one. */
 export const SMS_SEGMENT_LENGTH = 160;
-
-/**
- * Nigerian mobile numbers: +234 or 0, then a 070, 080, 081, 090 or 091 prefix and 8 digits.
- * Matched after removing spaces, dashes and brackets.
- */
-export const NIGERIAN_MOBILE_PATTERN = /^(?:\+234|0)(?:70|80|81|90|91)\d{8}$/;
 
 /* ---------- Routes ---------- */
 

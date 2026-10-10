@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+import { tradeBrowseLabel } from '../../../../i18n/labels';
 import { useFormContext } from 'react-hook-form';
 import { browseCategories } from '../../../../data/tradeCategories';
 import { FilterSection } from './FilterSection';
@@ -5,9 +7,10 @@ import type { FilterFormData, FilterFormValues } from '../../schemas';
 
 /** Multi-select category chips. Each chip is a real (visually hidden) checkbox. */
 export function CategoryFilterField() {
+  const { t } = useTranslation('discovery');
   const { register } = useFormContext<FilterFormValues, unknown, FilterFormData>();
   return (
-    <FilterSection title="Category">
+    <FilterSection title={t('filters.category')}>
       <div className="flex flex-wrap gap-2">
         {browseCategories.map((c) => {
           const Icon = c.icon;
@@ -18,7 +21,7 @@ export function CategoryFilterField() {
 
               <input type="checkbox" value={c.id} {...register('categories')} className="sr-only" />
               <Icon className="h-4 w-4" aria-hidden="true" />
-              {c.browseLabel}
+              {tradeBrowseLabel(c.id)}
             </label>);
 
         })}

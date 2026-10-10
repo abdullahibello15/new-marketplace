@@ -1,8 +1,10 @@
+import { useTranslation } from 'react-i18next';
 import { Price } from '../../../components/ui/Price';
 import type { Payable } from '../types';
 
 /** Order summary on the payment screen: what's being paid for, line by line, and the total. */
 export function PayableSummary({ payable }: {payable: Payable;}) {
+  const { t } = useTranslation('payments');
   return (
     <section aria-labelledby="payable-summary-heading" className="rounded-2xl border border-line bg-white p-4 lg:p-5">
       <h2 id="payable-summary-heading" className="text-base font-bold text-ink">
@@ -19,7 +21,7 @@ export function PayableSummary({ payable }: {payable: Payable;}) {
           </div>
         )}
         <div className="flex justify-between gap-3 border-t border-line pt-2">
-          <dt className="font-bold text-ink">Total</dt>
+          <dt className="font-bold text-ink">{t('total')}</dt>
           <dd>
             <Price amount={payable.total} className="text-lg font-extrabold text-ink" />
           </dd>

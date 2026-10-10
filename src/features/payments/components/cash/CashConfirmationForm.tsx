@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useId } from 'react';
 import { Controller } from 'react-hook-form';
 import { Button } from '../../../../components/ui/Button';
@@ -21,6 +22,7 @@ interface CashConfirmationFormProps {
 
 /** "Cash received ₦X" (vendor) or "I paid ₦X" (customer): the amount, then a confirmation dialog. */
 export function CashConfirmationForm({ payment, party, otherName, onUpdated }: CashConfirmationFormProps) {
+  const { t } = useTranslation('payments');
   const id = useId();
   const c = useCashConfirmation(payment, party, onUpdated);
   const errors = c.form.formState.errors;
@@ -34,8 +36,8 @@ export function CashConfirmationForm({ payment, party, otherName, onUpdated }: C
         render={({ field: f }) =>
         <FormField
           id={`${id}-amount`}
-          label={isVendor ? `Cash you received from ${otherName} (₦)` : `Cash you paid ${otherName} (₦)`}
-          hint={`The agreed amount was ${formatNaira(payment.amount)}. Change it if a different amount changed hands.`}
+          label={isVendor ? t('cash.receivedLabel', { name: otherName }) : t('cash.paidLabel', { name: otherName })}
+          hint={t('cash.hint', { amount: formatNaira(payment.amount) })}
           error={errors.amount?.message}>
 
             {(describedBy) =>
@@ -55,14 +57,14 @@ export function CashConfirmationForm({ payment, party, otherName, onUpdated }: C
         } />
 
       <Button type="submit" fullWidth>
-        {isVendor ? 'Confirm cash received' : 'Confirm I paid'}
+        {isVendor ? t('cash.confirmReceived') : t('cash.confirmPaid')}
       </Button>
       <ConfirmDialog
         open={c.pending !== null}
-        title={isVendor ? `Cash received: ${formatNaira(c.pending ?? 0)}?` : `You paid ${formatNaira(c.pending ?? 0)}?`}
-        description={`This can’t be changed afterwards. If ${otherName} confirms a different amount, Gwani’s team will review it.`}
-        confirmLabel={isVendor ? 'Yes, I received it' : 'Yes, I paid it'}
-        cancelLabel="Go back"
+        title={isVendor ? t('cash.receivedTitle', { amount: formatNaira(c.pending ?? 0) }) : t('cash.paidTitle', { amount: formatNaira(c.pending ?? 0) })}
+        description={t('cash.dialogText', { name: otherName })}
+        confirmLabel={isVendor ? t('cash.yesReceived') : t('cash.yesPaid')}
+        cancelLabel={t('cash.goBack')}
         loading={c.saving}
         onConfirm={() => void c.confirm()}
         onCancel={c.cancel} />

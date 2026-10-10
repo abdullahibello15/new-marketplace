@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { CheckIcon, CopyIcon } from 'lucide-react';
 import { useCopyToClipboard } from '../hooks/useCopyToClipboard';
 
@@ -12,6 +13,7 @@ interface CopyFieldProps {
 
 /** A value the customer needs to type elsewhere (account number, amount, USSD code), with a copy button. */
 export function CopyField({ label, display, copyValue, large = false }: CopyFieldProps) {
+  const { t } = useTranslation('payments');
   const { copy, copied } = useCopyToClipboard();
   const done = copied === label;
   return (
@@ -26,7 +28,7 @@ export function CopyField({ label, display, copyValue, large = false }: CopyFiel
         className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-sand px-3 py-2 text-sm font-bold text-ink hover:bg-line focus:outline-none focus-visible:ring-2 focus-visible:ring-pine/40">
 
         {done ? <CheckIcon className="h-4 w-4 text-pine" aria-hidden="true" /> : <CopyIcon className="h-4 w-4" aria-hidden="true" />}
-        {done ? 'Copied' : 'Copy'}
+        {done ? t('copy.copied') : t('copy.copy')}
         <span className="sr-only"> {label.toLowerCase()}</span>
       </button>
     </div>);

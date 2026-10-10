@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useToast } from '../../../hooks/useToast';
+import i18n from '../../../i18n';
 import { useCart } from './useCart';
 import type { Product, Vendor } from '../../../types/marketplace';
 
@@ -11,13 +12,13 @@ export function useAddToCart(vendor: Pick<Vendor, 'id' | 'name' | 'unavailable'>
   const inCart = cart.quantityOf(vendor.id, product.id);
   const soldOut = !product.available || product.stock <= 0;
   const atMax = !soldOut && inCart >= product.stock;
-  const blockedReason = vendor.unavailable ? `${vendor.name} isn’t taking orders right now.` : null;
+  const blockedReason = vendor.unavailable ? i18n.t('jobs:order.cart.vendorUnavailable', { name: vendor.name }) : null;
 
   function add() {
     const result = cart.add(vendor, product);
     if (result.ok) {
       setMessage(null);
-      toast.success(`Added ${product.name} to your cart (${result.quantity}).`);
+      toast.success(i18n.t('jobs:order.cart.added', { name: product.name, count: result.quantity }));
     } else {
       // Stays on screen next to the button, not only in a toast, so it's easy to see why.
       setMessage(result.message);
@@ -30,6 +31,6 @@ export function useAddToCart(vendor: Pick<Vendor, 'id' | 'name' | 'unavailable'>
     atMax,
     blockedReason,
     add,
-    message: message ?? (atMax ? `All ${product.stock} in stock are in your cart.` : null)
+    message: message ?? (atMax ? i18n.t('jobs:order.cart.allInCart', { stock: product.stock }) : null)
   };
 }

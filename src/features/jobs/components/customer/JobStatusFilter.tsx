@@ -1,4 +1,6 @@
+import { useTranslation } from 'react-i18next';
 import { SegmentedControl, type SegmentOption } from '../../../../components/ui/SegmentedControl';
+import { jobStatusLabel } from '../../../../i18n/labels';
 import { JOB_STATUS_META, JOB_STATUS_ORDER } from '../../constants';
 import type { JobStatus, JobStatusFilter as Filter } from '../../types';
 
@@ -11,9 +13,10 @@ interface JobStatusFilterProps {
 
 /** All, then each status that has jobs (plus the selected one, so it never vanishes). */
 export function JobStatusFilter({ value, onChange, counts, total }: JobStatusFilterProps) {
+  const { t } = useTranslation('jobs');
   const options: SegmentOption<Filter>[] = [
-  { id: 'all', label: 'All', count: total },
-  ...JOB_STATUS_ORDER.filter((s) => counts[s] > 0 || s === value).map((s) => ({ id: s, label: JOB_STATUS_META[s].label, count: counts[s] }))];
+  { id: 'all', label: t('filter.all'), count: total },
+  ...JOB_STATUS_ORDER.filter((s) => counts[s] > 0 || s === value).map((s) => ({ id: s, label: jobStatusLabel(s, JOB_STATUS_META[s].label), count: counts[s] }))];
 
-  return <SegmentedControl label="Filter jobs by status" options={options} value={value} onChange={onChange} />;
+  return <SegmentedControl label={t('filter.label')} options={options} value={value} onChange={onChange} />;
 }

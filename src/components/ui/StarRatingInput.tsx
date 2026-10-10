@@ -1,8 +1,8 @@
+import { useTranslation } from 'react-i18next';
 import { useId } from 'react';
 import { StarIcon } from 'lucide-react';
 
 const LEVELS = [1, 2, 3, 4, 5] as const;
-const WORDS = ['Terrible', 'Poor', 'Okay', 'Good', 'Excellent'];
 
 interface StarRatingInputProps {
   value: number | null;
@@ -17,6 +17,8 @@ interface StarRatingInputProps {
  * announce "4 stars, Good". Pairs with the read-only StarRating.
  */
 export function StarRatingInput({ value, onChange, label, invalid = false, describedBy }: StarRatingInputProps) {
+  const { t } = useTranslation();
+  const word = (n: number) => t(`stars.word.${n}`);
   const name = useId();
   return (
     <fieldset aria-describedby={describedBy}>
@@ -37,12 +39,12 @@ export function StarRatingInput({ value, onChange, label, invalid = false, descr
 
               <StarIcon className={`h-8 w-8 transition-colors duration-150 ${filled ? 'text-mustard' : 'text-line hover:text-mustard/60'}`} fill="currentColor" aria-hidden="true" />
               <span className="sr-only">
-                {level} {level === 1 ? 'star' : 'stars'}, {WORDS[level - 1]}
+                {t('stars.count', { count: level })}, {word(level)}
               </span>
             </label>);
 
         })}
-        {value !== null && <span className="ml-2 text-sm font-semibold text-ink">{WORDS[value - 1]}</span>}
+        {value !== null && <span className="ml-2 text-sm font-semibold text-ink">{word(value)}</span>}
       </div>
     </fieldset>);
 

@@ -1,3 +1,4 @@
+import i18n from '../../../i18n';
 import { useState } from 'react';
 import { useToast } from '../../../hooks/useToast';
 
@@ -11,10 +12,10 @@ export function useCopyToClipboard() {
       if (!navigator.clipboard) throw new Error('unsupported');
       await navigator.clipboard.writeText(text);
       setCopied(what);
-      toast.success(`${what} copied.`);
+      toast.success(i18n.t('payments:copy.toastCopied', { what }));
       window.setTimeout(() => setCopied((c) => c === what ? null : c), 2000);
     } catch {
-      toast.error(`Couldn’t copy. Press and hold the ${what.toLowerCase()} to copy it.`);
+      toast.error(i18n.t('payments:copy.toastFailed'));
     }
   }
 

@@ -1,12 +1,14 @@
+import { useTranslation } from 'react-i18next';
 import { PublicReviewCard } from '../../../public-profile/components/reviews/PublicReviewCard';
 import type { Job, JobReview } from '../../types';
 
 /** The review left on this job, shown with the same card customers see on the vendor's profile. */
 export function JobReviewDisplay({ job, review }: {job: Job;review: JobReview;}) {
+  const { t } = useTranslation('jobs');
   return (
     <section aria-labelledby="job-review-heading">
       <h2 id="job-review-heading" className="mb-2 text-xs font-bold uppercase tracking-wider text-muted">
-        Review
+        {t('review.heading')}
       </h2>
       <PublicReviewCard
         vendorName={job.vendorName}

@@ -8,7 +8,7 @@ import { NotFound } from './NotFound';
 import { useJobs } from '../contexts/JobsContext';
 import { timeSlots, useJobRequestForm } from '../hooks/useJobRequestForm';
 import { vendors } from '../data/vendors';
-import { user } from '../data/user';
+import { useAuth } from '../features/auth/hooks/useAuth';
 
 const inputClass =
 'w-full rounded-xl border bg-white px-4 py-3 text-[15px] text-ink placeholder:text-muted focus:outline-none focus:ring-2';
@@ -21,7 +21,8 @@ export function RequestJob() {
   const vendor = vendors.find((v) => v.id === vendorId);
   const navigate = useNavigate();
   const { addJob } = useJobs();
-  const form = useJobRequestForm(user.address);
+  const { user } = useAuth();
+  const form = useJobRequestForm(user?.address ?? '');
   const { values, errors, photos } = form;
 
   if (!vendor) return <NotFound message="We couldn't find that vendor." />;

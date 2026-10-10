@@ -1,3 +1,4 @@
+import i18n from '../../../i18n';
 import { isBefore, startOfToday } from 'date-fns';
 import { ApiError, mockResponse } from '../../../services/mockApi';
 import { fromDateKey, isDateKey } from '../../../lib/dates';
@@ -7,8 +8,13 @@ import type { BlockedDate } from '../types';
 let blockedDates: BlockedDate[] = structuredClone(mockBlockedDates);
 
 function assertBlockableKey(dateKey: string): void {
-  if (!isDateKey(dateKey)) throw new ApiError('That date isn’t valid.', 400);
-  if (isBefore(fromDateKey(dateKey), startOfToday())) throw new ApiError('You can’t change days that have passed.', 400);
+  if (!isDateKey(dateKey)) throw new ApiError(i18n.t('vendor:error.badDate'), 400);
+  if (isBefore(fromDateKey(dateKey), startOfToday())) throw new ApiError(i18n.t('vendor:error.pastDay'), 400);
+}
+
+/** Sync read for admin analytics (the signed-in vendor's blocked days, "yyyy-MM-dd"). */
+export function blockedDatesSnapshot(): readonly string[] {
+  return blockedDates.map((b) => b.date);
 }
 
 /** GET /vendor/schedule/blocked-dates */

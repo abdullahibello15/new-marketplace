@@ -2,6 +2,8 @@ import { useEffect, useId } from 'react';
 import { Controller, useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { addDays, format, parseISO } from 'date-fns';
+import { useTranslation } from 'react-i18next';
+import { quoteDurationLabel, quoteExpiryLabel } from '../../../../i18n/labels';
 import { Button } from '../../../../components/ui/Button';
 import { Dialog } from '../../../../components/ui/Dialog';
 import { FormField } from '../../../../components/ui/FormField';
@@ -42,6 +44,7 @@ function defaults(job: Job, hours: WorkingHours): QuoteFormValues {
 
 /** Task 51: price (₦), what's included, duration, proposed date/time and expiry. Sending sets the job to Quoted. */
 export function SendQuoteDialog({ open, job, workingHours, onSend, onClose }: SendQuoteDialogProps) {
+  const { t } = useTranslation('vendor');
   const uid = useId();
   const id = (name: string) => `${uid}-${name}`;
   const isDesktop = useMediaQuery('(min-width: 1024px)');
@@ -80,12 +83,12 @@ export function SendQuoteDialog({ open, job, workingHours, onSend, onClose }: Se
       open={open}
       onClose={onClose}
       dismissible={!isSubmitting}
-      title={`Quote for ${job.customerName}`}
-      description="Once sent, the customer can accept or reject it. Accepting books the job at this price and time."
+      title={t('quote.title', { name: job.customerName })}
+      description={t('quote.text')}
       variant={isDesktop ? 'center' : 'sheet'}>
 
       <form onSubmit={submit} noValidate className="space-y-4">
-        <FormField id={id('amount')} label="Price (₦)" error={errors.amount?.message}>
+        <FormField id={id('amount')} label={t('quote.price')} error={errors.amount?.message}>
           {(describedBy) =>
           <Controller
             control={control}
@@ -109,7 +112,7 @@ export function SendQuoteDialog({ open, job, workingHours, onSend, onClose }: Se
 
         <FormField
           id={id('includes')}
-          label="What’s included"
+          label={t('quote.includes')}
           error={errors.includes?.message}
           aside={<span className="text-xs font-semibold tabular-nums text-muted">{includes.trim().length}/{QUOTE_INCLUDES_MAX}</span>}>
 
@@ -118,7 +121,7 @@ export function SendQuoteDialog({ open, job, workingHours, onSend, onClose }: Se
             id={id('includes')}
             rows={3}
             {...register('includes')}
-            placeholder="e.g. New washer and tap, labour, clean-up"
+            placeholder={t('quote.includesPlaceholder')}
             aria-invalid={Boolean(errors.includes)}
             aria-describedby={describedBy}
             className={`${field} resize-y ${errors.includes ? bad : ok}`} />
@@ -127,7 +130,7 @@ export function SendQuoteDialog({ open, job, workingHours, onSend, onClose }: Se
         </FormField>
 
         <div className="grid grid-cols-2 gap-3">
-          <FormField id={id('date')} label="Proposed date" error={errors.proposedDate?.message}>
+          <FormField id={id('date')} label={t('quote.date')} error={errors.proposedDate?.message}>
             {(describedBy) =>
             <input
               id={id('date')}
@@ -143,8 +146,8 @@ export function SendQuoteDialog({ open, job, workingHours, onSend, onClose }: Se
           </FormField>
           <FormField
             id={id('time')}
-            label="Start time"
-            hint={dayHours ? dayHours.open ? `You work ${formatDayHours(dayHours)}` : 'You’re closed that day' : undefined}
+            label={t('quote.time')}
+            hint={dayHours ? dayHours.open ? t('quote.youWork', { hours: formatDayHours(dayHours) }) : t('quote.closed') : undefined}
             error={errors.proposedTime?.message}>
 
             {(describedBy) =>
@@ -162,18 +165,18 @@ export function SendQuoteDialog({ open, job, workingHours, onSend, onClose }: Se
         </div>
 
         <div className="grid grid-cols-2 gap-3">
-          <FormField id={id('duration')} label="Estimated time" error={errors.durationHours?.message}>
+          <FormField id={id('duration')} label={t('quote.duration')} error={errors.durationHours?.message}>
             {(describedBy) =>
             <select id={id('duration')} {...register('durationHours')} aria-describedby={describedBy} className={`${field} ${ok}`}>
                 {QUOTE_DURATIONS.map((d) =>
               <option key={d.hours} value={d.hours}>
-                    {d.label}
+                    {quoteDurationLabel(d.hours, d.label)}
                   </option>
               )}
               </select>
             }
           </FormField>
-          <FormField id={id('expiry')} label="Quote expires in" error={errors.expiresInHours?.message}>
+          <FormField id={id('expiry')} label={t('quote.expiry')} error={errors.expiresInHours?.message}>
             {(describedBy) =>
             <select
               id={id('expiry')}
@@ -184,7 +187,7 @@ export function SendQuoteDialog({ open, job, workingHours, onSend, onClose }: Se
 
                 {QUOTE_EXPIRY_OPTIONS.map((o) =>
               <option key={o.hours} value={o.hours}>
-                    {o.label}
+                    {quoteExpiryLabel(o.hours, o.label)}
                   </option>
               )}
               </select>
@@ -194,10 +197,10 @@ export function SendQuoteDialog({ open, job, workingHours, onSend, onClose }: Se
 
         <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
           <Button variant="secondary" onClick={onClose} disabled={isSubmitting}>
-            Cancel
+            {t('common:action.cancel')}
           </Button>
           <Button type="submit" loading={isSubmitting}>
-            Send quote
+            {t('quote.send')}
           </Button>
         </div>
       </form>

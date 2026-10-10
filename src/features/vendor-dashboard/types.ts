@@ -5,6 +5,7 @@ import type {
   BILLING_PERIOD,
   EARNING_STAGE,
   INVOICE_KIND,
+  ASSOCIATION_MEMBER_STATUS,
   INVOICE_STATUS,
   PAYOUT_STATUS,
   PLAN_ID,
@@ -162,6 +163,8 @@ export interface SubscriptionPlan {
 
 /** One row of the plan comparison. `true`/`false` render as a tick or dash; strings show as-is. */
 export interface PlanFeature {
+  /** Translation key under vendor:plan.feature. */
+  id: string;
   label: string;
   values: Record<PlanId, boolean | string>;
 }
@@ -169,6 +172,16 @@ export interface PlanFeature {
 export interface PlanCatalogue {
   plans: SubscriptionPlan[];
   features: PlanFeature[];
+}
+
+/** A vendor whose subscription is paid by a trade association's bundle. */
+export interface SubscriptionCoverage {
+  associationId: string;
+  associationName: string;
+  /** Covered until the end of this day (the bundle's renewal date, or the paid-up date if removed). */
+  until: string;
+  /** Taken off the bundle; covered until `until` only. */
+  removed: boolean;
 }
 
 export interface Subscription {
@@ -181,6 +194,53 @@ export interface Subscription {
   startedAt: string;
   /** A paid downgrade (or plan change at renewal) waiting for the current period to end. */
   scheduledChange: {planId: PlanId;effectiveAt: string;invoiceId: string;} | null;
+  /**
+   * Set when an association's bundle pays for this vendor. Then planId and renewsOn come from the bundle,
+   * and the vendor can't pay separately. Filled in by the service; never stored on the vendor's own record.
+   */
+  coveredBy: SubscriptionCoverage | null;
+}
+
+/** Where a vendor stands right now, from the one status helper. Used by search, booking and the dashboard. */
+export interface VendorStanding {
+  status: SubscriptionStatus;
+  /** The end date the status is worked out from; null for vendors with no subscription record (treated as active). */
+  renewsOn: string | null;
+  coveredBy: SubscriptionCoverage | null;
+  /** Set while Gwani's moderation team has suspended the vendor (same soft suspension as a lapsed plan). */
+  adminSuspension: {reason: string;at: string;} | null;
+}
+
+export type AssociationMemberStatus = ValueOf<typeof ASSOCIATION_MEMBER_STATUS>;
+
+export interface AssociationMember {
+  id: string;
+  vendorId: string;
+  vendorName: string;
+  /** The phone or email the admin added them with. */
+  contact: string;
+  status: AssociationMemberStatus;
+  addedAt: string;
+  /** When the bundle started paying for them (null until their first payment). */
+  coveredFrom: string | null;
+  removedAt: string | null;
+  /** Removed members keep access until this date (the end of the period already paid for). */
+  accessUntil: string | null;
+}
+
+/** A trade association: one organisation account paying one bundled invoice for its member vendors. */
+export interface Association {
+  id: string;
+  name: string;
+  adminName: string;
+  /** Partner contact details and agreed bundle terms (set for partners created by a bulk import). */
+  contactPhone?: string | null;
+  contactEmail?: string | null;
+  terms?: string | null;
+  /** Start and end of the bundle's current paid period. Every covered member renews on renewsOn. */
+  periodStart: string;
+  renewsOn: string;
+  members: AssociationMember[];
 }
 
 /** The working behind an invoice amount, shown to the vendor before they pay. */
@@ -193,7 +253,12 @@ export interface InvoiceLine {
 /** A subscription charge. Paid through the shared payment screen (card, transfer or USSD). */
 export interface Invoice {
   id: string;
+  /** The account billed: the vendor, or the association for bundle invoices. */
   vendorId: string;
+  /** Set for association bundle invoices. */
+  associationId: string | null;
+  /** Bundle invoices: the members this invoice pays for (one line each). Empty for vendor invoices. */
+  memberIds: string[];
   kind: InvoiceKind;
   planId: PlanId;
   /** The plan before this change (same as planId for a renewal). */

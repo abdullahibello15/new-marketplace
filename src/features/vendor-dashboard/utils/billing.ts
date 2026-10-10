@@ -1,4 +1,6 @@
 import { addMonths, differenceInCalendarDays, endOfDay, startOfDay } from 'date-fns';
+import i18n from '../../../i18n';
+import { planName } from '../../../i18n/labels';
 import { formatNaira } from '../../../utils/format';
 import { INVOICE_KIND, SUBSCRIPTION_STATUS } from '../constants';
 import { planById } from '../plans';
@@ -40,9 +42,9 @@ export function prorateUpgrade(fromPrice: number, toPrice: number, periodStart: 
   return { remainingDays, totalDays, months, credit, charge, due: Math.max(0, charge - credit) };
 }
 
-/** Is choosing `target` a renewal, an upgrade, a downgrade, or (after the profile is limited) a fresh subscription? */
+/** Is choosing `target` a renewal, an upgrade, a downgrade, or (once suspended) a fresh subscription? */
 export function changeKind(sub: Subscription, target: PlanId, now: Date): InvoiceKind {
-  if (getSubscriptionStatus(sub.renewsOn, now) === SUBSCRIPTION_STATUS.Expired) return INVOICE_KIND.Subscribe;
+  if (getSubscriptionStatus(sub.renewsOn, now) === SUBSCRIPTION_STATUS.Suspended) return INVOICE_KIND.Subscribe;
   if (target === sub.planId) return INVOICE_KIND.Renew;
   return planById(target).price > planById(sub.planId).price ? INVOICE_KIND.Upgrade : INVOICE_KIND.Downgrade;
 }
@@ -65,18 +67,18 @@ export function quoteChange(sub: Subscription, target: PlanId, now: Date): Invoi
   if (kind === INVOICE_KIND.Subscribe) {
     const start = startOfDay(now);
     const end = endOfDay(addMonths(now, 1));
-    return { ...base, kind, amount: to.price, lines: [{ label: `${to.name}, 1 month`, amount: to.price }], periodStart: start.toISOString(), periodEnd: end.toISOString(), effectiveAt: now.toISOString() };
+    return { ...base, kind, amount: to.price, lines: [{ label: i18n.t('vendor:subscription.line.month', { plan: planName(to.id, to.name) }), amount: to.price }], periodStart: start.toISOString(), periodEnd: end.toISOString(), effectiveAt: now.toISOString() };
   }
   if (kind === INVOICE_KIND.Upgrade && inPeriod) {
     const p = prorateUpgrade(from.price, to.price, sub.periodStart, sub.renewsOn, now);
-    const span = p.months > 1 ? ` × ${p.months} months` : '';
+    const span = p.months > 1 ? i18n.t('vendor:subscription.line.span', { count: p.months }) : '';
     return {
       ...base,
       kind,
       amount: p.due,
       lines: [
-      { label: `${to.name}: ${formatNaira(to.price)}${span} × ${p.remainingDays}/${p.totalDays} days left`, amount: p.charge },
-      { label: `Credit for unused ${from.name}: ${formatNaira(from.price)}${span} × ${p.remainingDays}/${p.totalDays} days`, amount: -p.credit }],
+      { label: i18n.t('vendor:subscription.line.upgrade', { plan: planName(to.id, to.name), price: formatNaira(to.price), span, left: p.remainingDays, total: p.totalDays }), amount: p.charge },
+      { label: i18n.t('vendor:subscription.line.credit', { plan: planName(from.id, from.name), price: formatNaira(from.price), span, left: p.remainingDays, total: p.totalDays }), amount: -p.credit }],
 
       periodStart: startOfDay(now).toISOString(),
       periodEnd: sub.renewsOn,
@@ -90,7 +92,7 @@ export function quoteChange(sub: Subscription, target: PlanId, now: Date): Invoi
     ...base,
     kind,
     amount: to.price,
-    lines: [{ label: `${to.name}, 1 month`, amount: to.price }],
+    lines: [{ label: i18n.t('vendor:subscription.line.month', { plan: planName(to.id, to.name) }), amount: to.price }],
     periodStart: period.start.toISOString(),
     periodEnd: period.end.toISOString(),
     effectiveAt: effective.toISOString()

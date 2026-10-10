@@ -1,15 +1,19 @@
-import { user } from '../../../data/user';
+import i18n from '../../../i18n';
+import { fulfilmentMethodLabel } from '../../../i18n/labels';
+import { currentCustomerId, requireUser } from '../../auth/session';
 import { ApiError, mockResponse } from '../../../services/mockApi';
 import { adjustProductStock, getAllVendors } from '../../../services/vendorStore';
 import { withListingRestrictions } from '../../vendor-dashboard/services/subscriptionService';
-import { CURRENT_CUSTOMER_ID } from '../../jobs/constants';
+import { DISPUTE_OUTCOME, DISPUTE_OUTCOME_LABELS } from '../../jobs/constants';
+import { formatNaira } from '../../../utils/format';
 import { CART_CHANGE_KIND, FULFILMENT_METHOD, ORDER_ACTOR, ORDER_AUTO_COMPLETE_HOURS, ORDER_STATUS } from '../constants';
 import { applyOrderEscrowChange } from '../../payments/services/escrowService';
 import { mockOrders } from '../mock/orders';
-import { OrderTransitionError, applyOrderTransition, orderTransitionBlockedReason } from '../stateMachine';
+import { OrderTransitionError, applyOrderTransition, orderTransitionBlockedReason, statusBeforeOrderDispute } from '../stateMachine';
 import { deliveryBlockedReason, enabledMethods, feeFor, fulfilmentFor } from '../utils/fulfilment';
 import type { Product, Vendor } from '../../../types/marketplace';
 import type { StarLevel } from '../../vendor-dashboard/types';
+import type { DisputeOutcome, DisputeReason } from '../../jobs/types';
 import type {
   CartChange,
   CartCheck,
@@ -44,7 +48,7 @@ const newestFirst = (a: Order, b: Order) => b.updatedAt.localeCompare(a.updatedA
 
 function findOrder(id: string): Order {
   const found = orders.find((o) => o.id === id);
-  if (!found) throw new ApiError('We couldn’t find that order.', 404);
+  if (!found) throw new ApiError(i18n.t('jobs:order.error.notFound'), 404);
   return found;
 }
 
@@ -88,6 +92,8 @@ function releaseStock(order: Order): Partial<Order> {
  */
 export function runScheduledOrderTasks(now = new Date()): void {
   for (const o of orders) {
+    // Only orders waiting for receipt. A disputed order completes only when Gwani's team resolves it.
+    if (o.status !== ORDER_STATUS.Delivered && o.status !== ORDER_STATUS.Collected) continue;
     if (!orderTransitionBlockedReason(o, ORDER_STATUS.Completed, ORDER_ACTOR.System, now)) {
       transition(o, ORDER_STATUS.Completed, ORDER_ACTOR.System, { note: `Completed automatically: no reply within ${ORDER_AUTO_COMPLETE_HOURS} hours`, at: now });
     }
@@ -100,7 +106,7 @@ export function runScheduledOrderTasks(now = new Date()): void {
 export function listCustomerOrders(): Promise<Order[]> {
   return mockResponse(() => {
     runScheduledOrderTasks();
-    return orders.filter((o) => o.customerId === CURRENT_CUSTOMER_ID).sort(newestFirst);
+    return orders.filter((o) => o.customerId === currentCustomerId()).sort(newestFirst);
   });
 }
 
@@ -197,7 +203,7 @@ export function checkCart(items: CartItem[]): Promise<CartCheck> {
  */
 export function placeOrders(input: CheckoutInput): Promise<CheckoutResult> {
   return mockResponse(() => {
-    if (input.orders.length === 0) throw new ApiError('Your cart is empty.', 400);
+    if (input.orders.length === 0) throw new ApiError(i18n.t('jobs:order.error.emptyCart'), 400);
     const asCart: CartItem[] = input.orders.flatMap((o) =>
     o.items.map((i) => ({
       vendorId: o.vendorId,
@@ -218,13 +224,13 @@ export function placeOrders(input: CheckoutInput): Promise<CheckoutResult> {
     const checkoutRef = `CHK-${Math.floor(100000 + Math.random() * 900000)}`;
     const created: Order[] = input.orders.map((o) => {
       const vendor = findVendor(o.vendorId);
-      if (!vendor) throw new ApiError('One of the shops in your cart closed. Please remove its items.', 409);
+      if (!vendor) throw new ApiError(i18n.t('jobs:order.error.shopClosed'), 409);
       const f = fulfilmentFor(vendor);
       if (!enabledMethods(f).includes(o.method)) {
-        throw new ApiError(`${vendor.name} no longer offers ${o.method}. Please choose again.`, 409);
+        throw new ApiError(i18n.t('jobs:order.error.methodGone', { name: vendor.name, method: fulfilmentMethodLabel(o.method) }), 409);
       }
       if (o.method === FULFILMENT_METHOD.Delivery) {
-        if (!input.delivery) throw new ApiError('Add a delivery address and phone number.', 400);
+        if (!input.delivery) throw new ApiError(i18n.t('jobs:order.error.addDelivery'), 400);
         const blocked = deliveryBlockedReason(f, vendor.name, input.delivery.lga);
         if (blocked) throw new ApiError(blocked, 409);
       }
@@ -239,8 +245,8 @@ export function placeOrders(input: CheckoutInput): Promise<CheckoutResult> {
         checkoutRef,
         vendorId: vendor.id,
         vendorName: vendor.name,
-        customerId: CURRENT_CUSTOMER_ID,
-        customerName: user.fullName,
+        customerId: currentCustomerId(),
+        customerName: requireUser().name,
         items,
         method: o.method,
         delivery: o.method === FULFILMENT_METHOD.Delivery ? input.delivery : null,
@@ -253,6 +259,7 @@ export function placeOrders(input: CheckoutInput): Promise<CheckoutResult> {
         stockReserved: false,
         review: null,
         reviewSkipped: false,
+        dispute: null,
         createdAt: now,
         updatedAt: now
       };
@@ -266,7 +273,7 @@ export function placeOrders(input: CheckoutInput): Promise<CheckoutResult> {
 
 function ownOrder(id: string, vendorId: string): Order {
   const found = findOrder(id);
-  if (found.vendorId !== vendorId) throw new ApiError('You can only manage your own orders.', 403);
+  if (found.vendorId !== vendorId) throw new ApiError(i18n.t('jobs:order.error.notYours'), 403);
   return found;
 }
 
@@ -290,7 +297,7 @@ export function confirmOrder(id: string, vendorId: string, outOfStockIds: string
       const stock = products.find((p) => p.id === line.productId)?.stock ?? 0;
       if (stock < line.quantity) {
         throw new ApiError(
-          `You have ${stock} × ${line.name} in stock but the order needs ${line.quantity}. Mark it out of stock, or update your stock first.`,
+          i18n.t('jobs:order.error.notEnoughStock', { stock, name: line.name, needed: line.quantity }),
           409
         );
       }
@@ -323,7 +330,7 @@ export function advanceOrder(id: string, vendorId: string, to: OrderStatus): Pro
 
 function customerOrder(id: string): Order {
   const found = findOrder(id);
-  if (found.customerId !== CURRENT_CUSTOMER_ID) throw new ApiError('We couldn’t find that order.', 404);
+  if (found.customerId !== currentCustomerId()) throw new ApiError(i18n.t('jobs:order.error.notFound'), 404);
   return found;
 }
 
@@ -344,8 +351,8 @@ export function confirmReceipt(id: string): Promise<Order> {
 export function reviewOrder(id: string, input: {rating: StarLevel;comment: string;}): Promise<Order> {
   return mockResponse(() => {
     const current = customerOrder(id);
-    if (current.status !== ORDER_STATUS.Completed) throw new ApiError('You can review an order once you’ve received it.', 409);
-    if (current.review) throw new ApiError('You’ve already reviewed this order.', 409);
+    if (current.status !== ORDER_STATUS.Completed) throw new ApiError(i18n.t('jobs:order.error.reviewWhen'), 409);
+    if (current.review) throw new ApiError(i18n.t('jobs:order.error.reviewed'), 409);
     return save({ ...current, review: { ...input, at: new Date().toISOString() }, updatedAt: new Date().toISOString() });
   });
 }
@@ -354,3 +361,49 @@ export function skipOrderReview(id: string): Promise<Order> {
   return mockResponse(() => save({ ...customerOrder(id), reviewSkipped: true }));
 }
 
+/**
+ * POST /orders/:id/problem — "Report a problem" instead of confirming receipt (Delivered or Collected only;
+ * the state machine enforces it). The order becomes Disputed and escrow holds the money for Gwani's team.
+ */
+export function reportOrderProblem(id: string, input: {reason: DisputeReason;details: string;}): Promise<Order> {
+  return mockResponse(() =>
+  transition(customerOrder(id), ORDER_STATUS.Disputed, ORDER_ACTOR.Customer, {
+    note: input.details,
+    changes: { dispute: { ...input, at: new Date().toISOString() } }
+  })
+  );
+}
+
+/* ---------- Gwani's team ---------- */
+
+/**
+ * Resolves a disputed order (same outcomes as jobs): release to the vendor → Completed; full refund →
+ * Cancelled; partial refund → Completed with part refunded; dismiss → back to Delivered or Collected (held
+ * again). Escrow follows from the status change. The refund is worked out here, except a partial refund's amount.
+ */
+export function resolveOrderDispute(id: string, outcome: DisputeOutcome, refundAmount: number, reason?: string): Promise<Order> {
+  return mockResponse(() => {
+    const current = findOrder(id);
+    if (current.status !== ORDER_STATUS.Disputed || !current.dispute) throw new ApiError(i18n.t('jobs:order.error.notDisputed'), 409);
+    const refund = outcome === DISPUTE_OUTCOME.RefundCustomer ? current.total : outcome === DISPUTE_OUTCOME.Split ? Math.round(refundAmount) : 0;
+    if (outcome === DISPUTE_OUTCOME.Split && (!(refund > 0) || refund >= current.total)) {
+      throw new ApiError(i18n.t('common:error.partialRefund', { max: formatNaira(current.total) }), 400);
+    }
+    const to =
+    outcome === DISPUTE_OUTCOME.RefundCustomer ? ORDER_STATUS.Cancelled : outcome === DISPUTE_OUTCOME.Dismiss ? statusBeforeOrderDispute(current) : ORDER_STATUS.Completed;
+    if (!to) throw new ApiError(i18n.t('jobs:order.error.beforeDispute'), 409);
+    const resolution = { outcome, refundAmount: refund, at: new Date().toISOString(), ...(reason ? { reason } : {}) };
+    return transition(current, to, ORDER_ACTOR.System, {
+      note: reason ? `${DISPUTE_OUTCOME_LABELS[outcome]}: ${reason}` : DISPUTE_OUTCOME_LABELS[outcome],
+      // No stock goes back on a refund: the goods already left the shop when it was delivered or collected.
+      changes: { dispute: { ...current.dispute, resolution } }
+    });
+  }, 700);
+}
+
+
+/** Every order as stored right now (read-only), for Gwani's admin tools (disputes). Runs the scheduled tasks first. */
+export function ordersSnapshot(): readonly Order[] {
+  runScheduledOrderTasks();
+  return orders;
+}

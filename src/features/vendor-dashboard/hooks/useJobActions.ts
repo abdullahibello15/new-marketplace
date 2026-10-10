@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { format } from 'date-fns';
-import { JOB_ACTOR } from '../../jobs/constants';
+import i18n from '../../../i18n';
+import { formatDate } from '../../../utils/format';
+import { AUTO_CONFIRM_HOURS, JOB_ACTOR } from '../../jobs/constants';
 import { useJobAction } from '../../jobs/hooks/useJobAction';
 import {
   cancelJob,
@@ -32,19 +33,19 @@ export function useJobActions(job: Job) {
     openQuote: () => setDialog('quote'),
     openDecline: () => setDialog('decline'),
     close: () => setDialog(null),
-    sendQuote: (input: QuoteInput) => run('quote', () => sendQuote(job.id, input), `Quote sent to ${job.customerName}.`),
-    decline: (reason: string) => run('decline', () => declineJob(job.id, reason), `Declined ${job.customerName}’s request.`),
+    sendQuote: (input: QuoteInput) => run('quote', () => sendQuote(job.id, input), () => i18n.t('vendor:toast.quoteSent', { name: job.customerName })),
+    decline: (reason: string) => run('decline', () => declineJob(job.id, reason), () => i18n.t('vendor:toast.declined', { name: job.customerName })),
     start: (shareLocation: boolean) =>
-    run('start', () => startJob(job.id, { shareLocation }), (u) => `Job started at ${format(new Date(u.arrival?.at ?? Date.now()), 'h:mm a')}. ${job.customerName} has been told.`),
-    markDone: () => run('done', () => markWorkDone(job.id), `Marked as done. ${job.customerName} has 48 hours to confirm.`),
+    run('start', () => startJob(job.id, { shareLocation }), (u) => i18n.t('vendor:toast.started', { time: formatDate(u.arrival?.at ?? Date.now(), 'h:mm a'), name: job.customerName })),
+    markDone: () => run('done', () => markWorkDone(job.id), () => i18n.t('vendor:toast.done', { name: job.customerName, hours: AUTO_CONFIRM_HOURS })),
     requestReschedule: (data: {proposedStart: string;reason: string;}) =>
-    run('reschedule-request', () => requestReschedule(job.id, by, data), `Reschedule request sent to ${job.customerName}.`),
+    run('reschedule-request', () => requestReschedule(job.id, by, data), () => i18n.t('vendor:toast.rescheduleSent', { name: job.customerName })),
     respondReschedule: (requestId: string, accept: boolean) =>
     run(
       accept ? 'reschedule-accept' : 'reschedule-decline',
       () => respondToReschedule(job.id, requestId, by, accept),
-      (u) => accept && u.scheduledAt ? `Moved to ${format(new Date(u.scheduledAt), 'EEE d MMM, h:mm a')}. Your calendar is updated.` : 'The original time stands.'
+      (u) => accept && u.scheduledAt ? i18n.t('vendor:toast.moved', { date: formatDate(u.scheduledAt, 'EEE d MMM, h:mm a') }) : i18n.t('jobs:toast.originalStands')
     ),
-    cancel: (reason: string) => run('cancel', () => cancelJob(job.id, by, reason), `Job #${job.id} cancelled. ${job.customerName} has been told and the slot is free.`)
+    cancel: (reason: string) => run('cancel', () => cancelJob(job.id, by, reason), () => i18n.t('vendor:toast.cancelled', { id: job.id, name: job.customerName }))
   };
 }

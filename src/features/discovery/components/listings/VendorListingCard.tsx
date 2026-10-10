@@ -1,3 +1,6 @@
+import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
+import { lgaLabel } from '../../../../i18n/labels';
 import { Link } from 'react-router-dom';
 import { MapPinIcon } from 'lucide-react';
 import { TradeBadge } from '../../../../components/TradeBadge';
@@ -10,10 +13,11 @@ import type { VendorListing } from '../../types';
 
 const AREAS_SHOWN = 2;
 
-function areasText(areas: string[]): string {
-  if (areas.length === 0) return 'Area not set';
+function areasText(areas: string[], t: TFunction): string {
+  if (areas.length === 0) return t('listing.areaNotSet');
   const extra = areas.length - AREAS_SHOWN;
-  return `Serves ${areas.slice(0, AREAS_SHOWN).join(', ')}${extra > 0 ? ` +${extra} more` : ''}`;
+  const shown = areas.slice(0, AREAS_SHOWN).map(lgaLabel).join(', ');
+  return extra > 0 ? t('listing.servesMore', { areas: shown, count: extra }) : t('listing.serves', { areas: shown });
 }
 
 interface VendorListingCardProps {
@@ -23,6 +27,7 @@ interface VendorListingCardProps {
 }
 
 export function VendorListingCard({ listing: v, highlighted = false }: VendorListingCardProps) {
+  const { t } = useTranslation('discovery');
   return (
     <Link
       to={vendorProfilePath(v.id)}
@@ -46,8 +51,12 @@ export function VendorListingCard({ listing: v, highlighted = false }: VendorLis
 
         <p className="mt-0.5 flex items-center gap-1 truncate text-sm text-muted">
           <MapPinIcon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-          <span className="truncate">{areasText(v.serviceAreas)}</span>
+          <span className="truncate">{areasText(v.serviceAreas, t)}</span>
         </p>
+
+        {v.temporarilyUnavailable &&
+        <p className="mt-1 text-xs font-bold text-clay-dark">{t('listing.unavailable')}</p>
+        }
 
         <div className="mt-auto flex min-w-0 flex-wrap gap-1.5 pt-2.5">
           <TradeBadge trade={v} />

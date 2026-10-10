@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useId, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { startOfToday } from 'date-fns';
@@ -20,6 +21,7 @@ import { useWorkingHours } from '../hooks/useWorkingHours';
 import { groupBookingsByDay, isBooking } from '../utils/calendar';
 
 export function CalendarSection() {
+  const { t } = useTranslation('vendor');
   const titleId = useId();
   const [params] = useSearchParams();
   const dateParam = params.get('date');
@@ -47,7 +49,7 @@ export function CalendarSection() {
 
   function renderGrid() {
     if (error !== null) return <ErrorState message={error} onRetry={retry} />;
-    if (loading) return <LoadingState label="Loading your calendar" rows={1} rowClassName="h-96" />;
+    if (loading) return <LoadingState label={t('calendar.loading')} rows={1} rowClassName="h-96" />;
     return (
       <CalendarGrid
         days={cal.days}
@@ -63,7 +65,7 @@ export function CalendarSection() {
 
   return (
     <>
-      <PageHeader title="Calendar" subtitle={`${upcoming} upcoming ${upcoming === 1 ? 'booking' : 'bookings'}`} />
+      <PageHeader title={t('calendar.title')} subtitle={t('calendar.upcoming', { count: upcoming })} />
       <PageContainer>
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-8">
           <div className="min-w-0">

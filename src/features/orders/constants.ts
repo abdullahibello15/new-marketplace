@@ -12,6 +12,7 @@ export const ORDER_AUTO_COMPLETE_HOURS = ESCROW_CONFIG.orderAutoReleaseHours;
  *   Delivery: Placed → Confirmed → Preparing → Dispatched → Delivered → Completed
  *   Pickup:   Placed → Confirmed → Preparing → Ready for pickup → Collected → Completed
  * Side branches (end states): Declined, Cancelled, Out of stock.
+ * Disputed: the customer reported a problem after delivery or collection; Gwani's team resolves it.
  * Which moves are allowed, by whom and when, lives in stateMachine.ts.
  */
 export const ORDER_STATUS = {
@@ -25,7 +26,8 @@ export const ORDER_STATUS = {
   Completed: 'completed',
   Declined: 'declined',
   Cancelled: 'cancelled',
-  OutOfStock: 'out_of_stock'
+  OutOfStock: 'out_of_stock',
+  Disputed: 'disputed'
 } as const;
 
 export const FULFILMENT_METHOD = {
@@ -58,8 +60,8 @@ export const ORDER_PATHS: Record<FulfilmentMethod, readonly OrderStatus[]> = {
 
 };
 
-/** Ways an order can leave its path. All are end states. */
-export const ORDER_SIDE_BRANCHES: readonly OrderStatus[] = [ORDER_STATUS.Declined, ORDER_STATUS.Cancelled, ORDER_STATUS.OutOfStock];
+/** Ways an order can leave its path. All are end states except Disputed, which waits for Gwani's team. */
+export const ORDER_SIDE_BRANCHES: readonly OrderStatus[] = [ORDER_STATUS.Declined, ORDER_STATUS.Cancelled, ORDER_STATUS.OutOfStock, ORDER_STATUS.Disputed];
 
 /** Every status in display order (shared start, delivery steps, pickup steps, the end, then side branches). */
 export const ORDER_STATUS_ORDER: readonly OrderStatus[] = [
@@ -140,6 +142,12 @@ export const ORDER_STATUS_META: Record<OrderStatus, {label: string;badgeClass: s
     badgeClass: 'bg-[#F9E3EE] text-[#9D2E63]',
     dotClass: 'bg-[#9D2E63]',
     description: 'None of the items were in stock, so the vendor couldn’t fill the order.'
+  },
+  disputed: {
+    label: 'Disputed',
+    badgeClass: 'bg-[#8F3916] text-white',
+    dotClass: 'bg-white',
+    description: 'The customer reported a problem. Gwani’s team is reviewing it, and the payment stays held.'
   }
 };
 
@@ -223,8 +231,6 @@ export const ORDER_DECLINE_REASONS: {id: string;label: string;}[] = [
 
 export const DELIVERY_LANDMARK_MIN = 5;
 export const DELIVERY_LANDMARK_MAX = 200;
-/** Nigerian mobile numbers: 0803 555 0142 or +234 803 555 0142. */
-export const NIGERIAN_PHONE_PATTERN = /^(?:\+234|0)[789][01]\d{8}$/;
 
 /* ---------- Routes ---------- */
 

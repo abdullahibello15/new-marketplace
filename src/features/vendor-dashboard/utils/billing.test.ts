@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { INVOICE_KIND, PLAN_ID, SUBSCRIPTION_STATUS } from '../constants';
 import { BILLING_RULES, PLANS, planAllowingMore } from '../plans';
 import { changeKind, prorateUpgrade, quoteChange } from './billing';
-import { getSubscriptionStatus, isProfileLimited } from './subscription';
+import { getSubscriptionStatus, isSuspended } from './subscription';
 import type { Subscription } from '../types';
 
 // Local times so day counting doesn't depend on the test machine's time zone.
@@ -16,6 +16,7 @@ const sub = (over: Partial<Subscription> = {}): Subscription => ({
   renewsOn: endOf(2026, 10, 30),
   startedAt: at(2026, 1, 1).toISOString(),
   scheduledChange: null,
+  coveredBy: null,
   ...over
 });
 
@@ -87,7 +88,7 @@ describe('downgrade, renewal and subscribe', () => {
     expect(new Date(q.periodEnd).getMonth()).toBe(10); // November
   });
 
-  it('after the grace period, any plan is a fresh subscription starting today', () => {
+  it('once suspended, any plan is a fresh subscription starting today', () => {
     const now = at(2026, 11, 10);
     expect(changeKind(sub(), PLAN_ID.Standard, now)).toBe(INVOICE_KIND.Subscribe);
     const q = quoteChange(sub(), PLAN_ID.Premium, now);
@@ -102,14 +103,15 @@ describe('downgrade, renewal and subscribe', () => {
 });
 
 describe('expiry and grace', () => {
-  it(`warns, then gives ${BILLING_RULES.graceDays} days of grace, then limits the profile`, () => {
+  it(`warns, then gives ${BILLING_RULES.graceDays} days of grace, then soft-suspends`, () => {
+    expect(BILLING_RULES.graceDays).toBe(7);
     const s = sub();
     expect(getSubscriptionStatus(s.renewsOn, at(2026, 10, 10))).toBe(SUBSCRIPTION_STATUS.Active);
     expect(getSubscriptionStatus(s.renewsOn, at(2026, 10, 25))).toBe(SUBSCRIPTION_STATUS.ExpiringSoon);
     expect(getSubscriptionStatus(s.renewsOn, at(2026, 10, 31))).toBe(SUBSCRIPTION_STATUS.Grace);
-    expect(getSubscriptionStatus(s.renewsOn, at(2026, 11, 2, 23))).toBe(SUBSCRIPTION_STATUS.Grace);
-    expect(isProfileLimited(s.renewsOn, at(2026, 11, 2, 23))).toBe(false);
-    expect(getSubscriptionStatus(s.renewsOn, at(2026, 11, 3))).toBe(SUBSCRIPTION_STATUS.Expired);
-    expect(isProfileLimited(s.renewsOn, at(2026, 11, 3))).toBe(true);
+    expect(getSubscriptionStatus(s.renewsOn, at(2026, 11, 6, 23))).toBe(SUBSCRIPTION_STATUS.Grace);
+    expect(isSuspended(s.renewsOn, at(2026, 11, 6, 23))).toBe(false);
+    expect(getSubscriptionStatus(s.renewsOn, at(2026, 11, 7))).toBe(SUBSCRIPTION_STATUS.Suspended);
+    expect(isSuspended(s.renewsOn, at(2026, 11, 7))).toBe(true);
   });
 });

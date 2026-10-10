@@ -1,7 +1,9 @@
+import { useTranslation } from 'react-i18next';
 import { addDays, format, parseISO } from 'date-fns';
 import { useFormContext, useWatch } from 'react-hook-form';
 import { FormField } from '../../../../components/ui/FormField';
 import { bad, errorText, field, ok } from '../../../../components/vendor/formStyles';
+import { timeWindowLabel } from '../../../../i18n/labels';
 import { formatDayHours, weekdayOfDate } from '../../../../utils/workingHours';
 import { JOB_BOOKING_WINDOW_DAYS, TIME_WINDOWS } from '../../constants';
 import type { JobRequestFormData, JobRequestFormValues } from '../../schemas';
@@ -9,6 +11,7 @@ import type { WorkingHours } from '../../../../types/marketplace';
 
 /** Preferred date plus a time window. The hint shows the vendor's hours for the chosen day. */
 export function JobWhenFields({ workingHours }: {workingHours: WorkingHours;}) {
+  const { t } = useTranslation('jobs');
   const {
     register,
     control,
@@ -23,8 +26,8 @@ export function JobWhenFields({ workingHours }: {workingHours: WorkingHours;}) {
     <>
       <FormField
         id="job-date"
-        label="Preferred date"
-        hint={hours ? `They work ${formatDayHours(hours)} that day.` : undefined}
+        label={t('request.date')}
+        hint={hours ? t('request.worksThatDay', { hours: formatDayHours(hours) }) : undefined}
         error={errors.preferredDate?.message}>
 
         {(describedBy) =>
@@ -43,7 +46,7 @@ export function JobWhenFields({ workingHours }: {workingHours: WorkingHours;}) {
       </FormField>
 
       <fieldset aria-describedby={errors.timeWindow ? 'job-window-error' : undefined}>
-        <legend className="mb-2 text-sm font-bold text-muted">Time window</legend>
+        <legend className="mb-2 text-sm font-bold text-muted">{t('request.window')}</legend>
         <div className="grid gap-2 sm:grid-cols-2">
           {TIME_WINDOWS.map((w) =>
           <label
@@ -57,7 +60,7 @@ export function JobWhenFields({ workingHours }: {workingHours: WorkingHours;}) {
               id={w.id === TIME_WINDOWS[0].id ? 'job-window' : undefined}
               className="h-4 w-4 accent-pine" />
 
-              {w.label}
+              {timeWindowLabel(w.id, w.label)}
             </label>
           )}
         </div>

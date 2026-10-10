@@ -1,5 +1,5 @@
 import type { BadgeTone } from '../../components/ui/Badge';
-import type { EarningStage, InvoiceKind, InvoiceStatus, ReportReason, SubscriptionStatus } from './types';
+import type { AssociationMemberStatus, EarningStage, InvoiceKind, InvoiceStatus, ReportReason, SubscriptionStatus } from './types';
 
 /* ---------- Calendar ---------- */
 
@@ -75,17 +75,20 @@ export const STAR_LEVELS = [5, 4, 3, 2, 1] as const;
 export const SUBSCRIPTION_STATUS = {
   Active: 'active',
   ExpiringSoon: 'expiring_soon',
-  /** Past the end date but inside the grace period: still visible, renew now. */
+  /** Past the end date but inside the grace period: fully visible and working, renew now. */
   Grace: 'grace',
-  /** Grace is over: the profile is limited (hidden from search, no new requests). */
-  Expired: 'expired'
+  /**
+   * Grace is over: soft suspension. Still listed (ranked lower, marked "temporarily unavailable"),
+   * no new requests, orders or quotes. Existing work, payouts and renewal still work.
+   */
+  Suspended: 'suspended'
 } as const;
 
 export const SUBSCRIPTION_STATUS_META: Record<SubscriptionStatus, {label: string;tone: BadgeTone;}> = {
   active: { label: 'Active', tone: 'success' },
   expiring_soon: { label: 'Expiring soon', tone: 'warning' },
   grace: { label: 'Grace period', tone: 'warning' },
-  expired: { label: 'Expired: profile limited', tone: 'danger' }
+  suspended: { label: 'Suspended', tone: 'danger' }
 };
 
 export const PLAN_ID = {
@@ -110,14 +113,37 @@ export const INVOICE_KIND = {
   Subscribe: 'subscribe',
   Renew: 'renew',
   Upgrade: 'upgrade',
-  Downgrade: 'downgrade'
+  Downgrade: 'downgrade',
+  /** An association paying for all its members for the next period. */
+  BundleRenewal: 'bundle_renewal',
+  /** An association adding members mid-period (prorated). */
+  BundleMembers: 'bundle_members'
 } as const;
 
 export const INVOICE_KIND_LABELS: Record<InvoiceKind, string> = {
   subscribe: 'New subscription',
   renew: 'Renewal',
   upgrade: 'Upgrade (prorated)',
-  downgrade: 'Downgrade (next period)'
+  downgrade: 'Downgrade (next period)',
+  bundle_renewal: 'Association bundle renewal',
+  bundle_members: 'New members (prorated)'
+};
+
+/* ---------- Trade association bundles (rules in bundles.ts) ---------- */
+
+export const ASSOCIATION_MEMBER_STATUS = {
+  /** Added, waiting for the association to pay the prorated amount. */
+  PendingPayment: 'pending_payment',
+  /** Covered by the bundle. */
+  Active: 'active',
+  /** Taken off the bundle. Keeps access until the period they were paid for ends; no refund. */
+  Removed: 'removed'
+} as const;
+
+export const ASSOCIATION_MEMBER_STATUS_META: Record<AssociationMemberStatus, {label: string;tone: BadgeTone;}> = {
+  pending_payment: { label: 'Awaiting payment', tone: 'warning' },
+  active: { label: 'Covered', tone: 'success' },
+  removed: { label: 'Removed', tone: 'neutral' }
 };
 
 export const INVOICE_STATUS = {
@@ -146,6 +172,7 @@ export const DASHBOARD_ROUTES = {
   subscription: '/pro/subscription',
   billing: '/pro/subscription/billing',
   invoice: (id: string) => `/pro/subscription/billing/${encodeURIComponent(id)}`,
+  association: '/pro/association',
   /** The shared payment screen, inside the vendor portal. */
   pay: (kind: string, id: string) => `/pro/pay/${kind}/${encodeURIComponent(id)}`
 } as const;

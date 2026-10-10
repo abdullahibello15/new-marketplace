@@ -1,5 +1,4 @@
 import { format, startOfMonth, startOfWeek, subMonths } from 'date-fns';
-import { vendorAccount } from '../../../data/vendorPortal';
 import { mockResponse } from '../../../services/mockApi';
 import { ESCROW_EVENT, ESCROW_STATUS } from '../../payments/constants';
 import { commissionFor, earningsBuckets, escrowTotals } from '../../payments/escrow/escrowRules';
@@ -8,6 +7,7 @@ import { EARNING_STAGE, EARNINGS_CHART_MONTHS, PAYOUT_STATUS, RECENT_TRANSACTION
 import { mockMonthlyHistory, mockTransactions, type MockTransaction } from '../mock/earnings';
 import type { Escrow } from '../../payments/types';
 import type { CompletedTransaction, EarningStage, EarningsOverview, MonthlyEarning } from '../types';
+import { currentVendorId } from '../../auth/session';
 
 /*
  * Earnings come from two places: the escrow ledger (every online payment since escrow) and a short
@@ -70,7 +70,7 @@ function releasedSince(escrows: Escrow[], start: Date): number {
 export function getEarningsOverview(
 months = EARNINGS_CHART_MONTHS,
 recentLimit = RECENT_TRANSACTIONS_LIMIT,
-vendorId = vendorAccount.vendorId)
+vendorId = currentVendorId())
 : Promise<EarningsOverview> {
   return mockResponse(() => {
     const now = new Date();
@@ -103,7 +103,7 @@ vendorId = vendorAccount.vendorId)
 }
 
 /** POST /vendor/payouts — sends the whole Available balance to the vendor's bank (MOCK). Resolves with the amount sent. */
-export function requestPayout(vendorId = vendorAccount.vendorId): Promise<number> {
+export function requestPayout(vendorId = currentVendorId()): Promise<number> {
   return mockResponse(() => {
     const fromEscrow = payOutVendorEscrow(vendorId);
     const fromOld = history.filter((t) => t.payoutStatus === PAYOUT_STATUS.Pending).reduce((s, t) => s + fromHistory(t).netAmount, 0);
