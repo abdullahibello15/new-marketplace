@@ -21,7 +21,8 @@ const AREAS = [
 { id: 'dispute', label: 'Disputes' },
 { id: 'moderation', label: 'Moderation' },
 { id: 'vendor', label: 'Vendor outreach' },
-{ id: 'bulk', label: 'Bulk tools' }] as
+{ id: 'bulk', label: 'Bulk tools' },
+{ id: 'admin', label: 'Admins' }] as
 const;
 
 const select = `${field} ${ok} py-2.5`;

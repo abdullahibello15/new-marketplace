@@ -8,6 +8,7 @@ import {
   findUser,
   findUserByEmail,
   findUserByPhone,
+  isSuspended,
   isEmail,
   issueSession,
   endSession,
@@ -76,6 +77,9 @@ function registerNow(data: RegisterInput, now: Date): {user: User;token: string;
       createdAt: now.toISOString(),
       hasPassword: false,
       adminRole: null,
+      adminSuspendedAt: null,
+      adminAddedBy: null,
+      lastLoginAt: now.toISOString(),
       vendorId: null,
       rider: null,
       address: null,
@@ -136,7 +140,7 @@ export async function refreshSession(): Promise<User | null> {
   try {
     const restored = await mockResponse(() => {
       const user = flag ? findUser(flag.userId) : null;
-      if (!user) return null;
+      if (!user || isSuspended(user)) return null;
       restoreProviderProfile(user, new Date());
       const role = user.roles.includes(flag?.activeRole ?? user.activeRole) ? flag?.activeRole ?? user.activeRole : user.activeRole;
       const saved = saveUser({ ...user, activeRole: role });

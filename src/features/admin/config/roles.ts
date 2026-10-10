@@ -14,7 +14,8 @@ export const ADMIN_SECTION = {
   Analytics: 'analytics',
   Outreach: 'outreach',
   BulkTools: 'bulk',
-  Audit: 'audit'
+  Audit: 'audit',
+  Admins: 'admins'
 } as const;
 
 export const ADMIN_PERMISSION = {
@@ -39,7 +40,12 @@ export const ADMIN_PERMISSION = {
   /** Act on at-risk vendors: SLA reminders, re-engagement messages, flags for review or outreach (all audited). */
   VendorOutreach: 'vendors.outreach',
   /** Run bulk imports (trade-association vendor imports), undo them and resend invitations. */
-  BulkImport: 'vendors.bulk_import'
+  BulkImport: 'vendors.bulk_import',
+  /**
+   * The Admins page: invite staff, change their role, suspend, reactivate and remove them. Super admin
+   * only. ⚠️ The backend must check this on every admin-management endpoint, not just the UI.
+   */
+  ManageAdmins: 'admins.manage'
 } as const;
 
 type ValueOf<T> = T[keyof T];
@@ -70,7 +76,7 @@ const ALL_PERMISSIONS = Object.values(ADMIN_PERMISSION);
 export const ADMIN_ROLES: Record<AdminRole, AdminRoleConfig> = {
   super_admin: {
     label: 'Super admin',
-    description: 'Everything, including taking over claimed items.',
+    description: 'Everything, including taking over claimed items and managing other admins.',
     sections: ALL_SECTIONS,
     permissions: ALL_PERMISSIONS
   },
@@ -102,3 +108,20 @@ export const ADMIN_ROLES: Record<AdminRole, AdminRoleConfig> = {
 
 export const roleCan = (role: AdminRole, permission: AdminPermission) => ADMIN_ROLES[role].permissions.includes(permission);
 export const roleSees = (role: AdminRole, section: AdminSection) => ADMIN_ROLES[role].sections.includes(section);
+export const isAdminRole = (v: unknown): v is AdminRole => typeof v === 'string' && v in ADMIN_ROLES;
+
+/** Short wording for each permission, for the admin detail view. */
+export const ADMIN_PERMISSION_LABELS: Record<AdminPermission, string> = {
+  'verification.review': 'Review verification applications',
+  'verification.decide': 'Approve or reject verification',
+  'verification.reveal_id': 'See full ID numbers (logged)',
+  'disputes.mediate': 'Mediate disputes',
+  'disputes.resolve': 'Decide dispute outcomes',
+  'moderation.review': 'Moderate content and appeals',
+  'moderation.suspend': 'Suspend vendors',
+  'claims.override': 'Take over claimed items',
+  'analytics.view': 'View analytics',
+  'vendors.outreach': 'Vendor outreach',
+  'vendors.bulk_import': 'Bulk vendor imports',
+  'admins.manage': 'Manage admins'
+};

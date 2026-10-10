@@ -5,6 +5,7 @@ import { EMAIL_CODE, EMAIL_LOGIN_LIMIT, OTP, PASSWORD, ROLE } from '../constants
 import { MOCK_AUTH, MOCK_NETWORK_FAILURE_SUFFIX, MOCK_OTP_CODE } from '../config';
 import { AuthError } from '../errors';
 import { seedUsers, type StoredUser } from '../mock/users';
+import { ADMIN_ROLE, isAdminRole } from '../../admin/config/roles';
 import type { OtpRequestResult, User, VerifyOtpResult } from '../types';
 
 /*
@@ -24,11 +25,18 @@ export function mockHash(password: string): string {
   return `mock$${(h >>> 0).toString(36)}`;
 }
 
+/** Accounts saved by older versions lack the newer staff fields; staff roles that no longer exist fall back to the seed's (or Verifier). */
+function upgrade(u: StoredUser, seed: StoredUser | undefined): StoredUser {
+  const adminRole = !u.roles.includes(ROLE.Admin) ? null : isAdminRole(u.adminRole) ? u.adminRole : seed?.adminRole ?? ADMIN_ROLE.Verifier;
+  return { ...u, adminRole, adminSuspendedAt: u.adminSuspendedAt ?? null, adminAddedBy: u.adminAddedBy ?? null, lastLoginAt: u.lastLoginAt ?? null };
+}
+
 function loadUsers(): Map<string, StoredUser> {
-  const map = new Map(seedUsers(mockHash).map((u) => [u.id, u]));
+  const seeds = new Map(seedUsers(mockHash).map((u) => [u.id, u]));
+  const map = new Map(seeds);
   try {
     const raw = window.localStorage.getItem(DB_KEY);
-    if (raw) for (const u of JSON.parse(raw) as StoredUser[]) map.set(u.id, u);
+    if (raw) for (const u of JSON.parse(raw) as StoredUser[]) map.set(u.id, upgrade(u, seeds.get(u.id)));
   } catch {
     // Storage blocked or corrupt: start from the seed accounts.
   }
@@ -59,6 +67,24 @@ export const findUserByPhone = (phone: string) => [...db().values()].find((u) =>
 /** The account that owns a vendor profile, if any (to send that vendor messages in their language). */
 export const findUserByVendorId = (vendorId: string) => [...db().values()].find((u) => u.vendorId === vendorId) ?? null;
 export const findUserByEmail = (email: string) => [...db().values()].find((u) => u.email?.toLowerCase() === email.trim().toLowerCase()) ?? null;
+
+/** Deleting is for staff accounts only (from the Admins page). */
+export function deleteUser(id: string): void {
+  db().delete(id);
+  for (const [token, userId] of sessions) if (userId === id) sessions.delete(token);
+  persist();
+}
+
+export const allUsers = () => [...db().values()];
+
+/** Ends every session of one account (e.g. a staff member who was just suspended). */
+export function endSessionsFor(userId: string): void {
+  for (const [token, id] of sessions) if (id === userId) sessions.delete(token);
+}
+
+/** A suspended staff account can't sign in or keep using an existing session. */
+export const isSuspended = (user: Pick<StoredUser, 'adminSuspendedAt'>) => Boolean(user.adminSuspendedAt);
+const suspendedError = () => new AuthError('account_suspended', i18n.t('auth:error.accountSuspended'), 403);
 
 export function saveUser(user: StoredUser): StoredUser {
   db().set(user.id, user);
@@ -122,7 +148,10 @@ export function issueSession(userId: string): string {
   return token;
 }
 
-export const userForToken = (token: string | null) => token ? findUser(sessions.get(token) ?? '') : null;
+export const userForToken = (token: string | null) => {
+  const user = token ? findUser(sessions.get(token) ?? '') : null;
+  return user && !isSuspended(user) ? user : null;
+};
 export const endSession = (token: string | null) => token && sessions.delete(token);
 
 /* ---------- One-time codes ---------- */
@@ -216,8 +245,9 @@ export function verifyOtpNow(raw: string, code: string, now: Date): {result: Ver
   const phone = checkOtpNow(raw, code, now);
   const existing = findUserByPhone(phone);
   if (existing) {
+    if (isSuspended(existing)) throw suspendedError();
     secondFactorFor(existing);
-    const user = saveUser({ ...existing, phoneVerified: true });
+    const user = saveUser({ ...existing, phoneVerified: true, lastLoginAt: now.toISOString() });
     return { result: { status: 'signed_in', user: toUser(user) }, token: issueSession(user.id) };
   }
   const signupToken = randomToken();
@@ -280,7 +310,8 @@ export function loginWithEmailNow(rawEmail: string, password: string, now: Date)
     throw new AuthError('invalid_credentials', i18n.t('auth:error.invalidCredentials'), 401);
   }
   failures.delete(email);
-  return { user: toUser(user), token: issueSession(user.id) };
+  const signedIn = saveUser({ ...user, lastLoginAt: now.toISOString() });
+  return { user: toUser(signedIn), token: issueSession(signedIn.id) };
 }
 
 /* ---------- Email verification and password reset ---------- */

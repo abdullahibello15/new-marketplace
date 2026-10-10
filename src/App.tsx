@@ -121,6 +121,8 @@ const AddRoleSection = lazy(() => import('./features/auth/sections/AddRoleSectio
 const ProviderTermsSection = lazy(() => import('./features/auth/sections/ProviderTermsSection').then((m) => ({ default: m.ProviderTermsSection })));
 const RiderDashboardSection = lazy(() => import('./features/rider/sections/RiderDashboardSection').then((m) => ({ default: m.RiderDashboardSection })));
 const AuditLogSection = lazy(() => import('./features/admin/sections/AuditLogSection').then((m) => ({ default: m.AuditLogSection })));
+const AdminsSection = lazy(() => import('./features/admin/sections/AdminsSection').then((m) => ({ default: m.AdminsSection })));
+const AdminDetailSection = lazy(() => import('./features/admin/sections/AdminDetailSection').then((m) => ({ default: m.AdminDetailSection })));
 const EditProfileSection = lazy(() =>
 import('./features/vendor-profile/sections/EditProfileSection').then((m) => ({ default: m.EditProfileSection }))
 );
@@ -246,6 +248,9 @@ const router = createBrowserRouter(
         <Route path="bulk/vendor-import" element={<RequireSection section="bulk"><VendorImportSection /></RequireSection>} />
         <Route path="bulk/imports/:importId" element={<RequireSection section="bulk"><VendorImportDetailSection /></RequireSection>} />
         <Route path="audit" element={<RequireSection section="audit"><AuditLogSection /></RequireSection>} />
+        {/* Super admin only (admins.manage in the role config); everyone else gets "Not authorised". UI only: the backend enforces it. */}
+        <Route path="admins" element={<RequireSection section="admins" permission="admins.manage" fallback={<NotAuthorised inline message="Only a Super admin can manage admins." />}><AdminsSection /></RequireSection>} />
+        <Route path="admins/:id" element={<RequireSection section="admins" permission="admins.manage" fallback={<NotAuthorised inline message="Only a Super admin can manage admins." />}><AdminDetailSection /></RequireSection>} />
         <Route path="*" element={<AdminHomeRedirect />} />
       </Route>
       {/* Riders: the role, routes and shell only; delivery features come later. */}

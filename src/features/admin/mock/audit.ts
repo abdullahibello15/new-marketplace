@@ -27,6 +27,7 @@ details: string | null = null)
 const ver = (id: string, label: string) => ({ type: 'vendor_verification' as const, id, label });
 const dsp = (id: string, label: string) => ({ type: 'dispute' as const, id, label });
 const mod = (id: string, label: string) => ({ type: 'moderation_item' as const, id, label });
+const adm = (id: string, label: string) => ({ type: 'admin' as const, id, label });
 
 export const mockAuditEntries: AuditEntry[] = [
 entry(45 * DAY, 'adm-tunde', AUDIT_ACTION.VerificationApprove, ver('ver-0970', 'Yusuf Plumbing & Borehole'), null, 'Tier: Trade-Verified'),
@@ -67,4 +68,8 @@ entry(4 * DAY, 'adm-ifeoma', AUDIT_ACTION.ModerationRemove, mod('mod-a2', 'Profi
 entry(2 * DAY, 'adm-ngozi', AUDIT_ACTION.ModerationRemove, mod('mod-a3', 'Product · Kure Market Provisions'), 'Misleading, fake or not the vendor’s own work'),
 entry(5 * DAY, 'adm-ifeoma', AUDIT_ACTION.ModerationRemove, mod('mod-a4', 'Portfolio photo · Chidi Woodworks'), 'Inappropriate or low-quality image'),
 entry(8 * DAY, 'adm-ifeoma', AUDIT_ACTION.ModerationApprove, mod('mod-d1', 'Profile photo · Bida Royal Tailors')),
-entry(7 * DAY, 'adm-ifeoma', AUDIT_ACTION.ModerationWarn, { type: 'vendor', id: 'abdullahi-mechanic', label: 'Abdullahi Mechanic Works' }, 'Using another vendor’s photos')];
+entry(7 * DAY, 'adm-ifeoma', AUDIT_ACTION.ModerationWarn, { type: 'vendor', id: 'abdullahi-mechanic', label: 'Abdullahi Mechanic Works' }, 'Using another vendor’s photos'),
+entry(120 * DAY, 'adm-halima', AUDIT_ACTION.AdminInvite, adm('adm-kabir', 'Kabir Lawal'), null, 'Role: Analyst'),
+entry(40 * DAY, 'adm-ngozi', AUDIT_ACTION.AdminRoleChange, adm('adm-ifeoma', 'Ifeoma Obi'), null, 'Support/Mediator → Moderator'),
+entry(2 * DAY + 7, 'adm-halima', AUDIT_ACTION.AdminSuspend, adm('adm-yakubu', 'Yakubu Danjuma'), 'Shared his sign-in with a vendor’s relative. Suspended until the review is done.'),
+entry(DAY + 11, 'adm-ngozi', AUDIT_ACTION.AdminInvite, adm('adm-zainab', 'Zainab Bello'), null, 'Role: Moderator')];

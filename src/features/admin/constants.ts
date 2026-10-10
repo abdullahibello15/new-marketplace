@@ -1,6 +1,7 @@
 import { REMOVED_PHOTO_PLACEHOLDER } from '../../data/moderationTakedowns';
 import type { BadgeTone } from '../../components/ui/Badge';
-import type { AuditAction, DisputeCaseStatus, DocumentType, ModerationKind, ModerationSource, ModerationTab, VerificationStatus } from './types';
+import type { AdminRole } from './config/roles';
+import type { AdminStatus, AuditAction, DisputeCaseStatus, DocumentType, ModerationKind, ModerationSource, ModerationTab, VerificationStatus } from './types';
 
 /* ---------- Verification ---------- */
 
@@ -144,7 +145,13 @@ export const AUDIT_ACTION = {
   BulkPartnerCreate: 'bulk.partner_create',
   BulkVendorImport: 'bulk.vendor_import',
   BulkImportUndo: 'bulk.import_undo',
-  BulkInviteResend: 'bulk.invite_resend'
+  BulkInviteResend: 'bulk.invite_resend',
+  AdminInvite: 'admin.invite',
+  AdminInviteAccepted: 'admin.invite_accepted',
+  AdminRoleChange: 'admin.role_change',
+  AdminSuspend: 'admin.suspend',
+  AdminReactivate: 'admin.reactivate',
+  AdminRemove: 'admin.remove'
 } as const;
 
 /** Follow-ups with at-risk vendors (response times and churn), shown next to the vendor on those lists. */
@@ -175,7 +182,30 @@ export const AUDIT_ACTION_LABELS: Record<AuditAction, string> = {
   'bulk.partner_create': 'Created partner association',
   'bulk.vendor_import': 'Imported vendors',
   'bulk.import_undo': 'Undid vendor import',
-  'bulk.invite_resend': 'Resent profile invitation'
+  'bulk.invite_resend': 'Resent profile invitation',
+  'admin.invite': 'Invited admin',
+  'admin.invite_accepted': 'Accepted admin invitation',
+  'admin.role_change': 'Changed admin role',
+  'admin.suspend': 'Suspended admin',
+  'admin.reactivate': 'Reactivated admin',
+  'admin.remove': 'Removed admin'
+};
+
+/* ---------- Admins page ---------- */
+
+export const ADMIN_STATUS_META: Record<AdminStatus, {label: string;tone: BadgeTone;}> = {
+  active: { label: 'Active', tone: 'success' },
+  suspended: { label: 'Suspended', tone: 'danger' },
+  invited: { label: 'Invited', tone: 'warning' }
+};
+
+/** Badge colour per admin role (Super admin stands out). */
+export const ADMIN_ROLE_TONE: Record<AdminRole, BadgeTone> = {
+  super_admin: 'danger',
+  verifier: 'info',
+  mediator: 'info',
+  moderator: 'info',
+  analyst: 'neutral'
 };
 
 /* ---------- Routes ---------- */
@@ -192,7 +222,10 @@ export const ADMIN_ROUTES = {
   bulk: '/admin/bulk',
   vendorImport: '/admin/bulk/vendor-import',
   vendorImportDetail: (id: string) => `/admin/bulk/imports/${encodeURIComponent(id)}`,
-  audit: '/admin/audit'
+  audit: '/admin/audit',
+  /** Super admin only. */
+  admins: '/admin/admins',
+  admin: (id: string) => `/admin/admins/${encodeURIComponent(id)}`
 } as const;
 
 /** Where vendors see verification outcomes, warnings and removed content, and resubmit or appeal. */

@@ -1,4 +1,5 @@
 import { mockStaff } from '../../admin/mock/staff';
+import type { AdminRole } from '../../admin/config/roles';
 import { ROLE } from '../constants';
 import type { DraftVendorInput } from '../../vendor-profile/utils/draftVendor';
 import type { User } from '../types';
@@ -37,6 +38,9 @@ const base = {
   language: 'en',
   hasPassword: false,
   adminRole: null,
+  adminSuspendedAt: null,
+  adminAddedBy: null,
+  lastLoginAt: null,
   vendorId: null,
   rider: null,
   address: null,
@@ -44,6 +48,35 @@ const base = {
   passwordHash: null,
   vendorDraft: null
 } as const;
+
+/** A staff-only account (Admin role). Used for the seeded staff and when an invited admin accepts. */
+export function staffUser(s: {
+  id: string;
+  name: string;
+  role: AdminRole;
+  phone: string | null;
+  email: string | null;
+  addedAt: string;
+  addedBy: {id: string;name: string;} | null;
+  suspendedAt: string | null;
+  lastLoginAt: string | null;
+}): StoredUser {
+  return {
+    ...base,
+    id: s.id,
+    roles: [ROLE.Admin],
+    activeRole: ROLE.Admin,
+    phone: s.phone ?? '',
+    phoneVerified: s.phone !== null,
+    email: s.email,
+    name: s.name,
+    adminRole: s.role,
+    adminSuspendedAt: s.suspendedAt,
+    adminAddedBy: s.addedBy,
+    lastLoginAt: s.lastLoginAt,
+    createdAt: s.addedAt
+  };
+}
 
 /** Mock password for Aisha's email sign-in: "minna-demo-2026". */
 export const DEMO_CUSTOMER_PASSWORD = 'minna-demo-2026';
@@ -88,16 +121,8 @@ export function seedUsers(hash: (password: string) => string): StoredUser[] {
     rider: { lga: 'Bosso', town: 'Maitumbi', vehicle: 'motorbike', plateNumber: 'BSS 123 NG' },
     createdAt: created(20)
   },
-  // Gwani staff: same ids as the staff directory, so the audit log and claims line up.
-  ...mockStaff.map((s, i): StoredUser => ({
-    ...base,
-    id: s.id,
-    roles: [ROLE.Admin],
-    activeRole: ROLE.Admin,
-    phone: `+23481000000${String(i + 1).padStart(2, '0')}`,
-    name: s.name,
-    adminRole: s.role,
-    createdAt: created(300)
-  }))];
+  // Gwani staff: same ids as the staff directory, so the audit log and claims line up. Invited staff
+  // have no account until they accept.
+  ...mockStaff.filter((s) => s.status !== 'invited').map((s) => staffUser({ ...s, suspendedAt: s.status === 'suspended' ? s.suspendedAt : null }))];
 
 }

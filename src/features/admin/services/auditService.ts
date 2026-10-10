@@ -1,6 +1,7 @@
 import { mockResponse } from '../../../services/mockApi';
 import { mockAuditEntries } from '../mock/audit';
-import { requireAdmin } from './adminSession';
+import { ADMIN_PERMISSION } from '../config/roles';
+import { requireAdmin, requirePermission } from './adminSession';
 import type { AdminUser, AuditAction, AuditEntry, AuditTargetType } from '../types';
 
 /*
@@ -47,6 +48,14 @@ export function getAuditFor(type: AuditTargetType, id: string): Promise<AuditEnt
     requireAdmin();
     return newestFirst(entries.filter((e) => e.target.type === type && e.target.id === id));
   }, 200);
+}
+
+/** GET /admin/admins/:id/activity — what one staff member did, and what was done to their account. */
+export function getAuditForAdmin(adminId: string, limit = 20): Promise<AuditEntry[]> {
+  return mockResponse(() => {
+    requirePermission(ADMIN_PERMISSION.ManageAdmins);
+    return newestFirst(entries.filter((e) => e.actor.id === adminId || e.target.type === 'admin' && e.target.id === adminId)).slice(0, limit);
+  }, 250);
 }
 
 /** Sync read for other admin services (e.g. analytics). */

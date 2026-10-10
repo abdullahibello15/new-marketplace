@@ -26,6 +26,12 @@ export interface User {
   hasPassword: boolean;
   /** Staff only: which admin sections and actions they get. */
   adminRole: AdminRole | null;
+  /** Staff only: set while a Super admin has suspended them. A suspended account can't sign in. */
+  adminSuspendedAt: string | null;
+  /** Staff only: who added them (null for accounts that existed from the start). */
+  adminAddedBy: {id: string;name: string;} | null;
+  /** When they last signed in, or null if never. */
+  lastLoginAt: string | null;
   /** Providers: their vendor profile. */
   vendorId: string | null;
   /** Riders: their setup. */
@@ -104,4 +110,5 @@ export type AuthErrorCode =
 'role_exists' |
 'not_signed_in' |
 'not_allowed' |
-'invalid_input';
+'invalid_input' |
+'account_suspended';

@@ -24,8 +24,25 @@ export interface AdminUser {
 }
 
 
+/** Active: can sign in. Suspended: blocked by a Super admin. Invited: hasn't accepted yet (no account). */
+export type AdminStatus = 'active' | 'suspended' | 'invited';
+
+/** One row on the Admins page (Super admin only). */
+export interface AdminAccount {
+  id: string;
+  name: string;
+  phone: string | null;
+  email: string | null;
+  role: AdminRole;
+  status: AdminStatus;
+  lastLoginAt: string | null;
+  addedAt: string;
+  addedBy: {id: string;name: string;} | null;
+  suspendedAt: string | null;
+}
+
 export type AuditAction = ValueOf<typeof AUDIT_ACTION>;
-export type AuditTargetType = 'vendor_verification' | 'dispute' | 'moderation_item' | 'vendor' | 'vendor_import' | 'association';
+export type AuditTargetType = 'vendor_verification' | 'dispute' | 'moderation_item' | 'vendor' | 'vendor_import' | 'association' | 'admin';
 
 /** One admin action. Never edited, only appended. */
 export interface AuditEntry {

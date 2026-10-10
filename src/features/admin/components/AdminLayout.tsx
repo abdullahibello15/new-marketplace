@@ -1,8 +1,8 @@
 import { Suspense, useEffect, useRef, useState, type ReactNode } from 'react';
 import { Link, Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { BarChart3Icon, FileCheck2Icon, FileUpIcon, GavelIcon, HeartHandshakeIcon, LogOutIcon, MenuIcon, ScrollTextIcon, ShieldCheckIcon, XIcon, type LucideIcon } from 'lucide-react';
+import { BarChart3Icon, FileCheck2Icon, FileUpIcon, GavelIcon, HeartHandshakeIcon, LogOutIcon, MenuIcon, ScrollTextIcon, ShieldCheckIcon, UsersRoundIcon, XIcon, type LucideIcon } from 'lucide-react';
 import { LoadingState } from '../../../components/ui/LoadingState';
-import { ADMIN_ROLES, ADMIN_SECTION, type AdminSection } from '../config/roles';
+import { ADMIN_ROLES, ADMIN_SECTION, type AdminPermission, type AdminSection } from '../config/roles';
 import { ADMIN_ROUTES } from '../constants';
 import { AUTH_ROUTES } from '../../auth/constants';
 import { RoleSwitcher } from '../../auth/components/RoleSwitcher';
@@ -16,11 +16,12 @@ const SECTION_NAV: Record<AdminSection, {to: string;label: string;icon: LucideIc
   analytics: { to: ADMIN_ROUTES.analytics, label: 'Analytics', icon: BarChart3Icon },
   outreach: { to: ADMIN_ROUTES.outreach, label: 'Vendor outreach', icon: HeartHandshakeIcon },
   bulk: { to: ADMIN_ROUTES.bulk, label: 'Bulk tools', icon: FileUpIcon },
-  audit: { to: ADMIN_ROUTES.audit, label: 'Audit log', icon: ScrollTextIcon }
+  audit: { to: ADMIN_ROUTES.audit, label: 'Audit log', icon: ScrollTextIcon },
+  admins: { to: ADMIN_ROUTES.admins, label: 'Admins', icon: UsersRoundIcon }
 };
 
 /** Sidebar order is fixed; each role only gets the sections it needs. */
-const ORDER: AdminSection[] = [ADMIN_SECTION.Verification, ADMIN_SECTION.Disputes, ADMIN_SECTION.Moderation, ADMIN_SECTION.Analytics, ADMIN_SECTION.Outreach, ADMIN_SECTION.BulkTools, ADMIN_SECTION.Audit];
+const ORDER: AdminSection[] = [ADMIN_SECTION.Verification, ADMIN_SECTION.Disputes, ADMIN_SECTION.Moderation, ADMIN_SECTION.Analytics, ADMIN_SECTION.Outreach, ADMIN_SECTION.BulkTools, ADMIN_SECTION.Audit, ADMIN_SECTION.Admins];
 
 function SidebarContent({ sections, onNavigate }: {sections: AdminSection[];onNavigate?: () => void;}) {
   const { pathname } = useLocation();
@@ -149,11 +150,15 @@ export function AdminLayout() {
 
 }
 
-/** Wraps a section's route: roles without it get a "no access" message instead (the sidebar hides it too). */
-export function RequireSection({ section, children }: {section: AdminSection;children: ReactNode;}) {
-  const { sees, admin } = useAdminSession();
+/**
+ * Wraps a section's route: roles without it (or without `permission`) get `fallback`, or a "no access"
+ * message, instead. The sidebar hides it too. ⚠️ UI only: the backend must refuse the requests as well.
+ */
+export function RequireSection({ section, permission, fallback, children }: {section: AdminSection;permission?: AdminPermission;fallback?: ReactNode;children: ReactNode;}) {
+  const { sees, can, admin } = useAdminSession();
   if (!admin) return null;
-  if (!sees(section)) {
+  if (!sees(section) || permission && !can(permission)) {
+    if (fallback) return <>{fallback}</>;
     return (
       <div className="mx-auto max-w-xl px-5 py-12 text-center">
         <h1 className="text-xl font-extrabold">No access to {SECTION_NAV[section].label}</h1>
