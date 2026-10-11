@@ -15,7 +15,8 @@ import { SessionGuard } from './features/auth/components/SessionGuard';
 import { AuthLayout } from './features/auth/components/AuthLayout';
 import { DevAuthBanner } from './features/auth/components/DevAuthBanner';
 import { LoginGate, RequireAuth, RequireRole, RequireVendorProfile } from './features/auth/components/guards';
-import { ROLE } from './features/auth/constants';
+import { AUTH_ROUTES, ROLE } from './features/auth/constants';
+import { LandingGate } from './features/landing/components/LandingGate';
 import { LanguageSync } from './i18n/LanguageSync';
 import { PlaceProvider } from './features/discovery/context/PlaceProvider';
 import { CartProvider } from './features/orders/context/CartProvider';
@@ -118,7 +119,7 @@ const SignupSection = lazy(() => import('./features/auth/sections/SignupSection'
 const WelcomeSection = lazy(() => import('./features/auth/sections/WelcomeSection').then((m) => ({ default: m.WelcomeSection })));
 const PasswordResetSection = lazy(() => import('./features/auth/sections/PasswordResetSection').then((m) => ({ default: m.PasswordResetSection })));
 const AddRoleSection = lazy(() => import('./features/auth/sections/AddRoleSection').then((m) => ({ default: m.AddRoleSection })));
-const StartSection = lazy(() => import('./features/auth/sections/StartSection').then((m) => ({ default: m.StartSection })));
+const AdminLoginSection = lazy(() => import('./features/admin/sections/AdminLoginSection').then((m) => ({ default: m.AdminLoginSection })));
 const VerifyEmailSection = lazy(() => import('./features/auth/sections/VerifyEmailSection').then((m) => ({ default: m.VerifyEmailSection })));
 const VerifyPhoneSection = lazy(() => import('./features/auth/sections/VerifyPhoneSection').then((m) => ({ default: m.VerifyPhoneSection })));
 const VendorSetupSection = lazy(() => import('./features/auth/sections/VendorSetupSection').then((m) => ({ default: m.VendorSetupSection })));
@@ -147,7 +148,8 @@ const router = createBrowserRouter(
 
       {/* Sign-in, signup and onboarding: their own simple layout. */}
       <Route element={<AuthLayout />}>
-        <Route path="/start" element={<StartSection />} />
+        {/* The old Welcome screen: the landing page at "/" replaced it. */}
+        <Route path="/start" element={<Navigate to={AUTH_ROUTES.start} replace />} />
         <Route path="/login" element={<LoginSection />} />
         <Route path="/login/forgot" element={<PasswordResetSection />} />
         {/* One signup path per role: the role picker, then /signup/customer, /signup/provider or /signup/rider. */}
@@ -162,14 +164,20 @@ const router = createBrowserRouter(
           <Route path="/account/vendor-setup" element={<VendorSetupSection />} />
         </Route>
       </Route>
-      {/* Customer shell. Browsing (home, search, vendor profiles, cart) is open to everyone; booking, ordering, payments and the account need sign-in. */}
+      {/*
+        Customer shell. At "/" the LandingGate shows the public landing page to signed-out visitors and sends
+        other roles to their home; customers get their home as before. Booking, ordering, payments and the
+        account need sign-in.
+       */}
       <Route
         element={
-        <PlaceProvider>
-            <CartProvider>
-              <CustomerShell />
-            </CartProvider>
-          </PlaceProvider>
+        <LandingGate>
+            <PlaceProvider>
+              <CartProvider>
+                <CustomerShell />
+              </CartProvider>
+            </PlaceProvider>
+          </LandingGate>
         }>
 
         <Route path="/" element={<HomeSection />} />
@@ -238,13 +246,22 @@ const router = createBrowserRouter(
         <Route path="notifications" element={<NotificationPreferencesSection party="vendor" />} />
         <Route path="verification" element={<VerificationStandingSection />} />
       </Route>
-      {/* Gwani's admin console: its own layout. Signed-out visitors go to the login page; signed-in non-staff see "Not authorised"; each admin role sees only its sections. */}
+      {/* Staff sign-in (phone + one-time code): its own plain page, linked only from the landing footer. */}
+      <Route
+        path="/admin/login"
+        element={
+        <Suspense fallback={<div className="min-h-screen bg-sand" aria-busy="true" />}>
+            <AdminLoginSection />
+          </Suspense>
+        } />
+
+      {/* Gwani's admin console: its own layout. Signed-out visitors go to the staff login; signed-in non-staff see "Not authorised"; each admin role sees only its sections. */}
       <Route
         path="/admin"
         element={
         <EnglishOnly>
             <Suspense fallback={<div className="min-h-screen bg-cream" aria-busy="true" />}>
-              <RequireRole role={ROLE.Admin} fallback={<NotAuthorised />}>
+              <RequireRole role={ROLE.Admin} fallback={<NotAuthorised />} loginTo={AUTH_ROUTES.staffLogin}>
                 <AdminLayout />
               </RequireRole>
             </Suspense>

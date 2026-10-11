@@ -1,5 +1,13 @@
 {
   "verification": {
     "profileComplete": "Shafi ya cika {{percent}}%"
+  },
+  "login": {
+    "title": "Shigar ma’aikatan Gwani",
+    "intro": "Ga ma’aikatan Gwani kawai. Shiga da lambar wayar aikinka da lambar da za mu aika maka.",
+    "notStaff": "Wannan asusun ba shi da damar ma’aikata.",
+    "noAccount": "Babu asusun ma’aikaci na wannan lambar.",
+    "signOut": "Fita",
+    "back": "Koma Gwani"
   }
 }

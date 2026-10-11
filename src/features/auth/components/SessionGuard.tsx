@@ -41,9 +41,11 @@ export function SessionGuard() {
     if (status !== 'signed_out' || !ended || ended.id <= handledEndId) return;
     handledEndId = ended.id;
     if (ended.reason === 'logout') return; // They chose to; the sign-out button decides where to go.
-    if (location.pathname.startsWith(AUTH_ROUTES.login)) return;
+    if (location.pathname.startsWith(AUTH_ROUTES.login) || location.pathname === AUTH_ROUTES.staffLogin) return;
     const from = `${location.pathname}${location.search}${location.hash}`;
-    navigate(AUTH_ROUTES.login, { replace: true, state: { from, reason: ended.reason } satisfies LoginRedirectState });
+    // Staff go back to the staff sign-in, everyone else to the usual login.
+    const loginPath = location.pathname.startsWith('/admin') ? AUTH_ROUTES.staffLogin : AUTH_ROUTES.login;
+    navigate(loginPath, { replace: true, state: { from, reason: ended.reason } satisfies LoginRedirectState });
   }, [status, ended, location, navigate]);
 
   const markActive = useCallback(() => {

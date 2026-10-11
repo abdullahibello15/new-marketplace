@@ -1,5 +1,8 @@
 import { useState, useSyncExternalStore } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useLocation } from 'react-router-dom';
+import { AUTH_ROUTES } from '../constants';
+import { useAuth } from '../hooks/useAuth';
 import { MOCK_AUTH, MOCK_OTP_CODE } from '../config';
 import { devOutbox, subscribeDevOutbox } from '../services/authBackend';
 import { DevSessionPanel } from './DevSessionPanel';
@@ -40,8 +43,16 @@ function Banner() {
 
 /**
  * DEV ONLY: shows the test code and the codes/links the mock backend "sent" (SMS, email). Renders nothing
- * unless MOCK_AUTH is on, which is impossible in a production build (see config.ts).
+ * unless MOCK_AUTH is on, which is impossible in a production build (see config.ts). Never on the public
+ * landing page: nothing internal shows there, even in test mode.
  */
 export function DevAuthBanner() {
-  return MOCK_AUTH ? <Banner /> : null;
+  return MOCK_AUTH ? <OffLanding /> : null;
+}
+
+function OffLanding() {
+  const { pathname } = useLocation();
+  const { user } = useAuth();
+  if (pathname === AUTH_ROUTES.start && !user) return null;
+  return <Banner />;
 }

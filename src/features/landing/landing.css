@@ -1,0 +1,55 @@
+/*
+ * Landing page only (imported by LandingPage, so it loads with the landing chunk and nowhere else).
+ * Display font for headings: Nunito (rounded, bold). Body text keeps the app's Manrope.
+ */
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@800;900&display=swap');
+
+.landing-display {
+  font-family: 'Nunito', 'Manrope', ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: -0.01em;
+}
+
+/* Gold underline under a highlighted headline word. */
+.landing-underline {
+  background-image: linear-gradient(transparent 62%, rgba(217, 169, 51, 0.55) 62%, rgba(217, 169, 51, 0.55) 88%, transparent 88%);
+}
+
+/* Subtle dotted pattern on the deep-teal banner. */
+.landing-pattern {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.09) 1.5px, transparent 1.5px);
+  background-size: 22px 22px;
+}
+
+/* Hide the scrollbar on the horizontal "top rated" row (it still scrolls by touch, wheel and keyboard). */
+.landing-scroll-row {
+  scrollbar-width: none;
+}
+.landing-scroll-row::-webkit-scrollbar {
+  display: none;
+}
+
+/*
+ * Gentle fade-up as sections come into view (useReveal). Only for people who haven't asked for reduced
+ * motion; everyone else sees the content straight away. Transform and opacity only: no layout shift.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .landing-reveal {
+    opacity: 0;
+    transform: translateY(18px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+  }
+  .landing-reveal[data-shown='true'] {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Header language switcher: keep its label for screen readers but don't show it (the select fits the bar). */
+.landing-lang-compact label {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

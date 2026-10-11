@@ -12,7 +12,7 @@ export type AppLanguage = (typeof APP_LANGUAGES)[number]['id'];
 export const DEFAULT_LANGUAGE: AppLanguage = 'en';
 
 /** Translation files are split by feature so they stay manageable (src/locales/<lang>/<namespace>.json). */
-export const NAMESPACES = ['common', 'auth', 'discovery', 'jobs', 'vendor', 'payments', 'admin'] as const;
+export const NAMESPACES = ['common', 'auth', 'discovery', 'jobs', 'vendor', 'payments', 'admin', 'landing'] as const;
 export type Namespace = (typeof NAMESPACES)[number];
 
 /** Where a signed-out visitor's choice is remembered (signed-in users: user.language). */

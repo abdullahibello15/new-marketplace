@@ -73,7 +73,7 @@ function SidebarContent({ sections, onNavigate }: {sections: AdminSection[];onNa
         </Link>
         <button
           type="button"
-          onClick={() => void signOut().then(() => navigate(AUTH_ROUTES.login, { replace: true }))}
+          onClick={() => void signOut().then(() => navigate(AUTH_ROUTES.staffLogin, { replace: true }))}
           className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-white/70 hover:bg-white/5 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60">
 
           <LogOutIcon className="h-4 w-4" aria-hidden="true" />

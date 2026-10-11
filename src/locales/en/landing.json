@@ -1,0 +1,192 @@
+{
+  "meta": {
+    "title": "Gwani – trusted local services and shops in Minna",
+    "description": "Find verified plumbers, tailors, electricians, riders and shops across Minna and Niger State. Book or order, and pay safely with escrow."
+  },
+  "skip": "Skip to main content",
+  "nav": {
+    "label": "Main",
+    "home": "Gwani home",
+    "howItWorks": "How it works",
+    "categories": "Categories",
+    "providers": "For providers",
+    "faq": "FAQ",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "logIn": "Log in",
+    "createAccount": "Create account",
+    "goToConsole": "Go to admin console",
+    "goToApp": "Go to my account"
+  },
+  "hero": {
+    "eyebrow": "Minna · Niger State",
+    "title": "Trusted local services and shops, <hl>close to home</hl>",
+    "subtitle": "Find verified tradespeople and shops across Minna and Niger State. Book a job or order products, and pay safely.",
+    "searchLabel": "Search for a service",
+    "category": "What do you need?",
+    "anyCategory": "Any service",
+    "lga": "Where?",
+    "anyLga": "Anywhere in Niger State",
+    "search": "Search",
+    "searchNote": "Create a free account to see the results.",
+    "findService": "Find a service",
+    "becomeProvider": "Become a provider",
+    "photoTailor": "A tailor sewing ankara fabric in her shop",
+    "photoElectrician": "An electrician fitting a wall socket",
+    "photoMarket": "A dispatch rider on a busy market street",
+    "cardVerified": "Verified providers",
+    "cardRating": "{{rating}} top rating",
+    "cardReply": "Replies in ~{{minutes}} min"
+  },
+  "how": {
+    "title": "How it <hl>works</hl>",
+    "customers": {
+      "heading": "For customers",
+      "step1": {
+        "title": "Search",
+        "text": "Find providers and shops near you by service, area and verification."
+      },
+      "step2": {
+        "title": "Book or order",
+        "text": "Request a quote for a job, or order products for pickup or delivery."
+      },
+      "step3": {
+        "title": "Pay safely",
+        "text": "Your payment is held in escrow and only released when the job is done or your order arrives."
+      }
+    },
+    "providers": {
+      "heading": "For providers",
+      "step1": {
+        "title": "Sign up",
+        "text": "Create your account with your phone number, then set up your business profile."
+      },
+      "step2": {
+        "title": "Get verified",
+        "text": "Upload your documents. Verified providers show a badge customers can trust."
+      },
+      "step3": {
+        "title": "Receive requests",
+        "text": "Customers nearby send you job requests and orders. Reply, quote and get paid."
+      }
+    }
+  },
+  "trust": {
+    "title": "Trust and <hl>safety</hl>",
+    "intro": "Built so customers and providers can rely on each other.",
+    "verification": {
+      "title": "Verification badges",
+      "text": "Gwani's team checks providers' ID and trade documents. Badges show what has been verified."
+    },
+    "escrow": {
+      "title": "Escrow-protected payments",
+      "text": "Card, transfer and USSD payments are held safely until the work is confirmed. Problems can be reported for review."
+    },
+    "reviews": {
+      "title": "Honest reviews",
+      "text": "Only customers who booked or ordered can leave a review, and providers can reply."
+    }
+  },
+  "providers": {
+    "title": "Grow your <hl>business</hl> with Gwani",
+    "intro": "Reach more customers in your area and manage your work in one place.",
+    "benefit1": "A public profile with your services, prices, photos and working hours",
+    "benefit2": "Job requests and orders from customers near you",
+    "benefit3": "Payments through the app, with your earnings in one view",
+    "benefit4": "A verification badge once your documents are approved",
+    "plansTitle": "Plans",
+    "perMonth": "per month",
+    "trial": "New providers start with a free trial of {{days}} days.",
+    "join": "Join as a provider",
+    "imageAlt": "A plumber repairing pipes under a kitchen sink"
+  },
+  "faq": {
+    "title": "Questions, <hl>answered</hl>",
+    "q1": {
+      "q": "What is Gwani?",
+      "a": "Gwani connects people in Minna and across Niger State with local service providers and shops. You can find a provider, request a quote or order products, and pay through the app."
+    },
+    "q2": {
+      "q": "How do payments work?",
+      "a": "When you pay by card, transfer or USSD, the money is held safely (escrow) and only released to the provider after the job is done or the order is received. If something goes wrong, you can report a problem."
+    },
+    "q3": {
+      "q": "Can I pay with cash?",
+      "a": "Many providers accept cash when the job is done. You can see whether a provider takes cash before you book."
+    },
+    "q4": {
+      "q": "How are providers checked?",
+      "a": "Providers can verify their identity and their trade with documents that Gwani's team reviews. Verified providers show a badge on their profile."
+    },
+    "q5": {
+      "q": "Do I need a phone number to sign up?",
+      "a": "Customers sign up with an email and a password, and can add a phone number later. Providers sign up with their phone number and verify it with a code."
+    },
+    "q6": {
+      "q": "How much does it cost to join as a provider?",
+      "a": "Providers choose a monthly plan: Starter, Standard or Premium. The prices are shown in the For providers section. New providers start with a free trial."
+    },
+    "q7": {
+      "q": "Can I use Gwani in Hausa?",
+      "a": "Yes. You can use Gwani in English or Hausa, and switch at any time."
+    },
+    "q8": {
+      "q": "Where is Gwani available?",
+      "a": "Across the 25 LGAs of Niger State, starting with Minna."
+    }
+  },
+  "footer": {
+    "tagline": "Trusted local services and shops in Minna and Niger State.",
+    "explore": "Explore",
+    "account": "Your account",
+    "contactHeading": "Contact",
+    "contact": "Contact details coming soon (placeholder).",
+    "legal": "Legal",
+    "terms": "Terms of use (placeholder, coming soon)",
+    "privacy": "Privacy policy (placeholder, coming soon)",
+    "providerTerms": "Provider terms",
+    "staffLogin": "Staff login",
+    "rights": "© {{year}} Gwani",
+    "social": "Gwani on social media",
+    "socialSoon": "coming soon"
+  },
+  "actionBar": "Get started",
+  "stats": {
+    "label": "Gwani in numbers",
+    "providers_one": "provider listed",
+    "providers_other": "providers listed",
+    "reviews_one": "customer review",
+    "reviews_other": "customer reviews",
+    "lgasValue": "{{count}} LGAs",
+    "lgas": "Minna and all of Niger State"
+  },
+  "market": {
+    "title": "What do you need today?",
+    "intro": "Tradespeople who come to you, and shops you can order from.",
+    "tabsLabel": "Show services or shops",
+    "tabServices": "Services",
+    "tabShops": "Shops",
+    "categoriesTitle": "Categories",
+    "providersCount_one": "{{count}} provider",
+    "providersCount_other": "{{count}} providers",
+    "shopsCount_one": "{{count}} shop",
+    "shopsCount_other": "{{count}} shops",
+    "featuredTitle": "Top rated near you",
+    "featuredIntro": "The highest-rated in Minna and around, from their customers’ reviews.",
+    "reviews_one": "({{count}} review)",
+    "reviews_other": "({{count}} reviews)",
+    "from": "From",
+    "bookNow": "Book now",
+    "viewShop": "View shop"
+  },
+  "testimonials": {
+    "title": "What customers <hl>say</hl>",
+    "intro": "In their own words, from reviews on Gwani.",
+    "about": "About {{vendor}}"
+  },
+  "finalCta": {
+    "title": "Ready when you are",
+    "text": "Create a free account to book trusted local providers, or join to reach customers near you.",
+    "button": "Create account"
+  }
+}

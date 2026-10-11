@@ -15,7 +15,7 @@ import { ProviderSignupForm } from '../components/signup/ProviderSignupForm';
 import type { LoginRedirectState } from '../components/guards';
 import type { VerifyOtpResult } from '../types';
 
-/** Where to go after verification and onboarding (passed along from the Welcome screen). */
+/** Where to go after verification and onboarding (passed along from the landing page). */
 export interface SignupFlowState extends LoginRedirectState {
   /** After verifying: the next step (customer onboarding, vendor setup). */
   next?: string;

@@ -26,10 +26,10 @@ function Checking() {
 
 }
 
-function ToLogin() {
+function ToLogin({ to = AUTH_ROUTES.login }: {to?: string;}) {
   const location = useLocation();
   const from = `${location.pathname}${location.search}${location.hash}`;
-  return <Navigate to={AUTH_ROUTES.login} replace state={{ from } satisfies LoginRedirectState} />;
+  return <Navigate to={to} replace state={{ from } satisfies LoginRedirectState} />;
 }
 
 /** Signed-in only: anyone else goes to the login page, and comes back here afterwards. */
@@ -65,7 +65,7 @@ function NoRole({ role }: {role: Role;}) {
  * Signed in AND holding `role`. Signed out → login (and back). Holding the role but using another one
  * right now → switches to it (the shell follows the active role). Without the role → `fallback`.
  */
-export function RequireRole({ role, fallback, children }: {role: Role;fallback?: ReactNode;children?: ReactNode;}) {
+export function RequireRole({ role, fallback, loginTo, children }: {role: Role;fallback?: ReactNode;/** Where signed-out visitors go (default: the login page; staff: the staff login). */loginTo?: string;children?: ReactNode;}) {
   const { status, user, hasRole, switchRole } = useAuth();
   const mustSwitch = !!user && hasRole(role) && user.activeRole !== role;
   useEffect(() => {
@@ -73,7 +73,7 @@ export function RequireRole({ role, fallback, children }: {role: Role;fallback?:
   }, [mustSwitch, role, switchRole]);
 
   if (status === 'loading') return <Checking />;
-  if (status === 'signed_out') return <ToLogin />;
+  if (status === 'signed_out') return <ToLogin to={loginTo} />;
   if (!hasRole(role)) return <>{fallback ?? <NoRole role={role} />}</>;
   if (mustSwitch) return <Checking />;
   return <>{children ?? <Outlet />}</>;
@@ -81,7 +81,7 @@ export function RequireRole({ role, fallback, children }: {role: Role;fallback?:
 
 /**
  * The whole-app login requirement (REQUIRE_LOGIN in config.ts). Signed out on anything but a public page
- * → the Welcome screen, remembering where they were going. With REQUIRE_LOGIN off it lets everything
+ * → the landing page, remembering where they were going. With REQUIRE_LOGIN off it lets everything
  * through and each page's own guard (RequireAuth/RequireRole) decides, as before.
  */
 export function LoginGate({ children }: {children?: ReactNode;}) {

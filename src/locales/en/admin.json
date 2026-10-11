@@ -1,5 +1,13 @@
 {
   "verification": {
     "profileComplete": "Profile {{percent}}% complete"
+  },
+  "login": {
+    "title": "Gwani staff sign-in",
+    "intro": "For Gwani staff only. Sign in with your work phone number and the code we text you.",
+    "notStaff": "This account doesn’t have staff access.",
+    "noAccount": "There’s no staff account for this number.",
+    "signOut": "Sign out",
+    "back": "Back to Gwani"
   }
 }

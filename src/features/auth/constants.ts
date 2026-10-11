@@ -28,9 +28,14 @@ export const ROLE_META: Record<Role, {label: string;description: string;home: st
 };
 
 export const AUTH_ROUTES = {
-  /** The Welcome screen for signed-out visitors (Create account / Log in). Not /welcome: that's the onboarding after signup. */
-  start: '/start',
+  /**
+   * The public landing page signed-out visitors land on (features/landing). The same path is the customer
+   * home once signed in. Not /welcome: that's the onboarding after signup.
+   */
+  start: '/',
   login: '/login',
+  /** Gwani staff sign in here (phone + one-time code); linked discreetly from the landing footer. */
+  staffLogin: '/admin/login',
   /** The role picker; each role's form is at signupFor(role). */
   signup: '/signup',
   signupFor: (role: SignupRole) => `/signup/${role}`,

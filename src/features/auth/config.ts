@@ -26,12 +26,15 @@ export const MOCK_NETWORK_FAILURE_SUFFIX = '9999';
 
 /**
  * Login required for the whole app. true: signed-out visitors only see the public pages below and are
- * sent to the Welcome screen from anywhere else (then back after signing in). false: browse freely,
+ * sent to the landing page from anywhere else (then back after signing in). false: browse freely,
  * sign in only for booking, ordering, payments and accounts (each page's own guard decides).
  */
 export const REQUIRE_LOGIN = true;
 
-/** Open without signing in when REQUIRE_LOGIN is on: welcome, login (with its OTP step), forgot password, signup (role picker and forms), terms, and invitation claims (a signup). */
+/**
+ * Open without signing in when REQUIRE_LOGIN is on: the landing page, login (with its OTP step), forgot
+ * password, signup (role picker and forms), terms, invitation claims (a signup) and the staff login.
+ */
 export const PUBLIC_PATHS: readonly {path: string;prefix?: boolean;}[] = [
 { path: AUTH_ROUTES.start },
 { path: AUTH_ROUTES.login },
@@ -39,7 +42,8 @@ export const PUBLIC_PATHS: readonly {path: string;prefix?: boolean;}[] = [
 { path: AUTH_ROUTES.signup },
 { path: `${AUTH_ROUTES.signup}/`, prefix: true },
 { path: '/terms/', prefix: true },
-{ path: '/claim/', prefix: true }];
+{ path: '/claim/', prefix: true },
+{ path: AUTH_ROUTES.staffLogin }];
 
 
 export const isPublicPath = (pathname: string) => PUBLIC_PATHS.some((p) => p.prefix ? pathname.startsWith(p.path) : pathname === p.path || pathname === `${p.path}/`);
