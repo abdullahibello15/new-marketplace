@@ -17,7 +17,7 @@ export function VendorCard({ vendor }: {vendor: LandingVendorCard;}) {
   const { t } = useTranslation('landing');
   const shop = vendor.kind === 'retail';
   return (
-    <article className="group flex h-full flex-col overflow-hidden rounded-3xl border border-[#EFE7D6] bg-white shadow-[0_12px_30px_-20px_rgba(22,58,60,0.5)] transition-shadow duration-200 hover:shadow-[0_18px_40px_-18px_rgba(22,58,60,0.55)] motion-reduce:transition-none">
+    <article className="landing-glass-lite landing-glass-hover group flex h-full flex-col overflow-hidden">
       <div className="relative">
         <img
           src={vendor.photo}
@@ -35,14 +35,14 @@ export function VendorCard({ vendor }: {vendor: LandingVendorCard;}) {
         }
       </div>
       <div className="flex flex-1 flex-col p-4">
-        <h3 className="text-lg font-extrabold leading-snug text-[#1C1B18]">{vendor.name}</h3>
-        <p className="text-sm font-semibold text-[#5E594F]">{tradeLabel(vendor.tradeCategory)}</p>
-        <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-[#5E594F]">
+        <h3 className="landing-display text-xl leading-snug text-[#16302F]">{vendor.name}</h3>
+        <p className="landing-label mt-1 text-[#7A5E1F]">{tradeLabel(vendor.tradeCategory)}</p>
+        <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-[#55524B]">
           {vendor.reviews > 0 &&
           <span className="inline-flex items-center gap-1 font-bold text-[#1C1B18]">
               <StarIcon className="h-4 w-4 fill-[#D9A933] text-[#D9A933]" aria-hidden="true" />
               {vendor.rating.toFixed(1)}
-              <span className="font-normal text-[#5E594F]">{t('market.reviews', { count: vendor.reviews })}</span>
+              <span className="font-normal text-[#55524B]">{t('market.reviews', { count: vendor.reviews })}</span>
             </span>
           }
           <span className="inline-flex items-center gap-1">
@@ -51,7 +51,7 @@ export function VendorCard({ vendor }: {vendor: LandingVendorCard;}) {
           </span>
         </div>
         <div className="mt-auto flex items-center justify-between gap-3 pt-4">
-          <p className="text-base text-[#5E594F]">
+          <p className="text-base text-[#55524B]">
             {vendor.priceFrom !== null && <PriceFrom price={formatNaira(vendor.priceFrom)} />}
           </p>
           <Link

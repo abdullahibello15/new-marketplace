@@ -6,9 +6,9 @@ import { Highlight, IconCircle, LandingHeading, Reveal } from './ui';
 /** Verification badges (the real ones customers see), escrow-protected payments and reviews. */
 export function TrustSection() {
   const { t } = useTranslation('landing');
-  const card = 'h-full rounded-3xl border border-[#EFE7D6] bg-[#FAF6EE] p-6';
+  const card = 'landing-glass landing-glass-hover h-full p-6';
   return (
-    <section aria-labelledby="trust-heading" className="bg-white py-14 lg:py-20">
+    <section aria-labelledby="trust-heading" className="py-14 lg:py-20">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <Reveal>
           <LandingHeading id="trust-heading" intro={t('trust.intro')}>
@@ -20,8 +20,8 @@ export function TrustSection() {
             <Reveal className="h-full">
               <div className={card}>
                 <IconCircle icon={ShieldCheckIcon} tone="teal" size="lg" />
-                <h3 className="mt-4 text-xl font-extrabold text-[#1C1B18]">{t('trust.verification.title')}</h3>
-                <p className="mt-2 text-base text-[#5E594F]">{t('trust.verification.text')}</p>
+                <h3 className="landing-display mt-4 text-xl text-[#16302F]">{t('trust.verification.title')}</h3>
+                <p className="mt-2 text-base text-[#55524B]">{t('trust.verification.text')}</p>
                 <div className="mt-4 flex flex-wrap gap-2">
                   <VerificationBadge verification="id" />
                   <VerificationBadge verification="trade" />
@@ -33,8 +33,8 @@ export function TrustSection() {
             <Reveal className="h-full">
               <div className={card}>
                 <IconCircle icon={LockKeyholeIcon} tone="orange" size="lg" />
-                <h3 className="mt-4 text-xl font-extrabold text-[#1C1B18]">{t('trust.escrow.title')}</h3>
-                <p className="mt-2 text-base text-[#5E594F]">{t('trust.escrow.text')}</p>
+                <h3 className="landing-display mt-4 text-xl text-[#16302F]">{t('trust.escrow.title')}</h3>
+                <p className="mt-2 text-base text-[#55524B]">{t('trust.escrow.text')}</p>
               </div>
             </Reveal>
           </li>
@@ -42,8 +42,8 @@ export function TrustSection() {
             <Reveal className="h-full">
               <div className={card}>
                 <IconCircle icon={MessageSquareQuoteIcon} tone="gold" size="lg" />
-                <h3 className="mt-4 text-xl font-extrabold text-[#1C1B18]">{t('trust.reviews.title')}</h3>
-                <p className="mt-2 text-base text-[#5E594F]">{t('trust.reviews.text')}</p>
+                <h3 className="landing-display mt-4 text-xl text-[#16302F]">{t('trust.reviews.title')}</h3>
+                <p className="mt-2 text-base text-[#55524B]">{t('trust.reviews.text')}</p>
               </div>
             </Reveal>
           </li>

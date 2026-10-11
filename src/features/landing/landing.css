@@ -1,23 +1,151 @@
 /*
  * Landing page only (imported by LandingPage, so it loads with the landing chunk and nowhere else).
- * Display font for headings: Nunito (rounded, bold). Body text keeps the app's Manrope.
+ * Classic and glassy: Playfair Display (serif) for headlines, Inter for body text; deep teal, cream and
+ * gold, with gold as a fine accent (hairline borders, dividers, icon rings) and orange only for the main
+ * call to action. Glass cards sit over soft cream-to-teal gradients with gold and teal light glows.
  */
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap');
+
+.landing-root {
+  font-family: 'Inter', 'Manrope', ui-sans-serif, system-ui, sans-serif;
+}
 
 .landing-display {
-  font-family: 'Nunito', 'Manrope', ui-sans-serif, system-ui, sans-serif;
-  letter-spacing: -0.01em;
+  font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  font-weight: 600;
+  letter-spacing: -0.005em;
 }
 
-/* Gold underline under a highlighted headline word. */
+/* Small uppercase labels: a little more letter-spacing, the classic way. */
+.landing-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+/* The highlighted word in headings: deep-teal italic over a thin gold hairline. */
 .landing-underline {
-  background-image: linear-gradient(transparent 62%, rgba(217, 169, 51, 0.55) 62%, rgba(217, 169, 51, 0.55) 88%, transparent 88%);
+  font-style: italic;
+  background-image: linear-gradient(rgba(185, 140, 52, 0.75), rgba(185, 140, 52, 0.75));
+  background-size: 100% 1px;
+  background-position: 0 92%;
+  background-repeat: no-repeat;
 }
 
-/* Subtle dotted pattern on the deep-teal banner. */
-.landing-pattern {
-  background-image: radial-gradient(rgba(255, 255, 255, 0.09) 1.5px, transparent 1.5px);
-  background-size: 22px 22px;
+/* Soft backgrounds for glass to sit on: cream to pale teal, with a gold glow and a teal glow (pure gradients, no blur filters). */
+.landing-glass-bg {
+  background:
+    radial-gradient(38rem 26rem at 88% 8%, rgba(217, 169, 51, 0.16), transparent 70%),
+    radial-gradient(34rem 28rem at 6% 92%, rgba(31, 75, 77, 0.14), transparent 70%),
+    linear-gradient(160deg, #fbf7ee 0%, #f5f2e8 45%, #e5efec 100%);
+}
+
+/* The deep-teal sections (closing banner, footer): a darker gradient with a faint gold glow. */
+.landing-teal-bg {
+  background:
+    radial-gradient(28rem 18rem at 85% 0%, rgba(217, 169, 51, 0.18), transparent 70%),
+    linear-gradient(150deg, #1f4b4d 0%, #163a3c 60%, #102d2f 100%);
+}
+
+/*
+ * Glass cards. Light glass: translucent white, 16px blur (12px on phones), a light hairline border, a soft
+ * teal-tinted shadow and an inner highlight along the top edge. Dark text on it stays well above WCAG AA.
+ */
+.landing-glass,
+.landing-glass-lite {
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 20px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85), 0 8px 32px rgba(15, 60, 60, 0.12);
+}
+.landing-glass {
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  backdrop-filter: blur(16px) saturate(140%);
+}
+/* Repeated small cards (categories, providers): no blur on phones, to keep only a few blurred layers on screen. */
+@media (min-width: 768px) {
+  .landing-glass-lite {
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+    backdrop-filter: blur(16px) saturate(140%);
+  }
+}
+@media (max-width: 767px) {
+  .landing-glass {
+    -webkit-backdrop-filter: blur(12px) saturate(140%);
+    backdrop-filter: blur(12px) saturate(140%);
+  }
+  .landing-glass-lite {
+    background: rgba(255, 255, 255, 0.82);
+  }
+}
+
+/* Dark glass for the deep-teal sections. Light text on it. */
+.landing-glass-dark {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 20px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 8px 32px rgba(0, 0, 0, 0.18);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  backdrop-filter: blur(16px) saturate(140%);
+}
+
+/* The header bar: a full-width glass strip with a fine gold line underneath and the same top highlight. */
+.landing-nav-glass {
+  background: rgba(251, 247, 238, 0.62);
+  border-bottom: 1px solid rgba(185, 140, 52, 0.28);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85), 0 8px 32px rgba(15, 60, 60, 0.08);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  backdrop-filter: blur(16px) saturate(140%);
+}
+
+@media (max-width: 767px) {
+  .landing-glass-dark,
+  .landing-nav-glass {
+    -webkit-backdrop-filter: blur(12px) saturate(140%);
+    backdrop-filter: blur(12px) saturate(140%);
+  }
+}
+
+/* Browsers without backdrop-filter: solid backgrounds, so text never sits on see-through glass. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .landing-glass,
+  .landing-glass-lite {
+    background: rgba(255, 255, 255, 0.94);
+  }
+  .landing-nav-glass {
+    background: #fbf7ee;
+  }
+  .landing-glass-dark {
+    background: #1d4547;
+  }
+}
+
+/* Hover: lift 4px, deeper shadow, the gold hairline brightens. */
+.landing-glass-hover {
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+.landing-glass-hover:hover {
+  border-color: rgba(201, 162, 74, 0.7);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 16px 40px rgba(15, 60, 60, 0.18);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .landing-glass-hover:hover {
+    transform: translateY(-4px);
+  }
+}
+
+/* Icons in a fine gold ring on glass (the one icon style on the page). */
+.landing-icon-ring {
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(185, 140, 52, 0.55);
+  color: #1f4b4d;
+}
+
+/* A thin gold divider between sections. */
+.landing-hairline {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(185, 140, 52, 0.55), transparent);
 }
 
 /* Hide the scrollbar on the horizontal "top rated" row (it still scrolls by touch, wheel and keyboard). */
@@ -52,4 +180,31 @@
   overflow: hidden;
   clip: rect(0 0 0 0);
   white-space: nowrap;
+}
+
+/* Hero: the key phrase in deep-teal italic, on a fine gold underline. */
+.landing-marker {
+  font-style: italic;
+  background-image: linear-gradient(90deg, rgba(185, 140, 52, 0), rgba(185, 140, 52, 0.8) 12%, rgba(185, 140, 52, 0.8) 88%, rgba(185, 140, 52, 0));
+  background-size: 100% 2px;
+  background-position: 0 94%;
+  background-repeat: no-repeat;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  padding: 0 0.04em;
+}
+
+/* Hero image: feather its edges into the page so its own background never shows as a rectangle. */
+.landing-feather {
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 7%, #000 93%, transparent), linear-gradient(to bottom, transparent, #000 6%, #000 94%, transparent);
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(to right, transparent, #000 7%, #000 93%, transparent), linear-gradient(to bottom, transparent, #000 6%, #000 94%, transparent);
+  mask-composite: intersect;
+}
+
+/* The landing is one fixed screen: on short desktop screens the headline steps down so the hero fits. */
+@media (min-width: 1024px) and (max-height: 820px) {
+  .landing-hero-title {
+    font-size: 3.1rem;
+  }
 }

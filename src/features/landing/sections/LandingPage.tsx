@@ -1,67 +1,58 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
 import { useAsyncData } from '../../../hooks/useAsyncData';
-import { LANDING_COLORS, MAIN_ID } from '../constants';
+import { LANDING_NAV, MAIN_ID, type LandingSectionId } from '../constants';
 import { useDocumentMeta } from '../hooks/useDocumentMeta';
 import { getLandingHighlights } from '../services/landingService';
-import { FaqSection } from '../components/FaqSection';
-import { FinalCtaBanner } from '../components/FinalCtaBanner';
 import { HeroSection } from '../components/HeroSection';
-import { HowItWorksSection } from '../components/HowItWorksSection';
 import { LandingFooter } from '../components/LandingFooter';
 import { LandingHeader } from '../components/LandingHeader';
-import { MarketplaceSection } from '../components/MarketplaceSection';
+import { LandingPanelContent } from '../components/LandingPanels';
 import { MobileActionBar } from '../components/MobileActionBar';
-import { ProvidersSection } from '../components/ProvidersSection';
-import { StatsRow } from '../components/StatsRow';
-import { TestimonialsSection } from '../components/TestimonialsSection';
-import { TrustSection } from '../components/TrustSection';
-import { CurveDivider } from '../components/ui';
+import { SectionPanel } from '../components/SectionPanel';
 import type { LoginRedirectState } from '../../auth/components/guards';
 import '../landing.css';
 
-const { cream, tealTint, orangeTint } = LANDING_COLORS;
-const WHITE = '#FFFFFF';
+const sectionFromHash = (hash: string): LandingSectionId | null => LANDING_NAV.find((n) => `#${n.id}` === hash)?.id ?? null;
 
 /**
- * "/" for signed-out visitors: the public landing page, styled as a warm, busy local marketplace.
- * Section backgrounds alternate (cream, white, soft teal, soft orange) with soft curves between them.
- * Live counts, top-rated providers and review quotes come from the app's data (landingService). Never
- * shows staff features or demo accounts. Motion is limited to a gentle fade-up, off for reduced motion.
+ * "/" for signed-out visitors: one fixed screen. The header, the hero and a slim footer bar fill the
+ * viewport and the page itself never scrolls. The header links open the other sections (how it works,
+ * categories, for providers, FAQ) in a panel over the hero; each panel scrolls inside itself when its
+ * content is long. Where the hero doesn't fit (phones, very short screens) only the hero area scrolls,
+ * so nothing is ever cut off. Links like /#faq open that panel directly.
  */
 export function LandingPage() {
   const { t } = useTranslation('landing');
+  const location = useLocation();
   // Where they were going when the login requirement sent them here: kept for after they sign in.
-  const from = (useLocation().state as LoginRedirectState | null)?.from;
+  const from = (location.state as LoginRedirectState | null)?.from;
   const [menuOpen, setMenuOpen] = useState(false);
+  const [panel, setPanel] = useState<LandingSectionId | null>(() => sectionFromHash(location.hash));
   const { data: highlights } = useAsyncData(getLandingHighlights);
   useDocumentMeta(t('meta.title'), t('meta.description'));
 
+  // Keep the URL in step (#faq while the FAQ panel is open), without adding history entries.
+  useEffect(() => {
+    const url = `${window.location.pathname}${window.location.search}${panel ? `#${panel}` : ''}`;
+    window.history.replaceState(window.history.state, '', url);
+  }, [panel]);
+
+  const closePanel = useCallback(() => setPanel(null), []);
+
   return (
-    // Room at the bottom on phones for the fixed action bar (plus the home-indicator inset).
-    <div className="min-h-screen bg-[#FAF6EE] pb-[calc(5.5rem+env(safe-area-inset-bottom))] text-base text-[#1C1B18] md:pb-0">
-      <LandingHeader from={from} menuOpen={menuOpen} onMenuChange={setMenuOpen} />
-      <main id={MAIN_ID} tabIndex={-1} className="focus:outline-none">
-        <HeroSection from={from} highlights={highlights} />
-        <StatsRow highlights={highlights} />
-        <div className="h-12 lg:h-16" aria-hidden="true" />
-        <CurveDivider from={cream} to={WHITE} />
-        <MarketplaceSection highlights={highlights} />
-        <CurveDivider from={WHITE} to={tealTint} flip />
-        <HowItWorksSection />
-        <CurveDivider from={tealTint} to={WHITE} />
-        <TrustSection />
-        <CurveDivider from={WHITE} to={orangeTint} flip />
-        <ProvidersSection />
-        <CurveDivider from={orangeTint} to={cream} />
-        <TestimonialsSection testimonials={highlights?.testimonials ?? null} />
-        <CurveDivider from={cream} to={WHITE} flip />
-        <FaqSection />
-        <FinalCtaBanner from={from} />
+    <div className="landing-root flex h-[100svh] flex-col overflow-hidden bg-[#FBF7EE] text-base text-[#1C1B18]">
+      <LandingHeader from={from} menuOpen={menuOpen} onMenuChange={setMenuOpen} onOpenSection={setPanel} />
+      {/* Fits the screen on desktop (no scrolling); scrolls only if the hero is taller than the space. Room for the phone's bottom button. */}
+      <main id={MAIN_ID} tabIndex={-1} className="min-h-0 flex-1 overflow-y-auto pb-[calc(5.5rem+env(safe-area-inset-bottom))] focus:outline-none md:pb-0">
+        <HeroSection from={from} />
       </main>
       <LandingFooter />
-      <MobileActionBar from={from} hidden={menuOpen} />
+      <MobileActionBar from={from} hidden={menuOpen || panel !== null} />
+      <SectionPanel sectionId={panel} onClose={closePanel}>
+        {panel && <LandingPanelContent sectionId={panel} highlights={highlights} from={from} />}
+      </SectionPanel>
     </div>);
 
 }

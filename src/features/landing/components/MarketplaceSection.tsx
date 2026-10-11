@@ -40,12 +40,12 @@ export function MarketplaceSection({ highlights }: {highlights: LandingHighlight
   }
 
   return (
-    <section id={id} aria-labelledby={`${id}-heading`} className="scroll-mt-20 bg-white py-14 lg:py-20">
+    <section id={id} aria-labelledby={`${id}-heading`} className="scroll-mt-20 py-14 lg:py-20">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <Reveal>
           <LandingHeading id={`${id}-heading`} intro={t('market.intro')}>{t('market.title')}</LandingHeading>
 
-          <div role="tablist" aria-label={t('market.tabsLabel')} className="mt-8 inline-flex rounded-2xl bg-[#F1ECDF] p-1.5">
+          <div role="tablist" aria-label={t('market.tabsLabel')} className="landing-glass mt-8 inline-flex p-1.5">
             {TABS.map((tab, i) => {
               const selected = tab.id === kind;
               const Icon = tab.icon;
@@ -63,8 +63,8 @@ export function MarketplaceSection({ highlights }: {highlights: LandingHighlight
                   tabIndex={selected ? 0 : -1}
                   onClick={() => setKind(tab.id)}
                   onKeyDown={(e) => onTabKey(e, i)}
-                  className={`inline-flex min-h-[44px] items-center gap-2 rounded-xl px-5 text-base font-bold transition-colors duration-150 focus:outline-none focus-visible:ring-4 focus-visible:ring-[#1F4B4D]/30 motion-reduce:transition-none ${
-                  selected ? 'bg-white text-[#1F4B4D] shadow-sm' : 'text-[#5E594F] hover:text-[#1C1B18]'}`
+                  className={`inline-flex min-h-[44px] items-center gap-2 rounded-[14px] px-5 text-base font-semibold transition-colors duration-150 focus:outline-none focus-visible:ring-4 focus-visible:ring-[#1F4B4D]/30 motion-reduce:transition-none ${
+                  selected ? 'bg-[#1F4B4D] text-white shadow-sm' : 'text-[#4F4C46] hover:text-[#16302F]'}`
                   }>
 
                   <Icon className="h-5 w-5" aria-hidden="true" />
@@ -86,13 +86,13 @@ export function MarketplaceSection({ highlights }: {highlights: LandingHighlight
                   <Link
                     to={AUTH_ROUTES.signupFor(ROLE.Customer)}
                     state={{ from: landingSearchUrl(c.id, '') } satisfies LoginRedirectState}
-                    className="group flex h-full min-h-[132px] flex-col items-start gap-3 rounded-3xl border border-[#EFE7D6] bg-[#FAF6EE] p-4 transition-[transform,background-color,border-color,box-shadow] duration-200 hover:border-[#1F4B4D]/30 hover:bg-[#E8F1EF] hover:shadow-[0_14px_30px_-18px_rgba(22,58,60,0.5)] focus:outline-none focus-visible:ring-4 focus-visible:ring-[#1F4B4D]/30 motion-safe:hover:-translate-y-1 motion-reduce:transition-none">
+                    className="landing-glass-lite landing-glass-hover group flex h-full min-h-[132px] flex-col items-start gap-3 p-4 focus:outline-none focus-visible:ring-4 focus-visible:ring-[#1F4B4D]/30">
 
-                    <span className={`flex h-12 w-12 items-center justify-center rounded-full ${c.tintClass}`} aria-hidden="true">
-                      <Icon className="h-6 w-6" />
+                    <span className="landing-icon-ring flex h-12 w-12 items-center justify-center rounded-full" aria-hidden="true">
+                      <Icon className="h-5 w-5" strokeWidth={1.5} />
                     </span>
-                    <span className="text-base font-extrabold leading-snug text-[#1C1B18]">{tradeBrowseLabel(c.id)}</span>
-                    <span className="mt-auto text-sm text-[#5E594F]">
+                    <span className="text-base font-semibold leading-snug text-[#16302F]">{tradeBrowseLabel(c.id)}</span>
+                    <span className="mt-auto text-sm text-[#55524B]">
                       {highlights ? t(kind === 'retail' ? 'market.shopsCount' : 'market.providersCount', { count }) : ' '}
                     </span>
                   </Link>
@@ -101,8 +101,8 @@ export function MarketplaceSection({ highlights }: {highlights: LandingHighlight
             })}
           </ul>
 
-          <h3 className="landing-display mt-12 text-2xl font-black text-[#1C1B18]">{t('market.featuredTitle')}</h3>
-          <p className="mt-1 text-base text-[#5E594F]">{t('market.featuredIntro')}</p>
+          <h3 className="landing-display mt-12 text-2xl text-[#16302F]">{t('market.featuredTitle')}</h3>
+          <p className="mt-1 text-base text-[#55524B]">{t('market.featuredIntro')}</p>
           {/* Phones: a sideways row (snap). Tablets and up: a grid. Fixed card size, so loading doesn't shift things. */}
           <ul
             aria-label={t('market.featuredTitle')}
@@ -117,7 +117,7 @@ export function MarketplaceSection({ highlights }: {highlights: LandingHighlight
                 </li>
             ) :
             Array.from({ length: 4 }, (_, i) =>
-            <li key={i} className="h-[340px] w-[78%] shrink-0 animate-pulse rounded-3xl bg-[#F1ECDF] motion-reduce:animate-none sm:w-auto" aria-hidden="true" />
+            <li key={i} className="h-[340px] w-[78%] shrink-0 animate-pulse rounded-[20px] bg-white/50 motion-reduce:animate-none sm:w-auto" aria-hidden="true" />
             )}
           </ul>
         </div>

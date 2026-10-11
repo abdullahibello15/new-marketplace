@@ -16,14 +16,15 @@ interface LandingCtasProps {
 }
 
 /**
- * "Log in" (outlined) and "Create account" (orange) for visitors. Someone already signed in sees a way
+ * "Log in" (gold outline) and "Create account" (deep teal) for visitors. Someone already signed in sees a way
  * back instead: staff "Go to admin console", everyone else "Go to my account".
  */
 export function LandingCtas({ from, compact = false, fullWidth = false, onNavigate }: LandingCtasProps) {
   const { t } = useTranslation('landing');
   const { user, hasRole, homeFor } = useAuth();
   const state = { from } satisfies LoginRedirectState;
-  const size = compact ? landingButton.compact : '';
+  // Pills, like the hero's buttons.
+  const size = `rounded-full ${compact ? landingButton.compact : ''}`;
   const wrap = fullWidth ? 'grid grid-cols-2 gap-2' : 'flex items-center gap-2';
 
   if (user) {

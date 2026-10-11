@@ -1,138 +1,95 @@
-import { useId, useState, type FormEvent, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
-import { Link, useNavigate } from 'react-router-dom';
-import { BadgeCheckIcon, MessageCircleIcon, SearchIcon, StarIcon } from 'lucide-react';
-import { nigerLgas } from '../../../data/nigerLgas';
-import { browseCategories } from '../../../data/tradeCategories';
-import { lgaLabel, tradeBrowseLabel } from '../../../i18n/labels';
+import { Link } from 'react-router-dom';
+import { ArrowRightIcon, BadgeCheckIcon, HeadsetIcon, ShieldCheckIcon, TruckIcon, type LucideIcon } from 'lucide-react';
 import { AUTH_ROUTES, ROLE } from '../../auth/constants';
 import { SEARCH_ROUTE } from '../../discovery/constants';
-import { LANDING_PHOTOS } from '../constants';
-import { landingSearchUrl } from '../utils/searchLink';
+import { HERO_IMAGE } from '../constants';
 import { landingButton } from './landingStyles';
-import { Highlight } from './ui';
 import type { LoginRedirectState } from '../../auth/components/guards';
-import type { NigerLga, TradeCategory } from '../../../types/marketplace';
-import type { LandingHighlights } from '../types';
 
-const field =
-'min-h-[48px] w-full rounded-2xl border border-[#E7DECB] bg-white px-4 text-base text-[#1C1B18] focus:border-[#1F4B4D] focus:outline-none focus:ring-4 focus:ring-[#1F4B4D]/15';
+/**
+ * ⚠️ CONFIRM before launch: "Fast & Reliable Delivery" (delivery is offered by each shop, where it
+ * offers it) and "24/7 Support" (no support line exists yet) are promises the business has to keep.
+ */
+const FEATURES: readonly {key: string;icon: LucideIcon;}[] = [
+{ key: 'delivery', icon: TruckIcon },
+{ key: 'payments', icon: ShieldCheckIcon },
+{ key: 'verified', icon: BadgeCheckIcon },
+{ key: 'support', icon: HeadsetIcon }];
 
-/** A small white card floating over the photo collage. Static: it doesn't move. */
-function FloatingCard({ className, children }: {className: string;children: ReactNode;}) {
-  return (
-    <div className={`absolute z-10 flex items-center gap-2 rounded-2xl bg-white px-3 py-2 text-sm font-bold text-[#1C1B18] shadow-[0_10px_30px_-10px_rgba(22,58,60,0.45)] ${className}`}>
-      {children}
-    </div>);
 
-}
-
-function CollagePhoto({ src, alt, className, eager = false }: {src: {small: string;large: string;size: number;};alt: string;className: string;eager?: boolean;}) {
-  return (
-    <img
-      src={src.small}
-      srcSet={`${src.small} 480w, ${src.large} 800w`}
-      sizes="(min-width: 1024px) 300px, 55vw"
-      width={src.size}
-      height={src.size}
-      alt={alt}
-      loading={eager ? 'eager' : 'lazy'}
-      decoding="async"
-      className={`absolute aspect-square rounded-3xl object-cover shadow-[0_18px_40px_-16px_rgba(22,58,60,0.55)] ring-4 ring-white ${className}`} />);
-
+/** The key phrase in the headline: deep-teal italic on a fine gold underline. */
+function MarkerHighlight({ children }: {children?: ReactNode;}) {
+  return <span className="landing-marker text-[#1F4B4D]">{children}</span>;
 }
 
 /**
- * Two columns: the headline (one key word highlighted), the two main buttons and a quick search on the
- * left; on the right, three overlapping photos with floating cards. The cards' facts (verification, the
- * best rating, the fastest typical reply) come from the app's data, so they're true.
+ * The hero: on desktop the headline (one phrase highlighted), subtext, the "Start Shopping" call to action
+ * (the only orange button on the page), "Become a provider" and the feature strip on a glass card on the
+ * left; the image on the right, over soft light glows, bleeding to the screen edge. On phones and tablets
+ * it stacks: text, full-width button, a 2x2 feature card, then the image. All text is real text.
  */
-export function HeroSection({ from, highlights }: {from?: string;highlights: LandingHighlights | null;}) {
+export function HeroSection({ from }: {from?: string;}) {
   const { t } = useTranslation('landing');
-  const navigate = useNavigate();
-  const uid = useId();
-  const [category, setCategory] = useState<TradeCategory | ''>('');
-  const [lga, setLga] = useState<NigerLga | ''>('');
-
-  function search(e: FormEvent) {
-    e.preventDefault();
-    navigate(AUTH_ROUTES.signupFor(ROLE.Customer), { state: { from: landingSearchUrl(category, lga) } satisfies LoginRedirectState });
-  }
 
   return (
-    <section aria-labelledby="hero-heading" className="relative overflow-hidden">
-      {/* Soft decorative blobs behind the content. */}
-      <div aria-hidden="true" className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full bg-[#F8EED2] opacity-70 blur-2xl" />
-      <div aria-hidden="true" className="pointer-events-none absolute -left-32 bottom-0 h-72 w-72 rounded-full bg-[#E8F1EF] opacity-80 blur-2xl" />
-
-      <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-4 pb-16 pt-8 sm:px-6 lg:grid-cols-2 lg:gap-14 lg:pb-24 lg:pt-14">
-        <div className="min-w-0">
-          <p className="inline-flex items-center gap-2 rounded-full bg-[#F8EED2] px-3 py-1.5 text-sm font-bold text-[#7A560C]">
-            <span className="h-2 w-2 rounded-full bg-[#D9A933]" aria-hidden="true" />
-            {t('hero.eyebrow')}
-          </p>
-          <h1 id="hero-heading" className="landing-display mt-4 text-4xl font-black leading-[1.08] text-[#1C1B18] sm:text-5xl lg:text-[3.6rem]">
-            <Trans t={t} i18nKey="hero.title" components={{ hl: <Highlight /> }} />
+    <section aria-labelledby="hero-heading" className="landing-glass-bg relative flex min-h-full flex-col justify-center overflow-hidden">
+      <div className="grid w-full items-center gap-10 pb-10 pt-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.08fr)] lg:gap-6 lg:py-4">
+        {/* Left column: its text lines up with the header logo (7xl container); the image column runs to the screen edge. */}
+        <div className="relative min-w-0 px-4 sm:px-6 lg:py-10 lg:pl-[max(1.5rem,calc((100vw-80rem)/2+1.5rem))] lg:pr-0">
+          <h1 id="hero-heading" className="landing-display landing-hero-title max-w-[16ch] text-[2.3rem] leading-[1.1] text-[#16302F] sm:text-5xl md:text-[3.4rem] xl:text-[4rem]">
+            <Trans t={t} i18nKey="hero.title" components={{ hl: <MarkerHighlight /> }} />
           </h1>
-          <p className="mt-5 max-w-xl text-lg text-[#5E594F]">{t('hero.subtitle')}</p>
+          <div aria-hidden="true" className="mt-6 h-px w-20 bg-[#B98C34]/70" />
+          <p className="mt-5 max-w-[34rem] text-lg leading-relaxed text-[#4F4C46] sm:text-xl">{t('hero.subtitle')}</p>
 
-          <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-            <Link to={AUTH_ROUTES.signupFor(ROLE.Customer)} state={{ from: from ?? SEARCH_ROUTE } satisfies LoginRedirectState} className={landingButton.primary}>
-              {t('hero.findService')}
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+            <Link
+              to={AUTH_ROUTES.signupFor(ROLE.Customer)}
+              state={{ from: from ?? SEARCH_ROUTE } satisfies LoginRedirectState}
+              className={`${landingButton.cta} min-h-[56px] gap-3 px-8 text-lg motion-safe:hover:-translate-y-0.5`}>
+
+              {t('hero.startShopping')}
+              <ArrowRightIcon className="h-5 w-5" aria-hidden="true" />
             </Link>
             <Link to={AUTH_ROUTES.signupFor(ROLE.Provider)} className={landingButton.secondary}>
               {t('hero.becomeProvider')}
             </Link>
           </div>
 
-          <form role="search" aria-label={t('hero.searchLabel')} onSubmit={search} className="mt-8 rounded-3xl border border-[#E7DECB] bg-white p-3 shadow-[0_12px_30px_-18px_rgba(22,58,60,0.4)] sm:p-4">
-            <div className="grid gap-3 sm:grid-cols-2 sm:items-end">
-              <div className="min-w-0">
-                <label htmlFor={`${uid}-cat`} className="mb-1 block text-sm font-bold text-[#5E594F]">{t('hero.category')}</label>
-                <select id={`${uid}-cat`} value={category} onChange={(e) => setCategory(e.target.value as TradeCategory | '')} className={field}>
-                  <option value="">{t('hero.anyCategory')}</option>
-                  {browseCategories.map((c) => <option key={c.id} value={c.id}>{tradeBrowseLabel(c.id)}</option>)}
-                </select>
-              </div>
-              <div className="min-w-0">
-                <label htmlFor={`${uid}-lga`} className="mb-1 block text-sm font-bold text-[#5E594F]">{t('hero.lga')}</label>
-                <select id={`${uid}-lga`} value={lga} onChange={(e) => setLga(e.target.value as NigerLga | '')} className={field}>
-                  <option value="">{t('hero.anyLga')}</option>
-                  {nigerLgas.map((l) => <option key={l} value={l}>{lgaLabel(l)}</option>)}
-                </select>
-              </div>
-              <button type="submit" className={`${landingButton.primary} w-full sm:col-span-2`}>
-                <SearchIcon className="h-5 w-5" aria-hidden="true" />
-                {t('hero.search')}
-              </button>
-            </div>
-            <p className="mt-2 px-1 text-sm text-[#5E594F]">{t('hero.searchNote')}</p>
-          </form>
+          {/*
+            A glass card. Phones and tablets: a 2x2 grid, icon beside label. Desktop: one row with thin gold
+            dividers, each icon above its two-line label.
+           */}
+          <ul className="landing-glass mt-10 grid grid-cols-2 gap-x-6 gap-y-5 p-5 lg:flex lg:items-start lg:gap-0 lg:divide-x lg:divide-[#B98C34]/30 lg:px-4 lg:py-5">
+            {FEATURES.map(({ key, icon: Icon }) =>
+            <li key={key} className="flex items-center gap-3 lg:flex-1 lg:flex-col lg:gap-2 lg:px-3 lg:text-center">
+                <span className="landing-icon-ring flex h-11 w-11 shrink-0 items-center justify-center rounded-full" aria-hidden="true">
+                  <Icon className="h-5 w-5" strokeWidth={1.5} />
+                </span>
+                <span className="max-w-[8.5rem] text-[15px] font-medium leading-snug text-[#2E2C28] sm:text-base lg:max-w-none lg:text-[15px]">{t(`hero.features.${key}`)}</span>
+              </li>
+            )}
+          </ul>
         </div>
 
-        {/* The collage keeps a fixed shape (aspect ratio), so nothing moves while photos load. */}
-        <div className="relative mx-auto aspect-[10/9] w-full max-w-[540px]">
-          <div aria-hidden="true" className="absolute inset-[8%] rounded-[3rem] bg-[#E8F1EF]" />
-          <CollagePhoto src={LANDING_PHOTOS.tailor} alt={t('hero.photoTailor')} eager className="left-0 top-[4%] w-[58%]" />
-          <CollagePhoto src={LANDING_PHOTOS.electrician} alt={t('hero.photoElectrician')} eager className="right-0 top-0 w-[44%]" />
-          <CollagePhoto src={LANDING_PHOTOS.market} alt={t('hero.photoMarket')} eager className="bottom-0 right-[6%] w-[48%]" />
+        {/* Right column: the image over two soft light glows (gradients, not blur filters), bleeding to the right edge. */}
+        <div className="relative min-w-0 px-4 sm:px-6 lg:pl-0 lg:pr-0">
+          <div aria-hidden="true" className="pointer-events-none absolute right-[4%] top-0 h-[70%] w-[60%] rounded-full bg-[radial-gradient(closest-side,rgba(217,169,51,0.22),transparent)]" />
+          <div aria-hidden="true" className="pointer-events-none absolute left-[10%] top-[18%] h-[60%] w-[55%] rounded-full bg-[radial-gradient(closest-side,rgba(31,75,77,0.14),transparent)]" />
+          {/* Fixed width and height (and aspect ratio), so nothing jumps while it loads. Never cropped: the whole picture shows. */}
+          <img
+            src={HERO_IMAGE.small}
+            srcSet={`${HERO_IMAGE.small} ${HERO_IMAGE.smallWidth}w, ${HERO_IMAGE.large} ${HERO_IMAGE.largeWidth}w`}
+            sizes="(min-width: 1024px) 52vw, 100vw"
+            width={HERO_IMAGE.largeWidth}
+            height={HERO_IMAGE.largeHeight}
+            alt={t('hero.imageAlt')}
+            loading="lazy"
+            decoding="async"
+            className="landing-feather relative mx-auto h-auto w-full max-w-[620px] object-contain lg:ml-auto lg:mr-0 lg:h-[min(820px,calc(100svh-9rem))] lg:w-auto lg:max-w-full" />
 
-          <FloatingCard className="left-[2%] top-[56%] sm:left-[-2%]">
-            <BadgeCheckIcon className="h-5 w-5 text-[#1F4B4D]" aria-hidden="true" />
-            {t('hero.cardVerified')}
-          </FloatingCard>
-          {highlights?.topRating &&
-          <FloatingCard className="bottom-[4%] left-[8%]">
-              <StarIcon className="h-5 w-5 fill-[#D9A933] text-[#D9A933]" aria-hidden="true" />
-              {t('hero.cardRating', { rating: highlights.topRating.toFixed(1) })}
-            </FloatingCard>
-          }
-          {highlights?.fastestReplyMinutes &&
-          <FloatingCard className="right-[-1%] top-[44%]">
-              <MessageCircleIcon className="h-5 w-5 text-[#C0501F]" aria-hidden="true" />
-              {t('hero.cardReply', { minutes: highlights.fastestReplyMinutes })}
-            </FloatingCard>
-          }
         </div>
       </div>
     </section>);

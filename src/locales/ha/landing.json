@@ -19,24 +19,18 @@
     "goToApp": "Je zuwa asusuna"
   },
   "hero": {
-    "eyebrow": "Minna · Jihar Neja",
-    "title": "Ayyuka da shaguna na gida masu aminci, <hl>kusa da gida</hl>",
-    "subtitle": "Nemo masu sana’a da shaguna da aka tantance a Minna da Jihar Neja. Kira aiki ko ka yi odar kaya, ka biya lafiya.",
-    "searchLabel": "Nemi aiki",
-    "category": "Me kake buƙata?",
-    "anyCategory": "Kowane aiki",
-    "lga": "A ina?",
-    "anyLga": "Ko’ina a Jihar Neja",
-    "search": "Nema",
-    "searchNote": "Buɗe asusu kyauta don ganin sakamakon.",
+    "title": "Duk Abin da Kake Buƙata, <hl>Duka a Wuri Ɗaya</hl> a Kasuwa",
+    "subtitle": "Ɗauki ƙwararru na gida masu aminci kuma ka yi siyayya daga masu sayarwa da aka tantance a Minna da Jihar Neja, duka a wuri ɗaya.",
     "findService": "Nemi aiki",
     "becomeProvider": "Zama mai sana’a",
-    "photoTailor": "Teloniya tana ɗinka atamfa a shagonta",
-    "photoElectrician": "Mai aikin wuta yana saka soket a bango",
-    "photoMarket": "Mai kai kaya a kan titin kasuwa mai cunkoso",
-    "cardVerified": "Masu sana’a da aka tantance",
-    "cardRating": "{{rating}} mafi girman ƙima",
-    "cardReply": "Yana amsawa cikin ~minti {{minutes}}"
+    "startShopping": "Fara Siyayya",
+    "imageAlt": "Wata mai siyayya tana murmushi tana amfani da manhaja a waya, da jakunkunan siyayya da kaya a kewayenta",
+    "features": {
+      "delivery": "Isarwa Cikin Sauri da Aminci",
+      "payments": "Biya Mai Tsaro",
+      "verified": "Masu Sayarwa da Aka Tantance",
+      "support": "Tallafi Awa 24/7"
+    }
   },
   "how": {
     "title": "Yadda yake <hl>aiki</hl>",
@@ -136,21 +130,12 @@
     }
   },
   "footer": {
-    "tagline": "Ayyuka da shaguna na gida masu aminci a Minna da Jihar Neja.",
-    "explore": "Bincika",
-    "account": "Asusunka",
-    "contactHeading": "Tuntuɓa",
-    "contact": "Bayanan tuntuɓa za su zo nan ba da daɗewa ba (na wucin gadi).",
-    "legal": "Doka",
-    "terms": "Sharuɗɗan amfani (na wucin gadi, na zuwa)",
-    "privacy": "Manufar sirri (na wucin gadi, na zuwa)",
     "providerTerms": "Sharuɗɗan masu sana’a",
     "staffLogin": "Shigar ma’aikata",
     "rights": "© {{year}} Gwani",
-    "social": "Gwani a kafafen sada zumunta",
-    "socialSoon": "na zuwa"
+    "termsShort": "Sharuɗɗa (na zuwa)",
+    "privacyShort": "Sirri (na zuwa)"
   },
-  "actionBar": "Fara",
   "stats": {
     "label": "Gwani a lambobi",
     "providers_one": "mai sana’a a jere",
@@ -188,5 +173,8 @@
     "title": "A shirye muke idan ka shirya",
     "text": "Buɗe asusu kyauta don kiran masu sana’a na gida masu aminci, ko ka shiga don kai ga abokan ciniki kusa da kai.",
     "button": "Buɗe asusu"
+  },
+  "panel": {
+    "close": "Rufe"
   }
 }

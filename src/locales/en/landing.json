@@ -19,24 +19,18 @@
     "goToApp": "Go to my account"
   },
   "hero": {
-    "eyebrow": "Minna · Niger State",
-    "title": "Trusted local services and shops, <hl>close to home</hl>",
-    "subtitle": "Find verified tradespeople and shops across Minna and Niger State. Book a job or order products, and pay safely.",
-    "searchLabel": "Search for a service",
-    "category": "What do you need?",
-    "anyCategory": "Any service",
-    "lga": "Where?",
-    "anyLga": "Anywhere in Niger State",
-    "search": "Search",
-    "searchNote": "Create a free account to see the results.",
+    "title": "Everything You Need, <hl>All in One</hl> Marketplace",
+    "subtitle": "Hire trusted local pros and shop from verified sellers across Minna and Niger State, all in one place.",
     "findService": "Find a service",
     "becomeProvider": "Become a provider",
-    "photoTailor": "A tailor sewing ankara fabric in her shop",
-    "photoElectrician": "An electrician fitting a wall socket",
-    "photoMarket": "A dispatch rider on a busy market street",
-    "cardVerified": "Verified providers",
-    "cardRating": "{{rating}} top rating",
-    "cardReply": "Replies in ~{{minutes}} min"
+    "startShopping": "Start Shopping",
+    "imageAlt": "A smiling shopper using a phone app, with shopping bags and products around her",
+    "features": {
+      "delivery": "Fast & Reliable Delivery",
+      "payments": "Secure Payments",
+      "verified": "Verified Sellers",
+      "support": "24/7 Support"
+    }
   },
   "how": {
     "title": "How it <hl>works</hl>",
@@ -136,21 +130,12 @@
     }
   },
   "footer": {
-    "tagline": "Trusted local services and shops in Minna and Niger State.",
-    "explore": "Explore",
-    "account": "Your account",
-    "contactHeading": "Contact",
-    "contact": "Contact details coming soon (placeholder).",
-    "legal": "Legal",
-    "terms": "Terms of use (placeholder, coming soon)",
-    "privacy": "Privacy policy (placeholder, coming soon)",
     "providerTerms": "Provider terms",
     "staffLogin": "Staff login",
     "rights": "© {{year}} Gwani",
-    "social": "Gwani on social media",
-    "socialSoon": "coming soon"
+    "termsShort": "Terms (coming soon)",
+    "privacyShort": "Privacy (coming soon)"
   },
-  "actionBar": "Get started",
   "stats": {
     "label": "Gwani in numbers",
     "providers_one": "provider listed",
@@ -188,5 +173,8 @@
     "title": "Ready when you are",
     "text": "Create a free account to book trusted local providers, or join to reach customers near you.",
     "button": "Create account"
+  },
+  "panel": {
+    "close": "Close"
   }
 }

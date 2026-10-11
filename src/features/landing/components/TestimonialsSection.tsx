@@ -3,7 +3,6 @@ import { QuoteIcon } from 'lucide-react';
 import { Highlight, LandingHeading, Reveal } from './ui';
 import type { LandingTestimonial } from '../types';
 
-const AVATAR_TONES = ['bg-[#E8F1EF] text-[#1F4B4D]', 'bg-[#FCEFE6] text-[#A8441D]', 'bg-[#F8EED2] text-[#7A560C]'];
 
 const initials = (name: string) => name.split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0]?.toUpperCase()).join('');
 
@@ -15,7 +14,7 @@ export function TestimonialsSection({ testimonials }: {testimonials: LandingTest
   const { t } = useTranslation('landing');
   if (testimonials && testimonials.length === 0) return null;
   return (
-    <section aria-labelledby="testimonials-heading" className="bg-[#FAF6EE] py-14 lg:py-20">
+    <section aria-labelledby="testimonials-heading" className="py-14 lg:py-20">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <Reveal>
           <LandingHeading id="testimonials-heading" intro={t('testimonials.intro')} center>
@@ -29,23 +28,23 @@ export function TestimonialsSection({ testimonials }: {testimonials: LandingTest
             <Reveal className="h-full">
                   <figure className="flex h-full flex-col">
                     {/* The bubble, with a little tail pointing at the reviewer. */}
-                    <blockquote className="relative flex-1 rounded-3xl bg-white p-6 shadow-[0_14px_36px_-24px_rgba(22,58,60,0.5)] after:absolute after:-bottom-3 after:left-10 after:h-6 after:w-6 after:rotate-45 after:rounded-sm after:bg-white">
-                      <QuoteIcon className="h-6 w-6 text-[#D9A933]" aria-hidden="true" />
-                      <p className="mt-3 text-base text-[#1C1B18]">{item.comment}</p>
+                    <blockquote className="landing-glass relative flex-1 p-6 after:absolute after:-bottom-[7px] after:left-10 after:h-3.5 after:w-3.5 after:rotate-45 after:border-b after:border-r after:border-white/60 after:bg-[#FCFAF5]">
+                      <QuoteIcon className="h-6 w-6 text-[#B98C34]" strokeWidth={1.5} aria-hidden="true" />
+                      <p className="landing-display mt-3 text-lg italic leading-relaxed text-[#2E2C28]">{item.comment}</p>
                     </blockquote>
                     <figcaption className="mt-6 flex items-center gap-3 pl-4">
-                      <span className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-base font-black ${AVATAR_TONES[i % AVATAR_TONES.length]}`} aria-hidden="true">
+                      <span className="landing-icon-ring landing-display flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-base" aria-hidden="true">
                         {initials(item.reviewerName)}
                       </span>
                       <span className="min-w-0">
-                        <span className="block font-extrabold text-[#1C1B18]">{item.reviewerName}</span>
-                        <span className="block text-sm text-[#5E594F]">{t('testimonials.about', { vendor: item.vendorName })}</span>
+                        <span className="block font-semibold text-[#16302F]">{item.reviewerName}</span>
+                        <span className="landing-label mt-0.5 block text-[#7A5E1F]">{t('testimonials.about', { vendor: item.vendorName })}</span>
                       </span>
                     </figcaption>
                   </figure>
                 </Reveal> :
 
-            <div className="h-56 animate-pulse rounded-3xl bg-white/70 motion-reduce:animate-none" aria-hidden="true" />
+            <div className="h-56 animate-pulse rounded-[20px] bg-white/50 motion-reduce:animate-none" aria-hidden="true" />
             }
             </li>
           )}

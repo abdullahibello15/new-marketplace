@@ -78,3 +78,15 @@ export const LANDING_COLORS = {
   orangeButtonHover: '#A8441D',
   gold: '#D9A933'
 } as const;
+
+/**
+ * The hero image (public/landing, WebP). ⚠️ TEMPORARY: a crop of the reference design, standing in until
+ * the real hero-right image is added. To swap it, replace both files (same names) and update the sizes.
+ */
+export const HERO_IMAGE = {
+  small: '/landing/hero-right-620.webp',
+  smallWidth: 620,
+  large: '/landing/hero-right-937.webp',
+  largeWidth: 937,
+  largeHeight: 940
+} as const;
