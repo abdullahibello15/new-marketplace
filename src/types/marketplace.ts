@@ -218,7 +218,7 @@ export interface VendorFulfilment {
 export type VendorProfileInput = Pick<Vendor, 'bio' | 'tradeCategory' | 'tradeCategoryOther'>;
 
 export type VendorProfilePatch = Partial<
-  Pick<Vendor, 'name' | 'bio' | 'tradeCategory' | 'tradeCategoryOther' | 'gallery' | 'services' | 'workingHours' | 'serviceAreas' | 'products' | 'fulfilment' | 'acceptsCash'>>;
+  Pick<Vendor, 'name' | 'photo' | 'bio' | 'tradeCategory' | 'tradeCategoryOther' | 'gallery' | 'services' | 'workingHours' | 'serviceAreas' | 'products' | 'fulfilment' | 'acceptsCash'>>;
 
 export type JobStage = 'requested' | 'quoted' | 'accepted' | 'in_progress' | 'completed';
 

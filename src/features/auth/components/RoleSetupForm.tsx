@@ -19,8 +19,13 @@ export interface RoleSetupValues {
 
 interface RoleSetupFormProps {
   role: SignupRole;
-  /** Signup asks for their name (and an optional email for customers); adding a role later doesn't. */
+  /** Rider signup asks for their name; adding a role later doesn't. */
   askName: boolean;
+  /**
+   * Vendor setup after provider signup: only the business (type, name, trade). The location and the
+   * provider terms were given at signup, so those fields are left out.
+   */
+  businessOnly?: boolean;
   submitLabel: string;
   onSubmit: (values: RoleSetupValues) => Promise<void>;
   onBack?: () => void;
@@ -29,15 +34,14 @@ interface RoleSetupFormProps {
 const input = `${field} ${ok}`;
 
 /**
- * The short setup for a role: customers give their name (and an optional email), providers their
- * business (name, service or retail, trade, LGA/town, provider terms), riders their area and vehicle.
+ * The short setup for a role: providers their business (name, service or retail, trade, and, when adding
+ * the role later, LGA/town and the provider terms), riders their name, area and vehicle.
  */
-export function RoleSetupForm({ role, askName, submitLabel, onSubmit, onBack }: RoleSetupFormProps) {
+export function RoleSetupForm({ role, askName, businessOnly = false, submitLabel, onSubmit, onBack }: RoleSetupFormProps) {
   const { t } = useTranslation('auth');
   const uid = useId();
   const id = (k: string) => `${uid}-${k}`;
   const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
   const [kind, setKind] = useState<'service' | 'retail'>('service');
   const [businessName, setBusinessName] = useState('');
   const [trade, setTrade] = useState<TradeCategory | ''>('');
@@ -56,6 +60,7 @@ export function RoleSetupForm({ role, askName, submitLabel, onSubmit, onBack }: 
     if (role === ROLE.Provider) {
       if (businessName.trim().length < 2) return t('setup.check.businessName');
       if (!trade) return t('setup.check.trade');
+      if (businessOnly) return null;
       if (!lga) return t('setup.check.lga');
       if (town.trim().length < 2) return t('setup.check.town');
       if (!terms) return t('setup.check.terms');
@@ -77,7 +82,7 @@ export function RoleSetupForm({ role, askName, submitLabel, onSubmit, onBack }: 
     try {
       await onSubmit({
         name,
-        email,
+        email: '',
         vendor: role === ROLE.Provider ? { kind, businessName, tradeCategory: trade as TradeCategory, lga: lga as NigerLga, town, acceptedTerms: terms } : undefined,
         rider: role === ROLE.Rider ? { lga: lga as NigerLga, town, vehicle: vehicle as RiderVehicle, plateNumber: plate.trim() || null } : undefined
       });
@@ -97,13 +102,6 @@ export function RoleSetupForm({ role, askName, submitLabel, onSubmit, onBack }: 
       <div>
           <label htmlFor={id('name')} className={labelClass}>{t('setup.yourName')}</label>
           <input id={id('name')} autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} className={input} autoFocus />
-        </div>
-      }
-      {askName && role === ROLE.Customer &&
-      <div>
-          <label htmlFor={id('email')} className={labelClass}>{t('setup.email')} <span className="font-normal">({t('common:state.optional')})</span></label>
-          <input id={id('email')} type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} className={input} />
-          <p className="mt-1 text-xs text-muted">{t('setup.emailHint')}</p>
         </div>
       }
 
@@ -146,7 +144,7 @@ export function RoleSetupForm({ role, askName, submitLabel, onSubmit, onBack }: 
         </>
       }
 
-      {role !== ROLE.Customer &&
+      {role !== ROLE.Customer && !businessOnly &&
       <div className="grid gap-3 sm:grid-cols-2">
           <div>
             <label htmlFor={id('lga')} className={labelClass}>{t('setup.lga')}</label>
@@ -182,7 +180,7 @@ export function RoleSetupForm({ role, askName, submitLabel, onSubmit, onBack }: 
         </>
       }
 
-      {role === ROLE.Provider &&
+      {role === ROLE.Provider && !businessOnly &&
       <label className="flex items-start gap-2 text-sm">
           <input type="checkbox" checked={terms} onChange={(e) => setTerms(e.target.checked)} className="mt-0.5 h-4 w-4 rounded border-line text-pine focus:ring-pine/40" />
           <span>

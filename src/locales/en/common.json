@@ -431,6 +431,14 @@
     "welcomeClaimed": {
       "title": "Welcome to Gwani",
       "body": "Your profile is live. Add photos, your services and prices so customers can book you. Your membership through {{association}} is set up."
+    },
+    "passwordChanged": {
+      "title": "Your password was changed",
+      "body": "Your password was changed. If this wasn’t you, contact support: {{support}}."
+    },
+    "newDevice": {
+      "title": "New sign-in to your account",
+      "body": "Your account was just signed in on {{device}} near {{location}}. If this wasn’t you, sign that device out and change your password."
     }
   }
 }

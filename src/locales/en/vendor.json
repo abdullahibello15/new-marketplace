@@ -677,7 +677,10 @@
       "yourTrade": "Your trade",
       "tradePlaceholder": "e.g. Welder, AC technician",
       "bio": "Bio (optional)",
-      "bioPlaceholder": "Tell customers about your experience, the areas you cover and what makes your work stand out."
+      "bioPlaceholder": "Tell customers about your experience, the areas you cover and what makes your work stand out.",
+      "photo": "Profile photo",
+      "photoHint": "A clear photo of you or your shop. Customers see it on your profile and in search.",
+      "photoAlt": "Profile photo of {{name}}"
     },
     "fulfilment": {
       "pickup": "Pickup",
@@ -939,5 +942,89 @@
     "bundleLapsed": "The bundle has lapsed. Pay the renewal to add members for a full period.",
     "ownProfile": "You can only edit your own profile.",
     "planLimit": "Your {{plan}} plan allows {{what}}. Remove some or upgrade your plan."
+  },
+  "completeness": {
+    "title": "Profile strength",
+    "privateNote": "Only you and the Gwani team see this score. Customers see your verification badge.",
+    "ringLabel": "Profile {{percent}}% complete",
+    "label": {
+      "gettingStarted": "Getting started",
+      "good": "Good",
+      "almostThere": "Almost there",
+      "complete": "Complete"
+    },
+    "missingHeading": "Still to do, most helpful first",
+    "points": "+{{points}}%",
+    "fix": "Fix it",
+    "fixAria": "Fix it: {{item}}",
+    "loading": "Loading your profile score",
+    "celebrateTitle": "Your profile is complete!",
+    "celebrateText": "Customers have everything they need to choose you. This card will be hidden from now on. You can bring it back from Edit Profile.",
+    "hide": "Hide card",
+    "banner": {
+      "title": "Your profile is {{percent}}% complete",
+      "text": "Profiles with photos, prices and a short bio get more requests. It only takes a few minutes.",
+      "action": "Finish my profile"
+    },
+    "nav": {
+      "summary": "Profile {{percent}}% complete",
+      "withEdits": "Profile {{percent}}% complete, including unsaved changes",
+      "sectionDone": "complete",
+      "sectionTodo": "something to add"
+    },
+    "settings": {
+      "show": "Show the profile strength card on my dashboard",
+      "hint": "The card always shows while your profile is incomplete."
+    },
+    "item": {
+      "photo": {
+        "label": "Add a profile photo",
+        "hint": "Customers trust profiles with a real photo."
+      },
+      "businessName": {
+        "label": "Add your business name",
+        "hint": "Your name is the first thing customers see in search."
+      },
+      "tradeCategory": {
+        "label": "Choose your trade",
+        "hint": "Customers find you by browsing your trade."
+      },
+      "bio": {
+        "label": "Write a short bio ({{min}}+ characters)",
+        "hint": "A few lines about your experience help customers decide."
+      },
+      "portfolio": {
+        "label": "Add {{min}}+ portfolio photos",
+        "hint": "Vendors with {{min}}+ photos get more requests."
+      },
+      "services": {
+        "label": "Add a service with a price range",
+        "hint": "Customers book more when they can see prices."
+      },
+      "products": {
+        "label": "Add your first product",
+        "hint": "Shops with products listed get more orders."
+      },
+      "workingHours": {
+        "label": "Set your working hours",
+        "hint": "Customers can see when you’re open."
+      },
+      "serviceAreas": {
+        "label": "Choose your service areas",
+        "hint": "You show up in searches for the LGAs you cover."
+      },
+      "phoneVerified": {
+        "label": "Verify your phone number",
+        "hint": "A verified phone lets customers and Gwani reach you."
+      },
+      "emailAdded": {
+        "label": "Add an email address",
+        "hint": "Get receipts and account alerts by email."
+      },
+      "documentsSubmitted": {
+        "label": "Submit verification documents",
+        "hint": "A verification badge helps customers trust you."
+      }
+    }
   }
 }

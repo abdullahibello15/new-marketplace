@@ -1,39 +1,93 @@
-import { Trans, useTranslation } from 'react-i18next';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Link, Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { LanguageSelector } from '../../../components/LanguageSelector';
 import { currentLanguage } from '../../../i18n';
-import { useState } from 'react';
-import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { formatLocalPhone } from '../../../utils/phone';
-import { AUTH_ROUTES, ROLE, ROLE_META, type SignupRole } from '../constants';
+import { AUTH_ROUTES, ROLE, ROLE_META, SIGNUP_ROLES, type SignupRole } from '../constants';
 import { isAuthError } from '../errors';
+import { useAuth } from '../hooks/useAuth';
 import { registerUser } from '../services/authService';
+import { PhoneOtpForm } from '../components/PhoneOtpForm';
 import { RoleCards } from '../components/RoleCards';
 import { RoleSetupForm, type RoleSetupValues } from '../components/RoleSetupForm';
-import type { SignupState } from './LoginSection';
+import { CustomerSignupForm } from '../components/signup/CustomerSignupForm';
+import { ProviderSignupForm } from '../components/signup/ProviderSignupForm';
+import type { LoginRedirectState } from '../components/guards';
+import type { VerifyOtpResult } from '../types';
+
+/** Where to go after verification and onboarding (passed along from the Welcome screen). */
+export interface SignupFlowState extends LoginRedirectState {
+  /** After verifying: the next step (customer onboarding, vendor setup). */
+  next?: string;
+}
+
+const isSignupRole = (v: string | undefined): v is SignupRole => SIGNUP_ROLES.some((r) => r === v);
 
 /**
- * /signup — after a new number is verified: "How will you use Gwani?", then that role's short setup.
- * Customers go on to a short welcome, providers to their dashboard, riders to theirs.
+ * /signup — "How will you use Gwani?" → /signup/:role, that role's form. The ONE signup path per role:
+ *  - customer: name, email, password → verify the email → short welcome → customer home;
+ *  - provider: name, phone, email, location, password, terms → verify the phone → vendor setup → dashboard;
+ *  - rider: phone + one-time code → name, area and vehicle → rider home.
  */
 export function SignupSection() {
   const { t } = useTranslation('auth');
-  const state = useLocation().state as SignupState | null;
+  const { role } = useParams();
+  const { user, homeFor } = useAuth();
+  const from = (useLocation().state as LoginRedirectState | null)?.from;
   const navigate = useNavigate();
-  const [role, setRole] = useState<SignupRole | null>(null);
-  const [claimPath, setClaimPath] = useState<string | null>(null);
+  const back = () => navigate(AUTH_ROUTES.signup, { state: { from } satisfies LoginRedirectState });
+
+  if (!role) {
+    // Already signed in: nothing to create here.
+    if (user) return <Navigate to={from ?? homeFor()} replace />;
+    return (
+      <div className="space-y-4">
+        <LanguageSelector variant="buttons" />
+        <RoleCards onSelect={(r) => navigate(AUTH_ROUTES.signupFor(r), { state: { from } satisfies LoginRedirectState })} />
+        <p className="text-center text-sm text-muted">
+          {t('signup.haveAccount')} <Link to={AUTH_ROUTES.login} state={{ from } satisfies LoginRedirectState} className="font-bold text-pine underline">{t('start.logIn')}</Link>
+        </p>
+      </div>);
+
+  }
+  if (!isSignupRole(role)) return <Navigate to={AUTH_ROUTES.signup} replace />;
+
+  if (role === ROLE.Customer) {
+    return (
+      <CustomerSignupForm
+        onBack={back}
+        onDone={() => navigate(AUTH_ROUTES.verifyEmail, { replace: true, state: { from, next: AUTH_ROUTES.welcome } satisfies SignupFlowState })} />);
+
+  }
+  if (role === ROLE.Provider) {
+    return (
+      <ProviderSignupForm
+        onBack={back}
+        onDone={() => navigate(AUTH_ROUTES.verifyPhone, { replace: true, state: { next: AUTH_ROUTES.vendorSetup } satisfies SignupFlowState })} />);
+
+  }
+  return <RiderSignup onBack={back} />;
+}
+
+/** Riders: verify the phone first (it's how they sign in), then their name, area and vehicle. */
+function RiderSignup({ onBack }: {onBack: () => void;}) {
+  const { t } = useTranslation('auth');
+  const navigate = useNavigate();
+  const [verified, setVerified] = useState<Extract<VerifyOtpResult, {status: 'new_user';}> | null>(null);
   const [expired, setExpired] = useState(false);
 
-  if (!state?.signupToken) return <Navigate to={AUTH_ROUTES.login} replace />;
-  const { signupToken, phone, from } = state;
+  function onVerified(result: VerifyOtpResult) {
+    // The number already has an account: they're signed in now.
+    if (result.status === 'signed_in') navigate(ROLE_META[result.user.activeRole].home, { replace: true });else
+    setVerified(result);
+  }
 
   async function submit(values: RoleSetupValues) {
-    if (!role) return;
+    if (!verified) return;
     try {
-      await registerUser({ signupToken, role, language: currentLanguage(), name: values.name, email: values.email || null, vendor: values.vendor, rider: values.rider });
-      if (role === ROLE.Customer) navigate(AUTH_ROUTES.welcome, { replace: true, state: { from } });else
-      navigate(ROLE_META[role].home, { replace: true });
+      await registerUser({ signupToken: verified.signupToken, role: ROLE.Rider, language: currentLanguage(), name: values.name, rider: values.rider });
+      navigate(ROLE_META[ROLE.Rider].home, { replace: true });
     } catch (e) {
-      if (isAuthError(e) && e.code === 'invite_exists') setClaimPath(e.claimPath);
       if (isAuthError(e) && e.code === 'signup_expired') setExpired(true);
       throw e;
     }
@@ -44,27 +98,17 @@ export function SignupSection() {
       <div className="space-y-3 text-center">
         <h1 className="text-xl font-extrabold">{t('signup.expiredTitle')}</h1>
         <p className="text-sm text-muted">{t('signup.expiredBody')}</p>
-        <Link to={AUTH_ROUTES.login} replace className="font-bold text-pine underline">{t('signup.startAgain')}</Link>
+        <button type="button" onClick={() => {setExpired(false);setVerified(null);}} className="font-bold text-pine underline">{t('signup.startAgain')}</button>
       </div>);
 
   }
-
+  if (verified) return <RoleSetupForm role={ROLE.Rider} askName submitLabel={t('signup.createAccount')} onSubmit={submit} onBack={() => setVerified(null)} />;
   return (
     <div className="space-y-4">
-      <p className="text-sm text-muted">
-        <Trans t={t} i18nKey="signup.verified" values={{ phone: formatLocalPhone(phone) }} components={{ strong: <strong className="text-ink" /> }} />
-      </p>
-      <LanguageSelector variant="buttons" />
-      {role ?
-      <RoleSetupForm role={role} askName submitLabel={t('signup.createAccount')} onSubmit={submit} onBack={() => setRole(null)} /> :
-      <RoleCards onSelect={setRole} />
-      }
-      {claimPath &&
-      <p className="rounded-xl bg-[#E3EEEC] px-4 py-3 text-sm">
-          {t('signup.inviteExists')}{' '}
-          <Link to={claimPath} className="font-bold text-pine underline">{t('signup.claimNow')}</Link>
-        </p>
-      }
+      <h1 className="text-2xl font-extrabold">{t('signup.rider.title')}</h1>
+      <p className="text-sm text-muted">{t('signup.rider.intro')}</p>
+      <PhoneOtpForm onVerified={onVerified} />
+      <button type="button" onClick={onBack} className="text-sm font-semibold text-pine underline">{t('common:action.back')}</button>
     </div>);
 
 }

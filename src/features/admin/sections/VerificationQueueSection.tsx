@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { format, formatDistanceToNowStrict } from 'date-fns';
 import { ChevronRightIcon, FileCheck2Icon, LockIcon, SearchXIcon } from 'lucide-react';
@@ -18,6 +19,7 @@ import { fromDateKey } from '../../../lib/dates';
 import { ADMIN_ROUTES, DOCUMENT_TYPE_LABELS, VERIFICATION_STATUS, VERIFICATION_STATUS_META } from '../constants';
 import { useAdminSession } from '../hooks/useAdminSession';
 import { listApplications } from '../services/verificationService';
+import { getProfileCompletenessForAdmin } from '../../vendor-profile/services/profileCompletenessService';
 import type { Verification } from '../../../types/marketplace';
 import type { VerificationApplication, VerificationStatus } from '../types';
 
@@ -50,7 +52,11 @@ const maskedId = (a: VerificationApplication) => a.documents.find((d) => d.idNum
 /** /admin/verification — vendors waiting for verification, oldest first. */
 export function VerificationQueueSection() {
   const { admin } = useAdminSession();
+  const { t } = useTranslation('admin');
   const { data, status, error, reload } = useAsyncData(listApplications);
+  // Profile completeness (admins only), computed from each vendor's saved profile.
+  const loadScores = useCallback(() => getProfileCompletenessForAdmin((data ?? []).map((a) => a.vendorId)), [data]);
+  const scores = useAsyncData(loadScores);
   const [f, setF] = useState<Filters>(DEFAULT);
   const set = <K extends keyof Filters,>(k: K, v: Filters[K]) => setF((prev) => ({ ...prev, [k]: v }));
 
@@ -105,6 +111,9 @@ export function VerificationQueueSection() {
                     {a.documents.map((d) => DOCUMENT_TYPE_LABELS[d.type]).join(' · ')}
                     {maskedId(a) && <> · ID <span className="font-mono">{maskedId(a)}</span></>}
                   </p>
+                  {scores.data?.[a.vendorId] !== undefined &&
+                  <p className="mt-0.5 text-xs text-muted">{t('verification.profileComplete', { percent: scores.data[a.vendorId] })}</p>
+                  }
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="text-xs text-muted">Requests</span>

@@ -32,7 +32,7 @@ export const mockAssociations: Association[] = [
  * vendor up by their verified account phone or email.
  */
 export const mockVendorContacts: {vendorId: string;vendorName: string;phone: string;email: string;}[] = [
-{ vendorId: 'bala-plumbing', vendorName: 'Bala Plumbing Services', phone: '+2348031112233', email: 'bala@balaplumbing.ng' },
+{ vendorId: 'bala-plumbing', vendorName: 'Bala Plumbing Services', phone: '+2348000000002', email: 'bala@example.com' },
 { vendorId: 'yusuf-borehole', vendorName: 'Yusuf Plumbing & Borehole', phone: '+2348052201188', email: 'yusuf@borehole.ng' },
 { vendorId: 'musa-auto-clinic', vendorName: 'Musa Auto Clinic', phone: '+2348067714400', email: 'musa@autoclinic.ng' },
 { vendorId: 'emeka-paints', vendorName: 'Emeka Paints & Finishes', phone: '+2348094417720', email: 'emeka@paints.ng' },

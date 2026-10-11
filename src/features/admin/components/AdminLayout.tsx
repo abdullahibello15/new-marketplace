@@ -1,6 +1,7 @@
 import { Suspense, useEffect, useRef, useState, type ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link, Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { BarChart3Icon, FileCheck2Icon, FileUpIcon, GavelIcon, HeartHandshakeIcon, LogOutIcon, MenuIcon, ScrollTextIcon, ShieldCheckIcon, UsersRoundIcon, XIcon, type LucideIcon } from 'lucide-react';
+import { BarChart3Icon, FileCheck2Icon, FileUpIcon, GavelIcon, HeartHandshakeIcon, LogOutIcon, MenuIcon, MonitorSmartphoneIcon, ScrollTextIcon, ShieldCheckIcon, UsersRoundIcon, XIcon, type LucideIcon } from 'lucide-react';
 import { LoadingState } from '../../../components/ui/LoadingState';
 import { ADMIN_ROLES, ADMIN_SECTION, type AdminPermission, type AdminSection } from '../config/roles';
 import { ADMIN_ROUTES } from '../constants';
@@ -24,6 +25,7 @@ const SECTION_NAV: Record<AdminSection, {to: string;label: string;icon: LucideIc
 const ORDER: AdminSection[] = [ADMIN_SECTION.Verification, ADMIN_SECTION.Disputes, ADMIN_SECTION.Moderation, ADMIN_SECTION.Analytics, ADMIN_SECTION.Outreach, ADMIN_SECTION.BulkTools, ADMIN_SECTION.Audit, ADMIN_SECTION.Admins];
 
 function SidebarContent({ sections, onNavigate }: {sections: AdminSection[];onNavigate?: () => void;}) {
+  const { t } = useTranslation();
   const { pathname } = useLocation();
   const { admin, signOut } = useAdminSession();
   const navigate = useNavigate();
@@ -61,9 +63,17 @@ function SidebarContent({ sections, onNavigate }: {sections: AdminSection[];onNa
           <p className="text-sm text-white/70">{ADMIN_ROLES[admin.role].label}</p>
           <RoleSwitcher tone="dark" className="mt-3" />
         </div>
+        <Link
+          to={AUTH_ROUTES.sessions}
+          onClick={onNavigate}
+          className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-white/70 hover:bg-white/5 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60">
+
+          <MonitorSmartphoneIcon className="h-4 w-4" aria-hidden="true" />
+          {t('auth:sessions.navLink')}
+        </Link>
         <button
           type="button"
-          onClick={() => void signOut().then(() => navigate(AUTH_ROUTES.login))}
+          onClick={() => void signOut().then(() => navigate(AUTH_ROUTES.login, { replace: true }))}
           className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-white/70 hover:bg-white/5 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60">
 
           <LogOutIcon className="h-4 w-4" aria-hidden="true" />

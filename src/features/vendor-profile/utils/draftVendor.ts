@@ -1,5 +1,6 @@
 import { findTradeCategory } from '../../../data/tradeCategories';
 import { makeWorkingHours } from '../../../data/weekdays';
+import { REMOVED_PHOTO_PLACEHOLDER } from '../../../data/moderationTakedowns';
 import type { NigerLga, TradeCategory, Vendor } from '../../../types/marketplace';
 
 /*
@@ -10,6 +11,9 @@ import type { NigerLga, TradeCategory, Vendor } from '../../../types/marketplace
 
 /** Shown until a new vendor adds their own photo. */
 export const PLACEHOLDER_VENDOR_PHOTO = '/vendor-placeholder.svg';
+
+/** False while a placeholder shows instead of the vendor's own photo (none added yet, or removed by moderation). */
+export const hasOwnPhoto = (photo: string) => Boolean(photo) && photo !== PLACEHOLDER_VENDOR_PHOTO && photo !== REMOVED_PHOTO_PLACEHOLDER;
 
 export interface DraftVendorInput {
   id: string;

@@ -5,11 +5,15 @@ import { Link, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { ShieldXIcon } from 'lucide-react';
 import { buttonClasses } from '../../../components/ui/buttonStyles';
 import { AUTH_ROUTES, ROLE, ROLE_META, type Role } from '../constants';
+import { REQUIRE_LOGIN, isPublicPath } from '../config';
 import { useAuth } from '../hooks/useAuth';
+import type { ClientEndReason } from '../types';
 
 /** Where the login page sends people back to afterwards. */
 export interface LoginRedirectState {
   from?: string;
+  /** Why they were signed out ("Your session has expired"…), shown on the login screen. */
+  reason?: ClientEndReason;
 }
 
 function Checking() {
@@ -72,5 +76,32 @@ export function RequireRole({ role, fallback, children }: {role: Role;fallback?:
   if (status === 'signed_out') return <ToLogin />;
   if (!hasRole(role)) return <>{fallback ?? <NoRole role={role} />}</>;
   if (mustSwitch) return <Checking />;
+  return <>{children ?? <Outlet />}</>;
+}
+
+/**
+ * The whole-app login requirement (REQUIRE_LOGIN in config.ts). Signed out on anything but a public page
+ * → the Welcome screen, remembering where they were going. With REQUIRE_LOGIN off it lets everything
+ * through and each page's own guard (RequireAuth/RequireRole) decides, as before.
+ */
+export function LoginGate({ children }: {children?: ReactNode;}) {
+  const { status } = useAuth();
+  const location = useLocation();
+  if (!REQUIRE_LOGIN || isPublicPath(location.pathname)) return <>{children ?? <Outlet />}</>;
+  if (status === 'loading') return <Checking />;
+  if (status === 'signed_out') {
+    const from = `${location.pathname}${location.search}${location.hash}`;
+    return <Navigate to={AUTH_ROUTES.start} replace state={{ from } satisfies LoginRedirectState} />;
+  }
+  return <>{children ?? <Outlet />}</>;
+}
+
+/**
+ * Inside the vendor portal: a provider who signed up but hasn't set up their business yet goes to vendor
+ * setup first (the portal's pages all need a vendor profile).
+ */
+export function RequireVendorProfile({ children }: {children?: ReactNode;}) {
+  const { user } = useAuth();
+  if (user && user.roles.includes(ROLE.Provider) && !user.vendorId) return <Navigate to={AUTH_ROUTES.vendorSetup} replace />;
   return <>{children ?? <Outlet />}</>;
 }

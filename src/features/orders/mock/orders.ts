@@ -37,7 +37,7 @@ const AISHA_DELIVERY: OrderDeliveryDetails = {
   placeId: 'town-tunga',
   placeLabel: 'Tunga, Minna',
   lga: 'Chanchaga',
-  phone: '0803 555 0142'
+  phone: '0800 000 0001'
 };
 
 const BALA = { vendorId: 'bala-plumbing', vendorName: 'Bala Plumbing Services' };

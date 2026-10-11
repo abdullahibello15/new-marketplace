@@ -1,20 +1,22 @@
 import { mockStaff } from '../../admin/mock/staff';
 import type { AdminRole } from '../../admin/config/roles';
+import { MOCK_DEMO_PASSWORD } from '../config';
 import { ROLE } from '../constants';
+import { DEMO_PHONES } from './demoAccounts';
 import type { DraftVendorInput } from '../../vendor-profile/utils/draftVendor';
 import type { User } from '../types';
 
 /*
- * MOCK accounts the demo starts with. Sign in with any of these phone numbers; in the dev server the code
- * is the test code shown in the dev banner. (Seeded jobs, orders, payments and the vendor portal belong
- * to these accounts.)
+ * MOCK accounts the demo starts with (numbers from mock/demoAccounts.ts: obviously fake). Sign in with any
+ * of these phone numbers; in test mode the code is the test code shown on the OTP screen. Seeded jobs,
+ * orders, payments and the vendor portal belong to these accounts, so every part of the app has data.
  */
 
 /** The demo customer: the seeded jobs, orders and payments are hers. */
 export const DEMO_CUSTOMER = {
   id: 'cust-aisha',
   name: 'Aisha Mohammed',
-  phone: '+2348035550142',
+  phone: DEMO_PHONES.customer,
   address: 'Tunga, behind NEPA office',
   area: 'Minna · Chanchaga LGA'
 } as const;
@@ -46,7 +48,8 @@ const base = {
   address: null,
   area: null,
   passwordHash: null,
-  vendorDraft: null
+  vendorDraft: null,
+  providerSignup: null
 } as const;
 
 /** A staff-only account (Admin role). Used for the seeded staff and when an invited admin accepts. */
@@ -78,8 +81,14 @@ export function staffUser(s: {
   };
 }
 
-/** Mock password for Aisha's email sign-in: "minna-demo-2026". */
-export const DEMO_CUSTOMER_PASSWORD = 'minna-demo-2026';
+/**
+ * The demo customer and vendors sign in with a password too: the obviously fake test-mode password
+ * (testMode.ts), and only in test mode. In any other build they have no password (phone code only), so
+ * no password, real or fake, ships in the app. Stored as a MOCK hash, never as plain text.
+ */
+function demoPassword(hash: (password: string) => string) {
+  return MOCK_DEMO_PASSWORD ? { hasPassword: true, passwordHash: hash(MOCK_DEMO_PASSWORD) } : { hasPassword: false, passwordHash: null };
+}
 
 export function seedUsers(hash: (password: string) => string): StoredUser[] {
   return [
@@ -92,8 +101,7 @@ export function seedUsers(hash: (password: string) => string): StoredUser[] {
     name: DEMO_CUSTOMER.name,
     email: 'aisha@example.com',
     emailVerified: true,
-    hasPassword: true,
-    passwordHash: hash(DEMO_CUSTOMER_PASSWORD),
+    ...demoPassword(hash),
     address: DEMO_CUSTOMER.address,
     area: DEMO_CUSTOMER.area,
     createdAt: created(400)
@@ -104,19 +112,37 @@ export function seedUsers(hash: (password: string) => string): StoredUser[] {
     id: 'usr-bala',
     roles: [ROLE.Provider, ROLE.Customer],
     activeRole: ROLE.Provider,
-    phone: '+2348031112233',
+    phone: DEMO_PHONES.serviceVendor,
     name: 'Bala Danladi',
     language: 'ha',
     vendorId: 'bala-plumbing',
+    email: 'bala@example.com',
+    emailVerified: true,
+    ...demoPassword(hash),
     area: 'Minna · Chanchaga LGA',
     createdAt: created(380)
+  },
+  {
+    // A shop (retail vendor) with products, a subscription and orders.
+    ...base,
+    id: 'usr-fatima-retail',
+    roles: [ROLE.Provider],
+    activeRole: ROLE.Provider,
+    phone: DEMO_PHONES.retailVendor,
+    name: 'Fatima Abdullahi',
+    vendorId: 'fatima-fresh-foods',
+    email: 'fatima@example.com',
+    emailVerified: true,
+    ...demoPassword(hash),
+    area: 'Minna · Chanchaga LGA',
+    createdAt: created(540)
   },
   {
     ...base,
     id: 'usr-sani-rider',
     roles: [ROLE.Rider],
     activeRole: ROLE.Rider,
-    phone: '+2349011112222',
+    phone: DEMO_PHONES.rider,
     name: 'Sani Abubakar',
     rider: { lga: 'Bosso', town: 'Maitumbi', vehicle: 'motorbike', plateNumber: 'BSS 123 NG' },
     createdAt: created(20)

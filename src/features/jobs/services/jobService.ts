@@ -4,7 +4,7 @@ import { ApiError, mockResponse } from '../../../services/mockApi';
 import { formatNaira } from '../../../utils/format';
 import { getAllVendors, incrementVendorCancellations } from '../../../services/vendorStore';
 import { isVendorSuspended, suspensionMessage, withListingRestrictions } from '../../vendor-dashboard/services/subscriptionService';
-import { currentCustomerId, requireUser } from '../../auth/session';
+import { currentCustomerId, requireUser, requireVerifiedContact } from '../../auth/session';
 import { DISPUTE_OUTCOME, DISPUTE_OUTCOME_LABELS, JOB_ACTOR, JOB_STATUS, RESCHEDULE_CUTOFF_HOURS, RESCHEDULE_STATUS } from '../constants';
 import { CANCELLATION_POLICY, getCancellationTerms } from '../cancellationPolicy';
 import { mockJobs } from '../mock/jobs';
@@ -129,6 +129,7 @@ export function reviewsForVendor(vendorId: string) {
 /** POST /jobs — a customer asks a service vendor for a quote. Starts as Requested. */
 export function createJobRequest(input: NewJobRequest): Promise<Job> {
   return mockResponse(() => {
+    requireVerifiedContact();
     const found = getAllVendors().find((v) => v.id === input.vendorId);
     const vendor = found && withListingRestrictions(found);
     if (!vendor) throw new ApiError(i18n.t('discovery:profile.errors.notFound'), 404);

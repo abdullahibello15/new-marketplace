@@ -5,6 +5,7 @@ import { messageThreads } from '../data/messages';
 import { ORDER_ROUTES } from '../features/orders/constants';
 import { useCart } from '../features/orders/hooks/useCart';
 import { useAuth } from '../features/auth/hooks/useAuth';
+import { VerifyContactBanner } from '../features/auth/components/VerifyContactBanner';
 
 /** The customer shell. Open to everyone (browsing); pages that need an account are guarded in the routes. */
 export function CustomerShell() {
@@ -18,5 +19,5 @@ export function CustomerShell() {
     return item;
   });
 
-  return <AppShell navItems={navItems} homeTo="/" accountSubtitle={user?.area ?? undefined} />;
+  return <AppShell navItems={navItems} homeTo="/" accountSubtitle={user?.area ?? undefined} banner={<VerifyContactBanner />} />;
 }

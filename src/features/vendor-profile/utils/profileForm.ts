@@ -2,15 +2,20 @@ import { serviceDurations } from '../../../data/vendorPortal';
 import { formatNumberInput } from '../../../lib/numberInput';
 import { NEW_SERVICE_ID_PREFIX } from '../constants';
 import { fulfilmentFor } from '../../orders/utils/fulfilment';
+import { hasOwnPhoto, PLACEHOLDER_VENDOR_PHOTO } from './draftVendor';
 import type { Vendor, VendorFulfilment, VendorProfilePatch } from '../../../types/marketplace';
 import type { ProfileFormData, ProfileFormValues, ServiceFormValues } from '../types';
 
 /** 2000 → "2,000", the format price inputs display. */
 export const formatPriceInput = formatNumberInput;
 
+/** The profile photo as the form holds it: blank while a placeholder (none yet, or removed by Gwani) is showing. */
+export const photoFormValue = (vendor: Pick<Vendor, 'photo'>) => hasOwnPhoto(vendor.photo) ? vendor.photo : '';
+
 export function toFormValues(vendor: Vendor): ProfileFormValues {
   return {
     name: vendor.name,
+    photo: photoFormValue(vendor),
     tradeCategory: vendor.tradeCategory,
     tradeCategoryOther: vendor.tradeCategoryOther ?? '',
     bio: vendor.bio ?? '',
@@ -60,6 +65,7 @@ export const isNewService = (id: string) => id.startsWith(NEW_SERVICE_ID_PREFIX)
 export function toProfilePatch(data: ProfileFormData): VendorProfilePatch {
   return {
     name: data.name,
+    photo: data.photo || PLACEHOLDER_VENDOR_PHOTO,
     tradeCategory: data.tradeCategory,
     tradeCategoryOther: data.tradeCategory === 'other' ? data.tradeCategoryOther : undefined,
     bio: data.bio || undefined,

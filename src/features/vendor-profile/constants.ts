@@ -29,6 +29,7 @@ export const PROFILE_SECTIONS: {id: ProfileSectionId;label: string;description: 
 /** Which section each form field lives in, so a failed save can point at the right place. */
 export const FIELD_SECTION: Record<keyof ProfileFormValues, ProfileSectionId> = {
   name: PROFILE_SECTION.About,
+  photo: PROFILE_SECTION.About,
   tradeCategory: PROFILE_SECTION.About,
   tradeCategoryOther: PROFILE_SECTION.About,
   bio: PROFILE_SECTION.About,

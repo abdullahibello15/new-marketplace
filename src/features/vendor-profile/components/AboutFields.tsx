@@ -5,9 +5,11 @@ import { FormField } from '../../../components/ui/FormField';
 import { bad, field, ok } from '../../../components/vendor/formStyles';
 import { BIO_MAX_LENGTH, tradeCategories } from '../../../data/tradeCategories';
 import { NAME_MAX } from '../constants';
+import { ProfilePhotoField } from './ProfilePhotoField';
 import type { ProfileFormData, ProfileFormValues } from '../types';
 
-export function AboutFields() {
+/** `savedPhoto`: the photo on the live profile ('' for none), so a new pick is tagged "New". */
+export function AboutFields({ savedPhoto }: {savedPhoto: string;}) {
   const { t } = useTranslation('vendor');
   const {
     register,
@@ -34,7 +36,9 @@ export function AboutFields() {
         }
       </FormField>
 
-      <FormField id="profile-trade" label={t('profile.about.trade')} error={errors.tradeCategory?.message}>
+      <ProfilePhotoField saved={savedPhoto} />
+
+      <FormField id="profile-trade"label={t('profile.about.trade')} error={errors.tradeCategory?.message}>
         {(describedBy) =>
         <select
           id="profile-trade"

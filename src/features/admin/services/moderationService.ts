@@ -3,6 +3,7 @@ import { vendors as seedVendors } from '../../../data/vendors';
 import { getAllVendors, updateVendor } from '../../../services/vendorStore';
 import { JOB_ACTOR } from '../../jobs/constants';
 import { recordAccountMessage } from '../../jobs/services/notificationService';
+import { endSessionsFor, findUserByVendorId } from '../../auth/services/authBackend';
 import type { TFunction } from 'i18next';
 import { findPublicReview, reviewStatsNow } from '../../public-profile/services/publicProfileService';
 import { allFlaggedReviews, removeReview, restoreReview } from '../../public-profile/services/reviewModeration';
@@ -303,7 +304,8 @@ export function warnVendor(itemId: string, reason: string): Promise<void> {
 
 /**
  * POST /admin/vendors/:id/suspension — the same soft suspension as a lapsed subscription (see
- * subscriptionService.vendorStanding): still listed but "temporarily unavailable", no new work.
+ * subscriptionService.vendorStanding): still listed but "temporarily unavailable", no new work. The owner's
+ * sessions end at once, so every device has to sign in again and sees the suspension notice.
  */
 export function suspendVendor(itemId: string, reason: string): Promise<void> {
   return mockResponse(() => {
@@ -313,6 +315,8 @@ export function suspendVendor(itemId: string, reason: string): Promise<void> {
     if (why.length < 3) throw new ApiError('Give a reason for the suspension.', 400);
     if (vendorStanding(item.vendorId).adminSuspension) throw new ApiError(`${item.vendorName} is already suspended.`, 409);
     suspendVendorByAdmin(item.vendorId, why);
+    const owner = findUserByVendorId(item.vendorId);
+    if (owner) endSessionsFor(owner.id, 'account_suspended');
     notifyOwner(item, 'suspended', () => ({ reason: why }));
     recordAudit(admin, AUDIT_ACTION.ModerationSuspend, { type: 'vendor', id: item.vendorId, label: item.vendorName }, { reason: why, details: `From ${label(item)}` });
   }, 500);

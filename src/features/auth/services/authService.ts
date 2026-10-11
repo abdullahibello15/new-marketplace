@@ -2,58 +2,74 @@ import i18n from '../../../i18n';
 import { mockResponse } from '../../../services/mockApi';
 import { LANGUAGES, ROLE } from '../constants';
 import { AuthError } from '../errors';
-import { clearSession, currentAccessToken, getAuthSnapshot, readSessionFlag, setSession } from '../session';
+import { updateSessionUser } from '../session';
+import { currentDevice } from '../utils/device';
+import { createSession, requestSession, signOutHere } from './sessionService';
 import {
   consumeSignupToken,
   findUser,
   findUserByEmail,
   findUserByPhone,
-  isSuspended,
   isEmail,
-  issueSession,
-  endSession,
-  loginWithEmailNow,
+  loginWithPasswordNow,
   newUserId,
   requestOtpNow,
   restoreSignupToken,
   saveUser,
   toUser,
-  userForToken,
   verifyOtpNow } from
 './authBackend';
-import { applyClaim, applyProviderSetup, applyRiderSetup, restoreProviderProfile } from './roleSetup';
+import { applyClaim, applyRiderSetup, restoreProviderProfile } from './roleSetup';
+import { registerCustomerNow, registerProviderNow } from './signupBackend';
+import { requestResetOtpNow, resetPasswordNow, verifyResetOtpNow } from './passwordResetBackend';
+import { PASSWORD_RESET } from '../passwordResetConfig';
 import type { StoredUser } from '../mock/users';
-import type { OtpRequestResult, RegisterInput, User, VerifyOtpResult } from '../types';
+import type {
+  CustomerSignupInput,
+  OtpRequestResult,
+  PasswordResetOtpResult,
+  PasswordResetOutcome,
+  PasswordResetVerifyResult,
+  ProviderSignupInput,
+  RegisterInput,
+  User,
+  VerifyOtpResult } from
+'../types';
 
 /*
  * The auth API, with the signatures a real backend would have. All mocked (authBackend.ts holds the
- * "server"), all Promise-based. Each call that signs someone in or changes their account updates the
- * session (session.ts), which AuthProvider and every service read.
+ * "server"), all Promise-based. Each sign-in starts a session (sessionService.ts: tokens, refresh, sign-out);
+ * account changes update the session's copy of the user (session.ts), which AuthProvider and every service read.
  */
 
 /** POST /auth/otp { phone } — sends a one-time code by SMS. Accepts +234…, 0…, 234… or 803… formats. */
 export function requestOtp(phone: string): Promise<OtpRequestResult> {
-  return mockResponse(() => requestOtpNow(phone, new Date()), 600);
+  return mockResponse(() => requestOtpNow(phone, new Date()), 600, { auth: false });
 }
 
 /**
  * POST /auth/otp/verify { phone, code } — a known number is signed in (no duplicate account is ever
- * created); a new one gets a short-lived signup token for registerUser.
+ * created); a new one gets a short-lived signup token for registerUser. Phone sign-in remembers this
+ * device by default (the login screen says so and lets them untick it).
  */
-export async function verifyOtp(phone: string, code: string): Promise<VerifyOtpResult> {
-  const { result, token } = await mockResponse(() => verifyOtpNow(phone, code, new Date()), 500);
-  if (result.status === 'signed_in' && token) signIn(result.user, token);
+export async function verifyOtp(phone: string, code: string, { remember = true }: {remember?: boolean;} = {}): Promise<VerifyOtpResult> {
+  const result = await mockResponse(() => verifyOtpNow(phone, code, new Date()), 500, { auth: false });
+  if (result.status === 'signed_in') await startSession(result.user, remember);
   return result;
 }
 
-/** POST /auth/register — creates the account for a verified number, with the chosen role's setup, and signs in. */
+/**
+ * POST /auth/register — phone-first signup: riders (after verifying their number), and providers claiming
+ * the profile their association created. Customers and new providers sign up with registerCustomer and
+ * registerProvider instead (email and password).
+ */
 export async function registerUser(data: RegisterInput): Promise<User> {
-  const { user, token } = await mockResponse(() => registerNow(data, new Date()), 700);
-  signIn(user, token);
+  const user = await mockResponse(() => registerNow(data, new Date()), 700, { auth: false });
+  await startSession(user, data.remember ?? true);
   return user;
 }
 
-function registerNow(data: RegisterInput, now: Date): {user: User;token: string;} {
+function registerNow(data: RegisterInput, now: Date): User {
   const phone = consumeSignupToken(data.signupToken, now);
   try {
     if (findUserByPhone(phone)) throw new AuthError('invalid_input', i18n.t('auth:error.accountExists'), 409);
@@ -85,20 +101,19 @@ function registerNow(data: RegisterInput, now: Date): {user: User;token: string;
       address: null,
       area: null,
       passwordHash: null,
-      vendorDraft: null
+      vendorDraft: null,
+      providerSignup: null
     };
-    if (data.role === ROLE.Provider) {
-      if (data.claim) user = applyClaim(user, data.claim, now);else
-      if (data.vendor) user = applyProviderSetup(user, data.vendor, now);else
-      throw new AuthError('invalid_input', i18n.t('auth:error.setUpBusiness'), 400);
+    if (data.role === ROLE.Provider && data.claim) {
+      user = applyClaim(user, data.claim, now);
     } else if (data.role === ROLE.Rider) {
       if (!data.rider) throw new AuthError('invalid_input', i18n.t('auth:error.setUpRider'), 400);
       user = applyRiderSetup(user, data.rider);
     } else {
-      user = { ...user, roles: [ROLE.Customer], activeRole: ROLE.Customer };
+      // One signup path per role: customers and new providers use email + password.
+      throw new AuthError('not_allowed', i18n.t('auth:error.useSignupForm'), 400);
     }
-    const saved = saveUser(user);
-    return { user: toUser(saved), token: issueSession(saved.id) };
+    return toUser(saveUser(user));
   } catch (e) {
     // Let them fix the form and try again without a new code.
     restoreSignupToken(data.signupToken, phone, now);
@@ -106,77 +121,82 @@ function registerNow(data: RegisterInput, now: Date): {user: User;token: string;
   }
 }
 
-/** POST /auth/login/email — customers only, and only once they've verified an email and set a password. */
-export async function loginWithEmail(email: string, password: string): Promise<User> {
-  const { user, token } = await mockResponse(() => loginWithEmailNow(email, password, new Date()), 700);
-  signIn(user, token);
+/** POST /auth/signup/customer — creates the account and signs in; the email is verified next. */
+export async function registerCustomer(input: CustomerSignupInput, { remember = true }: {remember?: boolean;} = {}): Promise<User> {
+  const user = await mockResponse(() => toUser(registerCustomerNow(input, new Date())), 700, { auth: false });
+  await startSession(user, remember);
   return user;
 }
 
-/** POST /auth/logout */
-export async function logout(): Promise<void> {
-  const token = currentAccessToken();
-  await mockResponse(() => {
-    endSession(token);
-  }, 200);
-  clearSession();
-}
-
-/** GET /auth/me — who the current session belongs to. */
-export function getCurrentUser(): Promise<User | null> {
-  const token = currentAccessToken();
-  return mockResponse(() => {
-    const user = userForToken(token);
-    return user ? toUser(user) : null;
-  }, 200);
+/** POST /auth/signup/provider — creates the account and signs in; the phone is verified next, then vendor setup. */
+export async function registerProvider(input: ProviderSignupInput, { remember = true }: {remember?: boolean;} = {}): Promise<User> {
+  const user = await mockResponse(() => toUser(registerProviderNow(input, new Date())), 700, { auth: false });
+  await startSession(user, remember);
+  return user;
 }
 
 /**
- * POST /auth/refresh — restores the session after a reload. MOCK: reads the persisted flag (a real
- * backend reads its httpOnly refresh cookie instead) and issues a new in-memory access token.
+ * POST /auth/login/password — an email or a phone number in one field, and the password (customers and
+ * providers). One message for any wrong combination; repeated failures are locked out for a while.
  */
-export async function refreshSession(): Promise<User | null> {
-  const flag = readSessionFlag();
-  try {
-    const restored = await mockResponse(() => {
-      const user = flag ? findUser(flag.userId) : null;
-      if (!user || isSuspended(user)) return null;
-      restoreProviderProfile(user, new Date());
-      const role = user.roles.includes(flag?.activeRole ?? user.activeRole) ? flag?.activeRole ?? user.activeRole : user.activeRole;
-      const saved = saveUser({ ...user, activeRole: role });
-      return { user: toUser(saved), token: issueSession(saved.id) };
-    }, 150);
-    if (!restored) {
-      clearSession();
-      return null;
-    }
-    signIn(restored.user, restored.token);
-    return restored.user;
-  } catch {
-    clearSession();
-    return null;
-  }
+export async function loginWithPassword(identifier: string, password: string, { remember = false }: {remember?: boolean;} = {}): Promise<User> {
+  const user = await mockResponse(() => loginWithPasswordNow(identifier, password, new Date()), 700, { auth: false });
+  await startSession(user, remember);
+  return user;
+}
+
+/* ---------- Password reset by one-time code (rules: passwordResetConfig.ts) ---------- */
+
+/**
+ * POST /auth/password/otp { identifier } — a phone number (code by SMS) or an email (code by email).
+ * Always the same answer, whether or not the account exists or has a password.
+ */
+export function requestPasswordResetOtp(identifier: string): Promise<PasswordResetOtpResult> {
+  return mockResponse(() => requestResetOtpNow(identifier, currentDevice().id, new Date()), 600, { auth: false });
+}
+
+/** POST /auth/password/otp/verify { identifier, code } — returns a short-lived, one-use reset token. */
+export function verifyPasswordResetOtp(identifier: string, code: string): Promise<PasswordResetVerifyResult> {
+  return mockResponse(() => verifyResetOtpNow(identifier, code, new Date()), 500, { auth: false });
+}
+
+/**
+ * POST /auth/password/reset { resetToken, newPassword } — every session of the account is signed out.
+ * Then, per PASSWORD_RESET.afterReset, this device is signed in or sent to the login screen.
+ */
+export async function resetPassword(resetToken: string, newPassword: string): Promise<PasswordResetOutcome> {
+  const user = await mockResponse(() => toUser(resetPasswordNow(resetToken, newPassword, new Date())), 700, { auth: false });
+  if (PASSWORD_RESET.afterReset !== 'sign_in') return { status: 'go_to_login' };
+  await startSession(user, false);
+  return { status: 'signed_in', user };
+}
+
+/**
+ * POST /auth/logout — revokes this session on the server, then clears this browser (memory, flag, cookie,
+ * cached private data, app state) and signs out the other tabs. Callers go to the login screen.
+ */
+export function logout(): Promise<void> {
+  return signOutHere();
 }
 
 /* ---------- Shared by the account service ---------- */
 
-function signIn(user: User, token: string) {
+/** After a successful sign-in: a new session for this device. */
+async function startSession(user: User, remember: boolean) {
   const stored = findUser(user.id);
   if (stored) restoreProviderProfile(stored, new Date());
-  setSession(user, token);
+  await createSession(user, currentDevice(), { remember });
 }
 
-/** The signed-in user's stored record (MOCK backend side), or a 401. */
+/** Inside a request: the caller's stored record (MOCK backend side), from the access token, or a 401. */
 export function sessionRecord(): StoredUser {
-  const user = userForToken(currentAccessToken()) ?? (getAuthSnapshot().user ? findUser(getAuthSnapshot().user?.id ?? '') : null);
-  if (!user) throw new AuthError('not_signed_in', i18n.t('auth:error.notSignedIn'), 401);
-  return user;
+  return requestSession().user;
 }
 
 /** After an account change: save it and refresh the session's copy. */
 export function commitUser(user: StoredUser): User {
   const saved = saveUser(user);
   const publicUser = toUser(saved);
-  setSession(publicUser);
+  updateSessionUser(publicUser);
   return publicUser;
 }

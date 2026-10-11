@@ -2,6 +2,8 @@ import i18n from '../../../i18n';
 import { findTradeCategory } from '../../../data/tradeCategories';
 import { ApiError, mockResponse } from '../../../services/mockApi';
 import { getAllVendors } from '../../../services/vendorStore';
+import { isVendorPublic } from '../../auth/services/authBackend';
+import { currentUser } from '../../auth/session';
 import { withListingRestrictions } from '../../vendor-dashboard/services/subscriptionService';
 import { computeReviewStats } from '../../vendor-dashboard/utils/reviews';
 import { REVIEW_SORT, REVIEWS_PAGE_SIZE } from '../constants';
@@ -66,9 +68,10 @@ function findVendor(vendorId: string): Vendor {
   return withListingRestrictions(vendor);
 }
 
-/** GET /vendors/:id */
+/** GET /vendors/:id — hidden from customers until the owner has verified their phone (the owner can still preview it). */
 export function getVendorProfile(vendorId: string): Promise<PublicVendorProfile> {
   return mockResponse(() => {
+    if (!isVendorPublic(vendorId) && currentUser()?.vendorId !== vendorId) throw new ApiError(i18n.t('discovery:profile.errors.notFound'), 404);
     const vendor = findVendor(vendorId);
     // "Usually responds within…": the same working-hours SLA helper the admin dashboard uses.
     return { vendor: { ...vendor, responseTimeMinutes: vendorTypicalResponseMinutes(vendor.id) }, kind: findTradeCategory(vendor.tradeCategory)?.kind ?? 'service' };

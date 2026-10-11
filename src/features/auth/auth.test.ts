@@ -1,12 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock mode on for these tests, so the code is the known test code.
-vi.mock('./config', () => ({ MOCK_AUTH: true, MOCK_OTP_CODE: '123456', MOCK_NETWORK_FAILURE_SUFFIX: '9999' }));
+vi.mock('./config', () => ({ MOCK_AUTH: true, MOCK_OTP_CODE: '123456', MOCK_DEMO_PASSWORD: 'demo-pass-0000', MOCK_NETWORK_FAILURE_SUFFIX: '9999' }));
 
-import { EMAIL_LOGIN_LIMIT, OTP } from './constants';
+import { OTP, PASSWORD_LOGIN_LIMIT } from './constants';
 import { AuthError } from './errors';
-import { DEMO_CUSTOMER_PASSWORD } from './mock/users';
-import { loginWithEmailNow, requestOtpNow, resetAuthBackendForTests, verifyOtpNow } from './services/authBackend';
+import { TEST_DEMO_PASSWORD } from './testMode';
+import { loginWithPasswordNow, requestOtpNow, resetAuthBackendForTests, verifyOtpNow } from './services/authBackend';
 import { passwordStrength } from './utils/password';
 
 const t0 = new Date(2026, 9, 9, 10, 0, 0);
@@ -24,19 +24,17 @@ beforeEach(() => resetAuthBackendForTests());
 
 describe('one-time codes', () => {
   it('sends a code, then signs in a known number (no duplicate account)', () => {
-    const sent = requestOtpNow('0803 555 0142', t0);
-    expect(sent).toMatchObject({ phone: '+2348035550142', devCode: '123456' });
-    const { result, token } = verifyOtpNow('+234 803 555 0142', '123456', later(10));
+    const sent = requestOtpNow('0800 000 0001', t0);
+    expect(sent).toMatchObject({ phone: '+2348000000001', devCode: '123456' });
+    const result = verifyOtpNow('+234 800 000 0001', '123456', later(10));
     expect(result).toMatchObject({ status: 'signed_in', user: { id: 'cust-aisha' } });
-    expect(token).toBeTruthy();
     expect('passwordHash' in (result.status === 'signed_in' ? result.user : {})).toBe(false);
   });
 
   it('starts signup for a new number', () => {
     requestOtpNow('0813 000 1111', t0);
-    const { result, token } = verifyOtpNow('08130001111', '123456', later(5));
+    const result = verifyOtpNow('08130001111', '123456', later(5));
     expect(result.status).toBe('new_user');
-    expect(token).toBeNull();
   });
 
   it('rejects invalid numbers', () => {
@@ -74,15 +72,15 @@ describe('one-time codes', () => {
   });
 });
 
-describe('email sign-in', () => {
+describe('password sign-in', () => {
   it('signs in a customer with a verified email and password', () => {
-    expect(loginWithEmailNow('Aisha@Example.com', DEMO_CUSTOMER_PASSWORD, t0).user.id).toBe('cust-aisha');
+    expect(loginWithPasswordNow('Aisha@Example.com', TEST_DEMO_PASSWORD, t0).id).toBe('cust-aisha');
   });
 
   it('gives the same answer for an unknown email and a wrong password', () => {
     const msg = (email: string, pw: string) => {
       try {
-        loginWithEmailNow(email, pw, t0);
+        loginWithPasswordNow(email, pw, t0);
       } catch (e) {
         return (e as AuthError).message;
       }
@@ -92,8 +90,8 @@ describe('email sign-in', () => {
   });
 
   it('rate-limits repeated failures for an email', () => {
-    for (let i = 0; i < EMAIL_LOGIN_LIMIT.maxFailures; i++) expect(codeOf(() => loginWithEmailNow('aisha@example.com', 'nope-nope', later(i)))).toBe('invalid_credentials');
-    expect(codeOf(() => loginWithEmailNow('aisha@example.com', DEMO_CUSTOMER_PASSWORD, later(10)))).toBe('rate_limited');
+    for (let i = 0; i < PASSWORD_LOGIN_LIMIT.maxFailures; i++) expect(codeOf(() => loginWithPasswordNow('aisha@example.com', 'nope-nope', later(i)))).toBe('invalid_credentials');
+    expect(codeOf(() => loginWithPasswordNow('aisha@example.com', TEST_DEMO_PASSWORD, later(10)))).toBe('rate_limited');
   });
 });
 

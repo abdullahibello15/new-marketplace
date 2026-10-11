@@ -1,6 +1,6 @@
 import i18n from '../../../i18n';
 import { fulfilmentMethodLabel } from '../../../i18n/labels';
-import { currentCustomerId, requireUser } from '../../auth/session';
+import { currentCustomerId, requireUser, requireVerifiedContact } from '../../auth/session';
 import { ApiError, mockResponse } from '../../../services/mockApi';
 import { adjustProductStock, getAllVendors } from '../../../services/vendorStore';
 import { withListingRestrictions } from '../../vendor-dashboard/services/subscriptionService';
@@ -203,6 +203,7 @@ export function checkCart(items: CartItem[]): Promise<CartCheck> {
  */
 export function placeOrders(input: CheckoutInput): Promise<CheckoutResult> {
   return mockResponse(() => {
+    requireVerifiedContact();
     if (input.orders.length === 0) throw new ApiError(i18n.t('jobs:order.error.emptyCart'), 400);
     const asCart: CartItem[] = input.orders.flatMap((o) =>
     o.items.map((i) => ({

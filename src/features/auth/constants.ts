@@ -28,12 +28,21 @@ export const ROLE_META: Record<Role, {label: string;description: string;home: st
 };
 
 export const AUTH_ROUTES = {
+  /** The Welcome screen for signed-out visitors (Create account / Log in). Not /welcome: that's the onboarding after signup. */
+  start: '/start',
   login: '/login',
+  /** The role picker; each role's form is at signupFor(role). */
   signup: '/signup',
+  signupFor: (role: SignupRole) => `/signup/${role}`,
+  verifyEmail: '/account/verify-email',
+  verifyPhone: '/account/verify-phone',
+  /** Providers after signup: business name, trade and type. */
+  vendorSetup: '/account/vendor-setup',
   welcome: '/welcome',
   forgotPassword: '/login/forgot',
-  resetPassword: (token: string) => `/reset-password/${encodeURIComponent(token)}`,
   addRole: '/account/roles',
+  /** Signed-in devices, for every role. */
+  sessions: '/account/sessions',
   providerTerms: '/terms/providers'
 } as const;
 
@@ -53,11 +62,11 @@ export const OTP = {
 
 export const PASSWORD = { minLength: 8, maxLength: 128 } as const;
 
-/** Failed email sign-ins per email address before a cool-off. PLACEHOLDER */
-export const EMAIL_LOGIN_LIMIT = { maxFailures: 5, windowMinutes: 15, lockoutMinutes: 15 } as const;
+/** Failed password sign-ins per email or phone before a cool-off. PLACEHOLDER */
+export const PASSWORD_LOGIN_LIMIT = { maxFailures: 5, windowMinutes: 15, lockoutMinutes: 15 } as const;
 
-/** Codes and links sent to verify an email or reset a password. */
-export const EMAIL_CODE = { length: 6, expiresMinutes: 30, resetLinkMinutes: 30 } as const;
+/** Codes sent to verify an email. (Password reset rules: passwordResetConfig.ts.) */
+export const EMAIL_CODE = { length: 6, expiresMinutes: 30, resendsPerHour: 5 } as const;
 
 /** The app's languages (i18n/config.ts is the one list). Saved as user.language. */
 export const LANGUAGES = APP_LANGUAGES;

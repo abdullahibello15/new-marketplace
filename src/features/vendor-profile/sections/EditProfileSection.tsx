@@ -16,11 +16,13 @@ import { PortfolioField } from '../components/PortfolioField';
 import { ProfilePreview } from '../components/ProfilePreview';
 import { ProfileSaveBar } from '../components/ProfileSaveBar';
 import { ProfileSectionCard } from '../components/ProfileSectionCard';
-import { ProfileSectionNav } from '../components/ProfileSectionNav';
+import { CompletenessSettings } from '../components/completeness/CompletenessSettings';
+import { EditorCompletenessNav } from '../components/completeness/EditorCompletenessNav';
 import { ServiceAreasField } from '../components/ServiceAreasField';
 import { ServicesField } from '../components/ServicesField';
 import { WorkingHoursField } from '../components/WorkingHoursField';
 import { useProfileEditor } from '../hooks/useProfileEditor';
+import { photoFormValue } from '../utils/profileForm';
 
 
 export function EditProfileSection() {
@@ -51,9 +53,9 @@ export function EditProfileSection() {
         <FormProvider {...editor.form}>
           <form onSubmit={editor.save} noValidate aria-label={t('profile.title')} className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-10">
             <div className="min-w-0 space-y-6">
-              <ProfileSectionNav withErrors={errs} />
+              <EditorCompletenessNav withErrors={errs} hasEdits={editor.isDirty} productCount={vendor.products.length} />
               <ProfileSectionCard section={PROFILE_SECTION.About} hasError={errs.has(PROFILE_SECTION.About)}>
-                <AboutFields />
+                <AboutFields savedPhoto={photoFormValue(vendor)} />
               </ProfileSectionCard>
               <ProfileSectionCard section={PROFILE_SECTION.Portfolio} hasError={errs.has(PROFILE_SECTION.Portfolio)}>
                 <PortfolioField vendorName={vendor.name} saved={vendor.gallery} />
@@ -73,6 +75,7 @@ export function EditProfileSection() {
               <ProfileSectionCard section={PROFILE_SECTION.Payments} hasError={errs.has(PROFILE_SECTION.Payments)}>
                 <PaymentsField />
               </ProfileSectionCard>
+              <CompletenessSettings />
               <ProfileSaveBar isDirty={editor.isDirty} isSubmitting={editor.isSubmitting} onDiscard={() => setConfirmDiscard(true)} />
             </div>
             <ProfilePreview vendor={vendor} />

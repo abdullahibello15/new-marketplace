@@ -6,6 +6,8 @@ import { VENDOR_ORDER_ROUTES } from '../features/orders/constants';
 import { useVendorOrders } from '../features/orders/hooks/useVendorOrders';
 import { VendorSubscriptionBanner } from '../features/vendor-dashboard/components/subscription/VendorSubscriptionBanner';
 import { useCurrentVendor } from '../features/auth/hooks/useCurrentVendor';
+import { CompletenessBanner } from '../features/vendor-profile/components/completeness/CompletenessBanner';
+import { VerifyContactBanner } from '../features/auth/components/VerifyContactBanner';
 
 /** The provider shell (the route guard makes sure the user is a provider with a vendor profile). */
 export function VendorShell() {
@@ -19,5 +21,5 @@ export function VendorShell() {
     return item;
   });
 
-  return <AppShell navItems={navItems} homeTo="/pro" modeLabel={t('shell.modeVendor')} accountSubtitle={businessName} banner={<VendorSubscriptionBanner />} />;
+  return <AppShell navItems={navItems} homeTo="/pro" modeLabel={t('shell.modeVendor')} accountSubtitle={businessName} banner={<><VerifyContactBanner /><VendorSubscriptionBanner /><CompletenessBanner /></>} />;
 }

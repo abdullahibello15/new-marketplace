@@ -1,6 +1,7 @@
 import { addMinutes } from 'date-fns';
 import { ApiError, mockResponse } from '../../../services/mockApi';
 import { getAllVendors } from '../../../services/vendorStore';
+import { requireVerifiedContact } from '../../auth/session';
 import { findBank } from '../../../data/nigerianBanks';
 import i18n from '../../../i18n';
 import { invoiceKindLabel, planName } from '../../../i18n/labels';
@@ -253,6 +254,7 @@ export async function getPaymentOverview(subject: PaymentSubjectRef): Promise<Pa
 export async function initiatePayment(order: PaymentSubjectRef, choice: PaymentMethodChoice): Promise<PaymentInitiation> {
   const payable = await loadPayable(order);
   return mockResponse(() => {
+    requireVerifiedContact();
     if (payable.blockedReason) throw new ApiError(payable.blockedReason, 409);
     if (!payable.methods.includes(choice.method)) throw new ApiError(payable.cashUnavailableReason ?? i18n.t('payments:error.methodUnavailable'), 400);
     const bank = choice.method === PAYMENT_METHOD.Ussd ? findBank(choice.bankId) : undefined;

@@ -52,6 +52,7 @@ Booking and renewal reminder texts are not in the JSON files. Their Hausa versio
 - // REVIEW `vendor:products.stockFilter.low_stock.label`: "Kaya sun yi ƙasa" (Low stock).
 - // REVIEW `common:import.*` and `vendor:products.col.*`: spreadsheet words ("ginshiƙi" column, "layi" row, "fayil ɗin lissafi" spreadsheet).
 - // REVIEW `vendor:profile.hours.copyPrefix` / `copySuffix`: "Kwafi lokutan [day] zuwa kowace rana" is split around the day picker. Check it reads naturally.
+- // REVIEW `vendor:completeness.*`: "Ƙarfin shafinka" (Profile strength), "Shafi ya cika {{percent}}%" (Profile X% complete) and the labels "Ana farawa / Da kyau / Ya kusa / Ya cika".
 
 ## Grammar and gender
 

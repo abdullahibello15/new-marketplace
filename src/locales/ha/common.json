@@ -431,6 +431,14 @@
     "welcomeClaimed": {
       "title": "Barka da zuwa Gwani",
       "body": "Shafinka yana aiki. Ƙara hotuna, ayyukanka da farashinsu don abokan ciniki su iya neman ka. An saita membobinka ta {{association}}."
+    },
+    "passwordChanged": {
+      "title": "An canza kalmar sirrinka",
+      "body": "An canza kalmar sirrinka. Idan ba kai ba ne, tuntuɓi tallafi: {{support}}."
+    },
+    "newDevice": {
+      "title": "Sabon shiga a asusunka",
+      "body": "An shiga asusunka yanzu a kan {{device}} kusa da {{location}}. Idan ba kai ba ne, fitar da wannan na’ura kuma ka canza kalmar sirrinka."
     }
   }
 }

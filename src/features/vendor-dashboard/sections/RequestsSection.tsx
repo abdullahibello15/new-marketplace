@@ -16,6 +16,7 @@ import { RequestFilters } from '../components/requests/RequestFilters';
 import { useRequestList } from '../hooks/useRequestList';
 import { useRequests } from '../hooks/useRequests';
 import { useCurrentVendor } from '../../auth/hooks/useCurrentVendor';
+import { CompletenessCard } from '../../vendor-profile/components/completeness/CompletenessCard';
 
 /** Incoming job requests and every job after them, from the shared job service. */
 export function RequestsSection() {
@@ -80,6 +81,9 @@ export function RequestsSection() {
         } />
 
       <PageContainer>
+        <div className="mb-5 empty:hidden">
+          <CompletenessCard />
+        </div>
         <div className="mb-5">
           <NotificationList recipient={JOB_ACTOR.Vendor} recipientId={vendorId} linkFor={DASHBOARD_ROUTES.request} />
         </div>

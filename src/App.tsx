@@ -1,5 +1,5 @@
 import { Suspense, lazy } from 'react';
-import { Navigate, Outlet, Route, RouterProvider, createBrowserRouter, createRoutesFromElements } from 'react-router-dom';
+import { Navigate, Route, RouterProvider, createBrowserRouter, createRoutesFromElements } from 'react-router-dom';
 import { ToastProvider } from './components/ui/ToastProvider';
 import { EnglishOnly } from './i18n/EnglishOnly';
 import { RequestsProvider } from './features/vendor-dashboard/context/RequestsProvider';
@@ -11,9 +11,10 @@ import { VendorShell } from './components/VendorShell';
 import { InvestorShell } from './components/InvestorShell';
 import { RiderShell } from './components/RiderShell';
 import { AuthProvider } from './features/auth/context/AuthContext';
+import { SessionGuard } from './features/auth/components/SessionGuard';
 import { AuthLayout } from './features/auth/components/AuthLayout';
 import { DevAuthBanner } from './features/auth/components/DevAuthBanner';
-import { RequireAuth, RequireRole } from './features/auth/components/guards';
+import { LoginGate, RequireAuth, RequireRole, RequireVendorProfile } from './features/auth/components/guards';
 import { ROLE } from './features/auth/constants';
 import { LanguageSync } from './i18n/LanguageSync';
 import { PlaceProvider } from './features/discovery/context/PlaceProvider';
@@ -115,9 +116,13 @@ const NotAuthorised = lazy(() => import('./features/admin/components/NotAuthoris
 const LoginSection = lazy(() => import('./features/auth/sections/LoginSection').then((m) => ({ default: m.LoginSection })));
 const SignupSection = lazy(() => import('./features/auth/sections/SignupSection').then((m) => ({ default: m.SignupSection })));
 const WelcomeSection = lazy(() => import('./features/auth/sections/WelcomeSection').then((m) => ({ default: m.WelcomeSection })));
-const ForgotPasswordSection = lazy(() => import('./features/auth/sections/PasswordResetSections').then((m) => ({ default: m.ForgotPasswordSection })));
-const ResetPasswordSection = lazy(() => import('./features/auth/sections/PasswordResetSections').then((m) => ({ default: m.ResetPasswordSection })));
+const PasswordResetSection = lazy(() => import('./features/auth/sections/PasswordResetSection').then((m) => ({ default: m.PasswordResetSection })));
 const AddRoleSection = lazy(() => import('./features/auth/sections/AddRoleSection').then((m) => ({ default: m.AddRoleSection })));
+const StartSection = lazy(() => import('./features/auth/sections/StartSection').then((m) => ({ default: m.StartSection })));
+const VerifyEmailSection = lazy(() => import('./features/auth/sections/VerifyEmailSection').then((m) => ({ default: m.VerifyEmailSection })));
+const VerifyPhoneSection = lazy(() => import('./features/auth/sections/VerifyPhoneSection').then((m) => ({ default: m.VerifyPhoneSection })));
+const VendorSetupSection = lazy(() => import('./features/auth/sections/VendorSetupSection').then((m) => ({ default: m.VendorSetupSection })));
+const ActiveSessionsSection = lazy(() => import('./features/auth/sections/ActiveSessionsSection').then((m) => ({ default: m.ActiveSessionsSection })));
 const ProviderTermsSection = lazy(() => import('./features/auth/sections/ProviderTermsSection').then((m) => ({ default: m.ProviderTermsSection })));
 const RiderDashboardSection = lazy(() => import('./features/rider/sections/RiderDashboardSection').then((m) => ({ default: m.RiderDashboardSection })));
 const AuditLogSection = lazy(() => import('./features/admin/sections/AuditLogSection').then((m) => ({ default: m.AuditLogSection })));
@@ -133,20 +138,28 @@ const router = createBrowserRouter(
     <Route
       element={
       <>
-          <Outlet />
+          {/* Login required for the whole app when REQUIRE_LOGIN is on (features/auth/config.ts). */}
+          <LoginGate />
+          <SessionGuard />
           <DevAuthBanner />
         </>
       }>
 
       {/* Sign-in, signup and onboarding: their own simple layout. */}
       <Route element={<AuthLayout />}>
+        <Route path="/start" element={<StartSection />} />
         <Route path="/login" element={<LoginSection />} />
-        <Route path="/login/forgot" element={<ForgotPasswordSection />} />
-        <Route path="/reset-password/:token" element={<ResetPasswordSection />} />
+        <Route path="/login/forgot" element={<PasswordResetSection />} />
+        {/* One signup path per role: the role picker, then /signup/customer, /signup/provider or /signup/rider. */}
         <Route path="/signup" element={<SignupSection />} />
+        <Route path="/signup/:role" element={<SignupSection />} />
         <Route element={<RequireAuth />}>
           <Route path="/welcome" element={<WelcomeSection />} />
           <Route path="/account/roles" element={<AddRoleSection />} />
+          <Route path="/account/sessions" element={<ActiveSessionsSection />} />
+          <Route path="/account/verify-email" element={<VerifyEmailSection />} />
+          <Route path="/account/verify-phone" element={<VerifyPhoneSection />} />
+          <Route path="/account/vendor-setup" element={<VendorSetupSection />} />
         </Route>
       </Route>
       {/* Customer shell. Browsing (home, search, vendor profiles, cart) is open to everyone; booking, ordering, payments and the account need sign-in. */}
@@ -191,11 +204,13 @@ const router = createBrowserRouter(
         path="/pro"
         element={
         <RequireRole role={ROLE.Provider}>
-            <RequestsProvider>
-              <VendorOrdersProvider>
-                <VendorShell />
-              </VendorOrdersProvider>
-            </RequestsProvider>
+            <RequireVendorProfile>
+              <RequestsProvider>
+                <VendorOrdersProvider>
+                  <VendorShell />
+                </VendorOrdersProvider>
+              </RequestsProvider>
+            </RequireVendorProfile>
           </RequireRole>
         }>
 

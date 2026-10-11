@@ -2,17 +2,20 @@ import i18n from '../../../i18n';
 import { mockResponse } from '../../../services/mockApi';
 import { LANGUAGES, ROLE, type LanguageId, type Role } from '../constants';
 import { AuthError } from '../errors';
-import { finishEmailVerification, finishPasswordReset, mockHash, passwordProblem, startEmailVerification, startPasswordReset } from './authBackend';
+import { finishEmailVerification, finishPhoneVerification, mockHash, passwordProblem, sendEmailCodeNow, sendPhoneCodeNow, startEmailVerification, type CodeSent } from './authBackend';
+import { completeVendorSetupNow } from './signupBackend';
 import { commitUser, sessionRecord } from './authService';
+import { endOtherSessionsForPasswordChange } from './sessionService';
 import { applyClaim, applyProviderSetup, applyRiderSetup, withRole } from './roleSetup';
-import type { ClaimSetupInput, RiderSetupInput, User, VendorSetupInput } from '../types';
+import type { ClaimSetupInput, RiderSetupInput, User, VendorBusinessInput, VendorSetupInput } from '../types';
 
 /*
- * The signed-in person's account (mocked): email and password (customers), extra roles, switching role,
- * and claiming a profile their association created. Phone + one-time code stays the main sign-in.
+ * The signed-in person's account (mocked): verifying their email and phone, password, vendor setup after
+ * signup, extra roles, switching role, and claiming a profile their association created.
  */
 
-const customerOnly = (roles: Role[]) => roles.length === 1 && roles[0] === ROLE.Customer;
+/** Password sign-in is for customers and providers; riders and staff use phone codes. */
+const canHavePassword = (roles: Role[]) => roles.every((r) => r === ROLE.Customer || r === ROLE.Provider);
 
 /** PUT /me { name, language } */
 export function updateAccount(input: {name: string;language: LanguageId;}): Promise<User> {
@@ -37,29 +40,49 @@ export function verifyEmail(code: string): Promise<User> {
   return mockResponse(() => commitUser(finishEmailVerification(sessionRecord(), code, new Date())), 500);
 }
 
+/** POST /me/email/code — (re)sends a code to the account's email (after signup, or "verify later"). */
+export function sendEmailCode(): Promise<CodeSent> {
+  return mockResponse(() => sendEmailCodeNow(sessionRecord(), new Date()), 600);
+}
+
 /**
- * PUT /me/password — customers who've verified an email can sign in with it and a password too.
- * Vendors, riders and staff keep using their phone (staff will get a stronger sign-in; see secondFactorFor).
+ * POST /me/phone/code { phone } — sends a code to verify the account's phone, or a new number (customers
+ * add one when it's needed, e.g. for SMS reminders or a delivery order). A new number must be free.
+ */
+export function sendPhoneCode(phone: string): Promise<CodeSent> {
+  return mockResponse(() => {
+    const { user, sent } = sendPhoneCodeNow(sessionRecord(), phone, new Date());
+    commitUser(user);
+    return sent;
+  }, 600);
+}
+
+/** POST /me/phone/verify { code } — providers become visible to customers once this is done. */
+export function verifyPhone(code: string): Promise<User> {
+  return mockResponse(() => commitUser(finishPhoneVerification(sessionRecord(), code, new Date())), 500);
+}
+
+/** POST /vendor/setup — after provider signup: business name, trade and type (one vendor profile per account). */
+export function completeVendorSetup(input: VendorBusinessInput): Promise<User> {
+  return mockResponse(() => commitUser(completeVendorSetupNow(sessionRecord(), input, new Date())), 700);
+}
+
+/**
+ * PUT /me/password — customers and providers with a verified email can set or change their password.
+ * Riders and staff keep using phone codes (staff will get a stronger sign-in; see secondFactorFor).
+ * Changing it signs out every other device (this one stays signed in).
  */
 export function setPassword(password: string): Promise<User> {
   return mockResponse(() => {
     const user = sessionRecord();
-    if (!customerOnly(user.roles)) throw new AuthError('not_allowed', i18n.t('auth:error.emailCustomersOnly'), 403);
+    if (!canHavePassword(user.roles)) throw new AuthError('not_allowed', i18n.t('auth:error.emailCustomersOnly'), 403);
     if (!user.email || !user.emailVerified) throw new AuthError('not_allowed', i18n.t('auth:error.verifyEmailFirst'), 409);
     const problem = passwordProblem(password);
     if (problem) throw new AuthError('weak_password', problem, 400);
-    return commitUser({ ...user, passwordHash: mockHash(password), hasPassword: true });
+    const updated = commitUser({ ...user, passwordHash: mockHash(password), hasPassword: true });
+    endOtherSessionsForPasswordChange();
+    return updated;
   }, 600);
-}
-
-/** POST /auth/password/forgot { email } — always the same answer, whether or not the email has an account. */
-export function requestPasswordReset(email: string): Promise<void> {
-  return mockResponse(() => startPasswordReset(email, new Date()), 700);
-}
-
-/** POST /auth/password/reset { token, password } */
-export function resetPassword(token: string, password: string): Promise<void> {
-  return mockResponse(() => finishPasswordReset(token, password, new Date()), 600);
 }
 
 /* ---------- Roles ---------- */

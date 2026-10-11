@@ -677,7 +677,10 @@
       "yourTrade": "Sana’arka",
       "tradePlaceholder": "misali Mai walda, mai gyaran AC",
       "bio": "Bayani game da kai (ba dole ba)",
-      "bioPlaceholder": "Faɗa wa abokan ciniki game da gogewarka, yankunan da kake aiki da abin da ya sa aikinka ya fita daban."
+      "bioPlaceholder": "Faɗa wa abokan ciniki game da gogewarka, yankunan da kake aiki da abin da ya sa aikinka ya fita daban.",
+      "photo": "Hoton shafi",
+      "photoHint": "Hoto mai kyau naka ko na shagonka. Abokan ciniki suna ganinsa a shafinka da a bincike.",
+      "photoAlt": "Hoton shafin {{name}}"
     },
     "fulfilment": {
       "pickup": "Ɗauka da kai",
@@ -939,5 +942,89 @@
     "bundleLapsed": "Tsarin ƙungiya ya ƙare. Biya sabuntawa don ƙara membobi na cikakken lokaci.",
     "ownProfile": "Za ka iya gyara shafinka ne kawai.",
     "planLimit": "Tsarinka na {{plan}} yana ba da damar {{what}}. Cire wasu ko ka ƙara tsari."
+  },
+  "completeness": {
+    "title": "Ƙarfin shafinka",
+    "privateNote": "Kai da ma’aikatan Gwani kaɗai ke ganin wannan maki. Abokan ciniki suna ganin alamar tantancewarka.",
+    "ringLabel": "Shafi ya cika {{percent}}%",
+    "label": {
+      "gettingStarted": "Ana farawa",
+      "good": "Da kyau",
+      "almostThere": "Ya kusa",
+      "complete": "Ya cika"
+    },
+    "missingHeading": "Abin da ya rage, mafi amfani da farko",
+    "points": "+{{points}}%",
+    "fix": "Gyara",
+    "fixAria": "Gyara: {{item}}",
+    "loading": "Ana lodo makin shafinka",
+    "celebrateTitle": "Shafinka ya cika!",
+    "celebrateText": "Abokan ciniki suna da duk abin da suke buƙata don zaɓarka. Za a ɓoye wannan kati daga yanzu. Kana iya dawo da shi daga Gyara shafi.",
+    "hide": "Ɓoye kati",
+    "banner": {
+      "title": "Shafinka ya cika {{percent}}%",
+      "text": "Shafuka masu hotuna, farashi da ɗan bayani suna samun ƙarin buƙatu. Minti kaɗan kawai zai ɗauka.",
+      "action": "Kammala shafina"
+    },
+    "nav": {
+      "summary": "Shafi ya cika {{percent}}%",
+      "withEdits": "Shafi ya cika {{percent}}%, tare da canje-canjen da ba a ajiye ba",
+      "sectionDone": "ya cika",
+      "sectionTodo": "akwai abin da za a ƙara"
+    },
+    "settings": {
+      "show": "Nuna katin ƙarfin shafi a babban shafina",
+      "hint": "Katin yana nunawa koyaushe muddin shafinka bai cika ba."
+    },
+    "item": {
+      "photo": {
+        "label": "Ƙara hoton shafi",
+        "hint": "Abokan ciniki sun fi amincewa da shafi mai hoto na gaske."
+      },
+      "businessName": {
+        "label": "Ƙara sunan kasuwancinka",
+        "hint": "Sunanka ne abu na farko da abokan ciniki ke gani a bincike."
+      },
+      "tradeCategory": {
+        "label": "Zaɓi sana’arka",
+        "hint": "Abokan ciniki suna samunka ta hanyar duba sana’arka."
+      },
+      "bio": {
+        "label": "Rubuta ɗan bayani (haruffa {{min}}+)",
+        "hint": "Layuka kaɗan game da gogewarka suna taimaka wa abokan ciniki su yanke shawara."
+      },
+      "portfolio": {
+        "label": "Ƙara hotunan ayyukan baya {{min}}+",
+        "hint": "Masu sana’a masu hotuna {{min}}+ suna samun ƙarin buƙatu."
+      },
+      "services": {
+        "label": "Ƙara aiki mai farashi",
+        "hint": "Abokan ciniki sun fi kiran aiki idan suna ganin farashi."
+      },
+      "products": {
+        "label": "Ƙara kayanka na farko",
+        "hint": "Shaguna masu kaya a jere suna samun ƙarin oda."
+      },
+      "workingHours": {
+        "label": "Saita lokutan aikinka",
+        "hint": "Abokan ciniki suna ganin lokacin da kake buɗe."
+      },
+      "serviceAreas": {
+        "label": "Zaɓi yankunan aikinka",
+        "hint": "Kana bayyana a binciken ƙananan hukumomin da kake aiki."
+      },
+      "phoneVerified": {
+        "label": "Tabbatar da lambar wayarka",
+        "hint": "Waya da aka tabbatar tana ba abokan ciniki da Gwani damar samunka."
+      },
+      "emailAdded": {
+        "label": "Ƙara adireshin imel",
+        "hint": "Samu rasit da sanarwar asusu ta imel."
+      },
+      "documentsSubmitted": {
+        "label": "Aika takardun tantancewa",
+        "hint": "Alamar tantancewa tana sa abokan ciniki su amince da kai."
+      }
+    }
   }
 }

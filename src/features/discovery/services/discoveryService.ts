@@ -4,10 +4,16 @@ import { normalizeSearch } from '../../../lib/sanitize';
 import { matchesWordPrefixes } from '../../../lib/textMatch';
 import { mockResponse } from '../../../services/mockApi';
 import { getAllVendors } from '../../../services/vendorStore';
+import { isVendorPublic } from '../../auth/services/authBackend';
 import { isVendorSuspended } from '../../vendor-dashboard/services/subscriptionService';
+import { COMPLETENESS_RULES } from '../../vendor-profile/completenessConfig';
+import { profileCompletenessScore } from '../../vendor-profile/services/profileCompletenessService';
 
-/** Every vendor is listed; a suspended subscription only lowers ranking (see rankAvailableFirst). */
-const listedVendors = () => getAllVendors();
+/**
+ * Every vendor is listed, once its owner has verified their phone; a suspended subscription only lowers
+ * ranking (see rankAvailableFirst).
+ */
+const listedVendors = () => getAllVendors().filter((v) => isVendorPublic(v.id));
 
 /** Soft suspension: suspended vendors go after everyone else, keeping the chosen order within each group. */
 const rankAvailableFirst = (a: {temporarilyUnavailable: boolean;}, b: {temporarilyUnavailable: boolean;}) =>
@@ -107,13 +113,26 @@ function overlapsPrice(listing: VendorListing, min: number | null, max: number |
 
 const hasNoReviews = (l: VendorListing) => l.reviews === 0 ? 1 : 0;
 
-const SORTERS: Record<SortOption, (a: VendorListing, b: VendorListing) => number> = {
-  nearest: (a, b) => byDistance(a.distanceKm, b.distanceKm) || b.rating - a.rating,
-  // Highest average first; ties go to more reviews, then nearer. Vendors with no reviews yet go last.
-  rating: (a, b) =>
-  hasNoReviews(a) - hasNoReviews(b) || b.rating - a.rating || b.reviews - a.reviews || byDistance(a.distanceKm, b.distanceKm),
-  // Vendors without prices go last.
-  price: (a, b) => (a.priceFrom ?? Infinity) - (b.priceFrom ?? Infinity) || byDistance(a.distanceKm, b.distanceKm)
+/**
+ * Profile completeness boost, 0 to COMPLETENESS_RULES.searchBoostWeight (see completenessConfig.ts):
+ * a small nudge to each sort's own measure, never a filter. Kept inside this service: the score is
+ * private and is not part of the listing customers receive.
+ */
+type Boost = (listing: VendorListing) => number;
+const boostFor = (score: number) => COMPLETENESS_RULES.searchBoostWeight * score / 100;
+const boostedDistance = (km: number | null, boost: number) => km === null ? null : km * (1 - boost);
+
+const SORTERS: Record<SortOption, (a: VendorListing, b: VendorListing, boost: Boost) => number> = {
+  // A complete profile counts as slightly nearer.
+  nearest: (a, b, boost) => byDistance(boostedDistance(a.distanceKm, boost(a)), boostedDistance(b.distanceKm, boost(b))) || b.rating - a.rating,
+  // Highest average first (a complete profile counts as slightly higher); ties go to more reviews, then nearer. Vendors with no reviews yet go last.
+  rating: (a, b, boost) =>
+  hasNoReviews(a) - hasNoReviews(b) ||
+  b.rating * (1 + boost(b)) - a.rating * (1 + boost(a)) ||
+  b.reviews - a.reviews ||
+  byDistance(a.distanceKm, b.distanceKm),
+  // The customer asked for price order, so the boost only breaks ties. Vendors without prices go last.
+  price: (a, b, boost) => (a.priceFrom ?? Infinity) - (b.priceFrom ?? Infinity) || boost(b) - boost(a) || byDistance(a.distanceKm, b.distanceKm)
 };
 
 /** Every vendor matching the filters, sorted. Shared by the paged list and the map. */
@@ -127,13 +146,16 @@ function matchingListings({
   sort = SORT_OPTION.Nearest
 }: Omit<VendorSearchParams, 'page' | 'pageSize'>): VendorListing[] {
   const q = normalizeSearch(query);
-  return vendorsInArea(place, area).
+  const matching = vendorsInArea(place, area).
   filter(({ vendor }) => !categories.length || categories.includes(vendor.tradeCategory)).
   filter(({ vendor }) => !tiers.length || tiers.includes(vendor.verification)).
-  filter(({ vendor }) => !q || matchesQuery(vendor, q)).
+  filter(({ vendor }) => !q || matchesQuery(vendor, q));
+  const boosts = new Map(matching.map(({ vendor }) => [vendor.id, boostFor(profileCompletenessScore(vendor))]));
+  const boost: Boost = (listing) => boosts.get(listing.id) ?? 0;
+  return matching.
   map(toListing).
   filter((listing) => overlapsPrice(listing, price.min, price.max)).
-  sort((a, b) => rankAvailableFirst(a, b) || SORTERS[sort](a, b));
+  sort((a, b) => rankAvailableFirst(a, b) || SORTERS[sort](a, b, boost));
 }
 
 /**

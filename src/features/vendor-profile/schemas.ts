@@ -115,6 +115,8 @@ object({
   name: cleanText.pipe(
     z.string().min(NAME_MIN, { error: () => i18n.t('vendor:profile.form.nameMin') }).max(NAME_MAX, { error: () => i18n.t('vendor:profile.form.nameMax', { max: NAME_MAX }) })
   ),
+  /** Profile photo URL; blank means none yet (the placeholder is shown). */
+  photo: z.string(),
   tradeCategory: z.string().pipe(z.custom<TradeCategory>(isTradeCategory, { error: () => i18n.t('vendor:profile.form.trade') })),
   tradeCategoryOther: cleanText.pipe(z.string().max(TRADE_OTHER_MAX_LENGTH, { error: () => i18n.t('jobs:form.keepTo', { max: TRADE_OTHER_MAX_LENGTH }) })),
   bio: cleanText.pipe(z.string().max(BIO_MAX_LENGTH, { error: () => i18n.t('vendor:profile.form.bioMax', { max: BIO_MAX_LENGTH }) })),

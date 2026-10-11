@@ -151,7 +151,10 @@ export const AUDIT_ACTION = {
   AdminRoleChange: 'admin.role_change',
   AdminSuspend: 'admin.suspend',
   AdminReactivate: 'admin.reactivate',
-  AdminRemove: 'admin.remove'
+  AdminRemove: 'admin.remove',
+  /** Staff sign-ins and sign-outs (written by the auth session service). */
+  AdminLogin: 'admin.login',
+  AdminLogout: 'admin.logout'
 } as const;
 
 /** Follow-ups with at-risk vendors (response times and churn), shown next to the vendor on those lists. */
@@ -188,7 +191,9 @@ export const AUDIT_ACTION_LABELS: Record<AuditAction, string> = {
   'admin.role_change': 'Changed admin role',
   'admin.suspend': 'Suspended admin',
   'admin.reactivate': 'Reactivated admin',
-  'admin.remove': 'Removed admin'
+  'admin.remove': 'Removed admin',
+  'admin.login': 'Signed in',
+  'admin.logout': 'Signed out'
 };
 
 /* ---------- Admins page ---------- */
