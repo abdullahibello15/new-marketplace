@@ -17,6 +17,18 @@
     "test:tz": "npm run test:tz --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
-    "i18n:check": "npm run i18n:check --workspace apps/web"
+    "i18n:check": "npm run i18n:check --workspace apps/web",
+    "db:up": "docker compose up -d --wait",
+    "db:down": "docker compose down",
+    "db:reset": "docker compose down -v && docker compose up -d --wait",
+    "db:logs": "docker compose logs -f",
+    "db:check": "npm run db:check --workspace apps/api",
+    "db:generate": "npm run db:generate --workspace apps/api",
+    "db:migrate": "npm run db:migrate --workspace apps/api",
+    "db:studio": "npm run db:studio --workspace apps/api",
+    "test:integration": "npm run test:integration --workspace apps/api"
+  },
+  "devDependencies": {
+    "drizzle-orm": "^0.45.4"
   }
 }
