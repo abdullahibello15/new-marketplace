@@ -9,9 +9,14 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "lint": "eslint . --ext .ts"
+    "lint": "eslint . --ext .ts",
+    "test": "vitest run",
+    "test:tz": "TZ=Africa/Lagos vitest run && TZ=UTC vitest run"
   },
   "dependencies": {
     "date-fns": "^4.0.0"
+  },
+  "devDependencies": {
+    "vitest": "^5.0.5"
   }
 }

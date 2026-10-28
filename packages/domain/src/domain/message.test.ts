@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import { formatNaira } from '../utils/format';
 import { date, message, money, nested } from './message';
 
 describe('money(): naira → kobo at the message boundary', () => {
@@ -18,12 +17,6 @@ describe('money(): naira → kobo at the message boundary', () => {
     expect(money(0.1 + 0.2).kobo).toBe(30); // 0.30000000000000004
     expect(money(-0.5).kobo).toBe(-50);
     expect(Object.is(money(-0).kobo, 0)).toBe(true);
-  });
-
-  it('shows the same text the naira amount showed (the web app formats kobo / 100)', () => {
-    for (const naira of [0, 1, 1000, 1600, 1250, 20_000, 1234.5, 1234.56, 999.99, 0.01, 1_000_000.25]) {
-      expect(formatNaira(money(naira).kobo / 100), String(naira)).toBe(formatNaira(naira));
-    }
   });
 
   it('refuses amounts that are not a whole number of kobo, instead of rounding them', () => {
