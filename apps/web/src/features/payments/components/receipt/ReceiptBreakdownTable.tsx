@@ -1,7 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import { Price } from '../../../../components/ui/Price';
 import { MONEY_CLASS } from '../../../../components/ui/moneyStyles';
-import { formatSignedNaira } from '../../utils/receiptData';
+import { renderText } from '../../../../i18n/message';
+import { formatSignedNaira } from '../../../../utils/format';
 import type { ReceiptBreakdown, ReceiptCommission } from '../../types';
 
 interface ReceiptBreakdownTableProps {
@@ -58,7 +59,7 @@ export function ReceiptBreakdownTable({ breakdown: b, commission, itemsLabel }: 
       <tbody>
         <Group title={itemsLabel} />
         {b.items.map((l, i) =>
-        <Row key={`${l.label}-${i}`} label={l.label} amount={l.amount} />
+        <Row key={`${renderText(l.label)}-${i}`} label={renderText(l.label)} amount={l.amount} />
         )}
         {b.deliveryFee > 0 && <Row label={t('receipt.deliveryFee')} amount={b.deliveryFee} />}
         <Row label={t('receipt.totalPaid')} amount={b.total} strong divider />
@@ -67,7 +68,7 @@ export function ReceiptBreakdownTable({ breakdown: b, commission, itemsLabel }: 
         <>
             <Group title={t('receipt.fees')} />
             {b.fees.map((l) =>
-          <Row key={l.label} label={l.label} amount={l.amount} muted />
+          <Row key={renderText(l.label)} label={renderText(l.label)} amount={l.amount} muted />
           )}
           </>
         }
@@ -76,7 +77,7 @@ export function ReceiptBreakdownTable({ breakdown: b, commission, itemsLabel }: 
         <>
             <Group title={t('receipt.refunds')} />
             {b.refunds.map((l, i) =>
-          <Row key={`${l.label}-${i}`} label={l.label} amount={l.amount} negative />
+          <Row key={`${renderText(l.label)}-${i}`} label={renderText(l.label)} amount={l.amount} negative />
           )}
             <Row label={t('receipt.afterRefunds')} amount={b.netPaid} strong divider />
           </>

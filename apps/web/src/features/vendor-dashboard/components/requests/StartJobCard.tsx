@@ -5,6 +5,7 @@ import { Button } from '../../../../components/ui/Button';
 import { Dialog } from '../../../../components/ui/Dialog';
 import { JOB_ACTOR, JOB_STATUS, START_JOB_EARLY_MINUTES } from '../../../jobs/constants';
 import { transitionBlockedReason } from '../../../jobs/stateMachine';
+import { translate } from '../../../../i18n/message';
 import type { Job } from '../../../jobs/types';
 
 interface StartJobCardProps {
@@ -33,7 +34,7 @@ export function StartJobCard({ job, busy, onStart }: StartJobCardProps) {
       </Button>
       {blocked &&
       <p id={`${uid}-blocked`} className="mt-2 text-sm text-muted">
-          {blocked}
+          {translate(blocked)}
         </p>
       }
 

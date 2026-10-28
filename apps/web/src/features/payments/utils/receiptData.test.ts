@@ -6,13 +6,14 @@ import { applyEscrowDecision, jobEscrowDecision, openEscrow, orderEscrowDecision
 import {
   buildReceiptBreakdown,
   buildReceiptDocument,
-  formatSignedNaira,
   hasReceipt,
   methodLabel,
   receiptNumberFor,
   transactionStatusOf } from
 './receiptData';
-import type { Escrow, Payment, ReceiptSource } from '../types';
+import type { Escrow, Payment, ReceiptLine, ReceiptSource } from '../types';
+import { renderText, translate } from '../../../i18n/message';
+import { formatSignedNaira } from '../../../utils/format';
 
 const T0 = '2026-10-01T10:00:00.000Z';
 const T1 = '2026-10-02T10:00:00.000Z';
@@ -48,6 +49,9 @@ function payment(over: Partial<Payment> = {}): Payment {
 
 const held = (p: Payment): Escrow => openEscrow(p, T0);
 const released = (e: Escrow) => applyEscrowDecision(e, orderEscrowDecision({ from: ORDER_STATUS.Delivered, to: ORDER_STATUS.Completed, orderTotal: e.gross }, e.gross), T1);
+
+// Labels, titles and notes are messages now; the assertions compare the text they show.
+const shown = (lines: ReceiptLine[]) => lines.map((l) => ({ ...l, label: renderText(l.label) }));
 
 function source(over: Partial<ReceiptSource> = {}): ReceiptSource {
   const p = over.payment ?? payment();
@@ -111,11 +115,11 @@ describe('hasReceipt and receiptNumberFor', () => {
 
 describe('methodLabel', () => {
   it('names the bank for transfers and USSD, never payer details', () => {
-    expect(methodLabel(payment())).toBe('Card');
-    expect(methodLabel(payment({ method: PAYMENT_METHOD.Transfer, transfer: { bankName: 'Wema Bank', accountNumber: '9012448871', accountName: 'Gwani Checkout' } }))).toBe(
+    expect(translate(methodLabel(payment()))).toBe('Card');
+    expect(translate(methodLabel(payment({ method: PAYMENT_METHOD.Transfer, transfer: { bankName: 'Wema Bank', accountNumber: '9012448871', accountName: 'Gwani Checkout' } })))).toBe(
       'Bank transfer to Wema Bank'
     );
-    expect(methodLabel(payment({ method: PAYMENT_METHOD.Ussd, ussd: { bankId: 'gtbank', bankName: 'GTBank', code: '*737*000*1#' } }))).toBe('USSD (GTBank)');
+    expect(translate(methodLabel(payment({ method: PAYMENT_METHOD.Ussd, ussd: { bankId: 'gtbank', bankName: 'GTBank', code: '*737*000*1#' } })))).toBe('USSD (GTBank)');
   });
 });
 
@@ -132,9 +136,9 @@ describe('buildReceiptBreakdown', () => {
 
   it('shows an adjustment line when the items no longer add up to what was paid', () => {
     const b = buildReceiptBreakdown(source({ items: [{ label: 'Tap', amount: 9_000 }] }));
-    expect(b.items).toContainEqual({ label: 'Other charges', amount: 10_000 });
+    expect(shown(b.items)).toContainEqual({ label: 'Other charges', amount: 10_000 });
     const less = buildReceiptBreakdown(source({ items: [{ label: 'Tap', amount: 25_000 }] }));
-    expect(less.items).toContainEqual({ label: 'Adjustment', amount: -6_000 });
+    expect(shown(less.items)).toContainEqual({ label: 'Adjustment', amount: -6_000 });
   });
 
   it('falls back to one line for the description when there are no items', () => {
@@ -160,7 +164,7 @@ describe('buildReceiptBreakdown', () => {
     );
     const b = buildReceiptBreakdown(source({ payment: p, escrow, items: [{ label: 'Ceiling fan installation', amount: 8_000 }], deliveryFee: 0, cancellationFee: 1_600 }));
     expect(b.refundedTotal).toBe(6_400);
-    expect(b.fees).toEqual([{ label: 'Late-cancellation fee (kept by the vendor)', amount: 1_600 }]);
+    expect(shown(b.fees)).toEqual([{ label: 'Late-cancellation fee (kept by the vendor)', amount: 1_600 }]);
     expect(b.netPaid).toBe(1_600);
   });
 
@@ -170,7 +174,7 @@ describe('buildReceiptBreakdown', () => {
 
   it('counts a refund made outside escrow as one full refund', () => {
     const b = buildReceiptBreakdown(source({ payment: payment({ status: PAYMENT_STATUS.Refunded }) }));
-    expect(b.refunds).toEqual([{ label: 'Refund', amount: 20_500 }]);
+    expect(shown(b.refunds)).toEqual([{ label: 'Refund', amount: 20_500 }]);
     expect(b.netPaid).toBe(0);
   });
 });
@@ -179,7 +183,7 @@ describe('buildReceiptDocument', () => {
   it('builds the customer copy with every receipt field and no commission', () => {
     const p = payment({ method: PAYMENT_METHOD.Ussd, ussd: { bankId: 'gtbank', bankName: 'GTBank', code: '*737#' } });
     const doc = buildReceiptDocument(source({ payment: p, escrow: released(held(p)) }), 'customer', { issuer: ISSUER });
-    expect(doc).toMatchObject({
+    expect({ ...doc, title: translate(doc.title), methodLabel: translate(doc.methodLabel) }).toMatchObject({
       receiptNumber: 'RCT-TEST-1',
       kind: 'receipt',
       title: 'Payment receipt',
@@ -210,14 +214,14 @@ describe('buildReceiptDocument', () => {
     const doc = buildReceiptDocument(source({ payment: p, escrow: held(p) }), 'vendor', { commissionRate: RATE });
     expect(doc.status).toBe(TRANSACTION_STATUS.Held);
     expect(doc.commission).toEqual({ rate: RATE, amount: 1_025, vendorNet: 19_475, estimated: true });
-    expect(doc.notes[0]).toMatch(/escrow/);
+    expect(renderText(doc.notes[0])).toMatch(/escrow/);
   });
 
   it('takes no commission on cash and says so on the vendor copy', () => {
     const p = payment({ method: PAYMENT_METHOD.Cash, cash: { vendorAmount: 20_500, vendorConfirmedAt: T0, customerAmount: 20_500, customerConfirmedAt: T0 } });
     const doc = buildReceiptDocument(source({ payment: p }), 'vendor', { commissionRate: RATE });
     expect(doc.commission).toEqual({ rate: RATE, amount: 0, vendorNet: 20_500, estimated: false });
-    expect(doc.notes.some((n) => n.includes('no commission'))).toBe(true);
+    expect(doc.notes.some((n) => renderText(n).includes('no commission'))).toBe(true);
   });
 
   it('becomes a refund note, dated at the refund, when everything came back', () => {
@@ -225,7 +229,7 @@ describe('buildReceiptDocument', () => {
     const escrow = applyEscrowDecision(held(p), orderEscrowDecision({ from: ORDER_STATUS.Placed, to: ORDER_STATUS.Cancelled, orderTotal: 0 }, p.amount), T1);
     const doc = buildReceiptDocument(source({ payment: p, escrow }), 'customer', { issuer: ISSUER });
     expect(doc.kind).toBe('refund_note');
-    expect(doc.title).toBe('Refund note');
+    expect(translate(doc.title)).toBe('Refund note');
     expect(doc.receiptNumber).toBe('RFN-TEST-1');
     expect(doc.issuedAt).toBe(T1);
     expect(doc.status).toBe(TRANSACTION_STATUS.Refunded);
@@ -242,14 +246,14 @@ describe('buildReceiptDocument', () => {
       commissionRate: RATE
     });
     expect(doc.kind).toBe('receipt');
-    expect(doc.title).toBe('Payment receipt and refund note');
+    expect(translate(doc.title)).toBe('Payment receipt and refund note');
     // The vendor keeps the fee, less commission on it.
     expect(doc.commission).toEqual({ rate: RATE, amount: 80, vendorNet: 1_520, estimated: false });
   });
 
   it('shows the customer-facing outcome on the customer copy only', () => {
     const p = payment({ outcome: 'You sent ₦1,000 more than needed.' });
-    expect(buildReceiptDocument(source({ payment: p }), 'customer').notes).toContain('You sent ₦1,000 more than needed.');
-    expect(buildReceiptDocument(source({ payment: p }), 'vendor').notes).not.toContain('You sent ₦1,000 more than needed.');
+    expect(buildReceiptDocument(source({ payment: p }), 'customer').notes.map(renderText)).toContain('You sent ₦1,000 more than needed.');
+    expect(buildReceiptDocument(source({ payment: p }), 'vendor').notes.map(renderText)).not.toContain('You sent ₦1,000 more than needed.');
   });
 });

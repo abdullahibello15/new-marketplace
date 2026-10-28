@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { TriangleAlertIcon } from 'lucide-react';
 import { Price } from '../../../../components/ui/Price';
+import { translate } from '../../../../i18n/message';
 import type { CancellationTerms } from '../../cancellationPolicy';
 
 /** The part of the policy that applies to this cancellation, with the fee if there is one. */
@@ -8,11 +9,11 @@ export function CancellationTermsSummary({ terms }: {terms: CancellationTerms;})
   const { t } = useTranslation('jobs');
   return (
     <div className="space-y-2 rounded-xl bg-sand p-3 text-sm">
-      <p className="text-ink">{terms.summary}</p>
+      <p className="text-ink">{terms.summary ? translate(terms.summary) : ''}</p>
       {terms.warning &&
       <p className="flex items-start gap-2 font-semibold text-clay-dark">
           <TriangleAlertIcon className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-          {terms.warning}
+          {translate(terms.warning)}
         </p>
       }
       <p className="flex flex-wrap items-baseline justify-between gap-2 border-t border-line pt-2">

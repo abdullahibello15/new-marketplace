@@ -7,6 +7,7 @@ import { Button } from '../../../../components/ui/Button';
 import { Price } from '../../../../components/ui/Price';
 import { SUBSCRIPTION_STATUS, SUBSCRIPTION_STATUS_META } from '../../constants';
 import { describeDaysLeft } from '../../utils/subscription';
+import { translate } from '../../../../i18n/message';
 import type { Subscription, SubscriptionPlan, SubscriptionStatus } from '../../types';
 
 interface SubscriptionStatusCardProps {
@@ -45,7 +46,7 @@ export function SubscriptionStatusCard({ plan, subscription, status, daysLeft, s
         </div>
         <div>
           <dt className="text-sm text-white/75">{t('subscription.card.timeLeft')}</dt>
-          <dd className="mt-0.5 font-bold">{describeDaysLeft(daysLeft)}</dd>
+          <dd className="mt-0.5 font-bold">{translate(describeDaysLeft(daysLeft))}</dd>
         </div>
       </dl>
 

@@ -2,7 +2,7 @@ import { format } from 'date-fns';
 import { Badge } from '../../../components/ui/Badge';
 import { MONEY_CLASS } from '../../../components/ui/moneyStyles';
 import { Price } from '../../../components/ui/Price';
-import { formatSignedNaira } from '../../payments/utils/receiptData';
+import { formatSignedNaira } from '../../../utils/format';
 import { LEDGER_ENTRY_TYPE_META } from '../constants';
 import type { Investment, LedgerRow } from '../types';
 

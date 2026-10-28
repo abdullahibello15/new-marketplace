@@ -1,3 +1,4 @@
+import type { Message, Text } from '../../domain/message';
 import type { ESCROW_EVENT, ESCROW_STATUS, PAYMENT_METHOD, PAYMENT_STATUS, PAYMENT_SUBJECT, TRANSACTION_STATUS, TRANSACTION_TYPE } from './constants';
 
 type ValueOf<T> = T[keyof T];
@@ -121,7 +122,8 @@ export type ReceiptViewer = 'customer' | 'vendor';
 export type ReceiptKind = 'receipt' | 'refund_note';
 
 export interface ReceiptLine {
-  label: string;
+  /** A message, or data shown as written (an item name, the payment description). */
+  label: Text;
   /** Whole Naira, positive. */
   amount: number;
 }
@@ -164,7 +166,7 @@ export interface ReceiptCommission {
 export interface ReceiptDocument {
   receiptNumber: string;
   kind: ReceiptKind;
-  title: string;
+  title: Message;
   viewer: ReceiptViewer;
   issuedAt: string;
   paidAt: string | null;
@@ -177,11 +179,12 @@ export interface ReceiptDocument {
   reference: string;
   method: PaymentMethod;
   /** e.g. "USSD (GTBank)" */
-  methodLabel: string;
+  methodLabel: Message;
   status: TransactionStatus;
   breakdown: ReceiptBreakdown;
   commission: ReceiptCommission | null;
-  notes: string[];
+  /** Messages, plus the payment's outcome text (stored data, shown as written). */
+  notes: Text[];
 }
 
 /** Everything the receipt mapping needs, gathered by the service. */

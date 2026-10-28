@@ -228,6 +228,7 @@
     "refundWith": "Refund: {{note}}",
     "otherCharges": "Other charges",
     "adjustment": "Adjustment",
+    "lateFeeKept": "Late-cancellation fee (kept by the vendor)",
     "noteDisputed": "On hold while {{appName}}’s team reviews a reported problem.",
     "noteHeld": "Held securely in escrow until the work or order is confirmed.",
     "noteCashVendor": "Paid in cash directly to you: no commission was taken through Gwani.",

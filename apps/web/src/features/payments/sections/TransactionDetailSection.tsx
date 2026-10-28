@@ -20,6 +20,7 @@ import { TransactionStatusBadge } from '../components/transactions/TransactionSt
 import { PAYMENT_METHOD, PAYMENT_ROUTES, PAYMENT_SUBJECT, TRANSACTION_STATUS } from '../constants';
 import { useReceiptDownload } from '../hooks/useReceiptDownload';
 import { useTransaction } from '../hooks/useTransaction';
+import { translate } from '../../../i18n/message';
 import { methodLabel } from '../utils/receiptData';
 import { subjectPath } from '../utils/subject';
 import type { TransactionDetail } from '../types';
@@ -99,7 +100,7 @@ export function TransactionDetailSection() {
                 <h2 id="tx-summary" className="sr-only">{tr('tx.paymentSummary')}</h2>
                 <Price amount={payment.amount} className="text-3xl font-extrabold text-ink" />
                 <p className="mt-1 text-sm text-muted">
-                  {methodLabel(payment)} · {when(tx.date)}
+                  {translate(methodLabel(payment))} · {when(tx.date)}
                 </p>
               </div>
               <TransactionStatusBadge status={tx.status} />

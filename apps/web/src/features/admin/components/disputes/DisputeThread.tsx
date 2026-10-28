@@ -18,6 +18,7 @@ import { PaymentStatusBadge } from '../../../payments/components/PaymentStatusBa
 import { EscrowLedger } from '../../../payments/components/escrow/EscrowLedger';
 import { EscrowStatusBadge } from '../../../payments/components/escrow/EscrowStatusBadge';
 import { Price } from '../../../../components/ui/Price';
+import { translate } from '../../../../i18n/message';
 import { methodLabel } from '../../../payments/utils/receiptData';
 import type { DisputeDetail } from '../../services/disputeService';
 
@@ -136,7 +137,7 @@ export function DisputeThread({ d }: {d: DisputeDetail;}) {
               {escrow && <EscrowStatusBadge status={escrow.status} />}
             </div>
             <p className="text-muted">
-              {methodLabel(payment)} · <span className="font-mono">{payment.reference}</span>
+              {translate(methodLabel(payment))} · <span className="font-mono">{payment.reference}</span>
               {payment.paidAt && ` · paid ${format(new Date(payment.paidAt), 'd MMM yyyy')}`}
             </p>
             {escrow ? <EscrowLedger escrow={escrow} showCommission open /> : <p className="text-muted">No escrow (cash, or not paid yet).</p>}

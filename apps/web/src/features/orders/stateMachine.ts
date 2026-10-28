@@ -1,6 +1,5 @@
 import { addHours } from 'date-fns';
-import i18n from '../../i18n';
-import { orderStatusLabel } from '../../i18n/labels';
+import { message, nested, type Message } from '../../domain/message';
 import { FULFILMENT_METHOD, ORDER_ACTOR, ORDER_AUTO_COMPLETE_HOURS, ORDER_PATHS, ORDER_SIDE_BRANCHES, ORDER_STATUS, ORDER_STATUS_META } from './constants';
 import type { Order, OrderActor, OrderStatus } from './types';
 
@@ -65,13 +64,13 @@ export const ORDER_TRANSITIONS: Record<OrderStatus, Partial<Record<OrderStatus, 
   out_of_stock: {}
 };
 
-type Guard = (order: Order, now: Date) => string | null;
+type Guard = (order: Order, now: Date) => Message | null;
 
-const deliveryOnly: Guard = (order) => order.method === FULFILMENT_METHOD.Delivery ? null : i18n.t('jobs:order.error.pickupNotDispatched');
-const pickupOnly: Guard = (order) => order.method === FULFILMENT_METHOD.Pickup ? null : i18n.t('jobs:order.error.deliveryNotCollected');
+const deliveryOnly: Guard = (order) => order.method === FULFILMENT_METHOD.Delivery ? null : message('jobs:order.error.pickupNotDispatched');
+const pickupOnly: Guard = (order) => order.method === FULFILMENT_METHOD.Pickup ? null : message('jobs:order.error.deliveryNotCollected');
 const autoCompleteDue = (from: OrderStatus): Guard => (order, now) => {
   const at = orderReachedAt(order, from);
-  return at && now >= addHours(new Date(at), ORDER_AUTO_COMPLETE_HOURS) ? null : i18n.t('jobs:order.error.stillTime');
+  return at && now >= addHours(new Date(at), ORDER_AUTO_COMPLETE_HOURS) ? null : message('jobs:order.error.stillTime');
 };
 
 /** Rules on top of the table: a move can be allowed in principle but not for this order, or not yet. */
@@ -81,8 +80,8 @@ const GUARDS: Partial<Record<`${OrderStatus}>${OrderStatus}`, Partial<Record<Ord
   'delivered>completed': { system: autoCompleteDue(ORDER_STATUS.Delivered) },
   'collected>completed': { system: autoCompleteDue(ORDER_STATUS.Collected) },
   // Dismissing a dispute returns the order to the status it had when the problem was reported.
-  'disputed>delivered': { system: (order) => statusBeforeOrderDispute(order) === ORDER_STATUS.Delivered ? null : i18n.t('jobs:order.error.wasntDelivered') },
-  'disputed>collected': { system: (order) => statusBeforeOrderDispute(order) === ORDER_STATUS.Collected ? null : i18n.t('jobs:order.error.wasntCollected') }
+  'disputed>delivered': { system: (order) => statusBeforeOrderDispute(order) === ORDER_STATUS.Delivered ? null : message('jobs:order.error.wasntDelivered') },
+  'disputed>collected': { system: (order) => statusBeforeOrderDispute(order) === ORDER_STATUS.Collected ? null : message('jobs:order.error.wasntCollected') }
 };
 
 /** The status an order had just before its latest dispute (where a dismissed dispute returns it). */
@@ -91,9 +90,13 @@ export function statusBeforeOrderDispute(order: Pick<Order, 'history'>): OrderSt
   return i > 0 ? order.history[i - 1].status : null;
 }
 
+/** An order status label as a message, with the English label from ORDER_STATUS_META as the fallback. */
+const statusLabel = (status: OrderStatus) => message(`jobs:order.status.${status}.label`, undefined, ORDER_STATUS_META[status].label);
+
+/** Thrown by applyOrderTransition; `reason` says why, as a message (the Error message is its key). */
 export class OrderTransitionError extends Error {
-  constructor(message: string) {
-    super(message);
+  constructor(readonly reason: Message) {
+    super(reason.key);
     this.name = 'OrderTransitionError';
   }
 }
@@ -106,15 +109,15 @@ export function orderReachedAt(order: Pick<Order, 'history'>, status: OrderStatu
 export const isOrderEndState = (status: OrderStatus) => Object.keys(ORDER_TRANSITIONS[status]).length === 0;
 
 /** Why `by` can't move the order to `to` right now, or null if they can. */
-export function orderTransitionBlockedReason(order: Order, to: OrderStatus, by: OrderActor, now = new Date()): string | null {
-  const from = orderStatusLabel(order.status, ORDER_STATUS_META[order.status].label);
-  if (isOrderEndState(order.status)) return i18n.t('jobs:order.error.ended', { status: from.toLowerCase() });
+export function orderTransitionBlockedReason(order: Order, to: OrderStatus, by: OrderActor, now = new Date()): Message | null {
+  const from = statusLabel(order.status);
+  if (isOrderEndState(order.status)) return message('jobs:order.error.ended', { status: nested(from, { case: 'lower' }) });
   if (to === ORDER_STATUS.Cancelled && by === Customer && !ORDER_TRANSITIONS[order.status].cancelled) {
-    return i18n.t('jobs:order.error.preparing');
+    return message('jobs:order.error.preparing');
   }
   if (!ORDER_TRANSITIONS[order.status][to]?.includes(by)) {
-    const toLabel = orderStatusLabel(to, ORDER_STATUS_META[to].label);
-    return by === System ? i18n.t('jobs:order.error.cantMove', { from, to: toLabel }) : i18n.t('jobs:order.error.cantMoveBy', { from, to: toLabel, by: i18n.t(`jobs:actor.${by}`).toLowerCase() });
+    const labels = { from: nested(from), to: nested(statusLabel(to)) };
+    return by === System ? message('jobs:order.error.cantMove', labels) : message('jobs:order.error.cantMoveBy', { ...labels, by: nested(message(`jobs:actor.${by}`), { case: 'lower' }) });
   }
   return GUARDS[`${order.status}>${to}`]?.[by]?.(order, now) ?? null;
 }
