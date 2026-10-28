@@ -19,6 +19,8 @@ An npm workspaces monorepo: the web app is in `apps/web`, the API in `apps/api` 
 2. `cp apps/api/.env.example apps/api/.env`, then `npm run db:check` and `npm run db:migrate`.
 3. `npm run dev:api` serves the API on http://127.0.0.1:3000 (`GET /healthz`).
 4. `npm run test:integration` runs the database tests in throwaway containers (Testcontainers).
+5. `npm run app:up` builds the production image (`Dockerfile`, one image for the API and the worker) and runs
+   both in compose next to Postgres and Redis. `npm run db:down` stops everything.
 
 ## Platform name
 

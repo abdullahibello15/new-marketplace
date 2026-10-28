@@ -1,0 +1,17 @@
+# Allowlist: the build context is only what the Dockerfile copies. Anything new stays out (and out of the
+# image) until it is added here.
+*
+!package.json
+!package-lock.json
+!apps/web/package.json
+!apps/api
+!packages/contracts
+
+# Never send these, even inside the allowed folders.
+**/node_modules
+**/dist
+**/.env
+**/.env.*
+**/coverage
+**/*.log
+**/.DS_Store

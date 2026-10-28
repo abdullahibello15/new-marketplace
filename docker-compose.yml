@@ -1,9 +1,28 @@
-# Local services for the API: Postgres 16 (PostGIS, pg_trgm) and Redis.
-#   npm run db:up      start them in the background
-#   npm run db:down    stop them (data is kept in the named volumes)
-#   npm run db:reset   stop them and delete the data
+# Local services for the API: Postgres 16 (PostGIS, pg_trgm) and Redis, plus the API and worker image.
+#   npm run db:up      start Postgres and Redis in the background
+#   npm run app:up     also build and start the api and worker containers (the "app" profile)
+#   npm run db:down    stop everything (data is kept in the named volumes)
+#   npm run db:reset   stop everything and delete the data
 # Ports bind to 127.0.0.1 only, so nothing outside this machine can reach them.
 name: zamani
+
+# The api and worker run the same image (Dockerfile at the repo root) with different commands.
+x-app: &app
+  build:
+    context: .
+  image: zamani-api:local
+  profiles: [app]
+  environment:
+    NODE_ENV: production
+    TZ: Africa/Lagos
+    LOG_LEVEL: info
+    DATABASE_URL: postgres://zamani:zamani@postgres:5432/zamani
+    REDIS_URL: redis://redis:6379
+  depends_on:
+    postgres:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
 
 services:
   postgres:
@@ -36,6 +55,24 @@ services:
       interval: 2s
       timeout: 3s
       retries: 30
+
+  api:
+    <<: *app
+    ports:
+      - "127.0.0.1:3000:3000"
+    healthcheck:
+      # The image has no curl; Node's fetch does the same job.
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/healthz').then((r) => process.exit(r.ok ? 0 : 1), () => process.exit(1))"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+
+  worker:
+    <<: *app
+    command: ["node", "--enable-source-maps", "apps/api/dist/worker.js"]
+    # Time for worker.close() to finish running jobs after SIGTERM.
+    stop_grace_period: 30s
 
 volumes:
   postgres-data:
