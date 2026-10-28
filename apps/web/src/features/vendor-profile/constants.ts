@@ -46,8 +46,8 @@ export const profileSectionHref = (id: ProfileSectionId) => `${PROFILE_ROUTE}#${
 
 export const NAME_MIN = 2;
 export const NAME_MAX = 60;
-export const PORTFOLIO_MAX = 10;
-export const SERVICES_MAX = 20;
+// Plan limits use these, so they live in packages/domain (@zamani/domain).
+export { PORTFOLIO_MAX, SERVICES_MAX } from '@zamani/domain/features/vendor-profile/constants';
 export const SERVICE_NAME_MAX = 60;
 export const SERVICE_DESCRIPTION_MAX = 120;
 export const SERVICE_PRICE_MAX = 10_000_000;

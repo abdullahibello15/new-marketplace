@@ -19,18 +19,21 @@ import { collectReturned, collectStored } from './domainTextScenarios';
  * missing from Hausa must be listed in HAUSA_PENDING (it shows in English until a translator adds it).
  */
 
-/** The files whose messages are checked: the domain rules (moving to packages/domain). */
+/** The files whose literal keys are checked, relative to this test. */
 const DOMAIN_FILES = [
-  'features/jobs/stateMachine.ts',
-  'features/jobs/cancellationPolicy.ts',
-  'features/orders/stateMachine.ts',
-  'features/vendor-dashboard/utils/subscription.ts',
-  'features/vendor-dashboard/utils/billing.ts',
-  'features/vendor-dashboard/utils/bundle.ts',
-  'features/payments/escrow/escrowRules.ts',
-  'features/payments/utils/receiptData.ts',
+  // The rules, in packages/domain (the web paths only re-export them).
+  ...[
+    'features/jobs/stateMachine.ts',
+    'features/jobs/cancellationPolicy.ts',
+    'features/orders/stateMachine.ts',
+    'features/vendor-dashboard/utils/subscription.ts',
+    'features/vendor-dashboard/utils/billing.ts',
+    'features/vendor-dashboard/utils/bundle.ts',
+    'features/payments/escrow/escrowRules.ts',
+    'features/payments/utils/receiptData.ts'
+  ].map((f) => `../../../../packages/domain/src/${f}`),
   // Seed data stores messages too.
-  'features/vendor-dashboard/mock/subscription.ts'
+  '../features/vendor-dashboard/mock/subscription.ts'
 ];
 
 function keysIn(value: unknown, into: Set<string>) {
@@ -54,7 +57,7 @@ function domainKeys(): Set<string> {
   collectStored(record);
   // 2. Literal keys written in the domain files, including branches the scenarios might not reach.
   for (const file of DOMAIN_FILES) {
-    const source = readFileSync(new URL(`../${file}`, import.meta.url), 'utf8');
+    const source = readFileSync(new URL(file, import.meta.url), 'utf8');
     for (const [, key] of source.matchAll(/'((?:jobs|vendor|payments|common|admin):[\w.]+)'/g)) keys.add(key);
   }
   // 3. Keys built from data: every status, actor and payment method.
