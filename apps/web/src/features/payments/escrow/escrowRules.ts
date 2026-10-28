@@ -1,5 +1,5 @@
 import { addHours } from 'date-fns';
-import { formatNaira } from '../../../utils/format';
+import { message, money, type Message } from '../../../domain/message';
 import { JOB_STATUS } from '../../jobs/constants';
 import { ORDER_STATUS } from '../../orders/constants';
 import { ESCROW_EVENT, ESCROW_STATUS, PAYMENT_SUBJECT } from '../constants';
@@ -7,7 +7,6 @@ import { ESCROW_CONFIG } from './escrowConfig';
 import type { JobStatus } from '../../jobs/types';
 import type { OrderStatus } from '../../orders/types';
 import type { EarningsBuckets, Escrow, EscrowLedgerEntry, EscrowStatus, EscrowTotals, Payment, PaymentSubjectKind } from '../types';
-import { APP_NAME } from '../../../config/brand';
 
 /*
  * Escrow money rules. Pure functions only: no state, no dates read from the clock, no I/O. The escrow
@@ -18,15 +17,18 @@ import { APP_NAME } from '../../../config/brand';
 export type EscrowDecision =
 {kind: 'none';} |
 /** Release everything still held to the vendor (less commission). */
-{kind: 'release';note: string;} |
+{kind: 'release';note: Message;} |
 /** Return `amount` to the customer; anything left stays held. */
-{kind: 'refund';amount: number;note: string;} |
+{kind: 'refund';amount: number;note: Message;} |
 /** Return `refund` to the customer and release the rest to the vendor. */
-{kind: 'settle';refund: number;note: string;} |
+{kind: 'settle';refund: number;note: Message;} |
 /** Keep holding while a problem is reviewed. */
-{kind: 'dispute';note: string;} |
+{kind: 'dispute';note: Message;} |
 /** A dispute was dismissed: hold again as normal until the work or order is confirmed. */
-{kind: 'resume';note: string;};
+{kind: 'resume';note: Message;};
+
+/** A ledger note: stored on the entry as { key, params }, shown in the reader's language. */
+const note = (id: string, params?: Message['params']) => message(`payments:escrowNote.${id}`, params);
 
 const NONE: EscrowDecision = { kind: 'none' };
 
@@ -52,21 +54,21 @@ export function jobEscrowDecision(change: JobEscrowChange, held: number): Escrow
   switch (change.to) {
     case JOB_STATUS.Completed:
       if (change.from === JOB_STATUS.Disputed && change.disputeRefund !== null && change.disputeRefund > 0) {
-        return { kind: 'settle', refund: Math.min(change.disputeRefund, held), note: 'Dispute resolved: part refunded to the customer, the rest released' };
+        return { kind: 'settle', refund: Math.min(change.disputeRefund, held), note: note('partRefund') };
       }
-      return { kind: 'release', note: change.from === JOB_STATUS.Disputed ? 'Dispute resolved in the vendor’s favour' : 'Job confirmed complete' };
+      return { kind: 'release', note: note(change.from === JOB_STATUS.Disputed ? 'vendorFavour' : 'jobConfirmed') };
     case JOB_STATUS.Cancelled:{
-        if (change.from === JOB_STATUS.Disputed) return { kind: 'refund', amount: held, note: 'Dispute resolved: full refund to the customer' };
+        if (change.from === JOB_STATUS.Disputed) return { kind: 'refund', amount: held, note: note('fullRefund') };
         const fee = Math.min(Math.max(0, change.cancellationFee), held);
         return fee > 0 ?
-        { kind: 'settle', refund: held - fee, note: `Cancelled: refunded less the ${formatNaira(fee)} late-cancellation fee` } :
-        { kind: 'refund', amount: held, note: 'Cancelled before the job started: full refund' };
+        { kind: 'settle', refund: held - fee, note: note('cancelledLessFee', { fee: money(fee) }) } :
+        { kind: 'refund', amount: held, note: note('cancelledBeforeStart') };
       }
     case JOB_STATUS.Disputed:
-      return { kind: 'dispute', note: `Problem reported: held until ${APP_NAME}’s team resolves it` };
+      return { kind: 'dispute', note: note('problemReported') };
     case JOB_STATUS.InProgress:
     case JOB_STATUS.AwaitingConfirmation:
-      return change.from === JOB_STATUS.Disputed ? { kind: 'resume', note: 'Dispute dismissed: held until the job is confirmed' } : NONE;
+      return change.from === JOB_STATUS.Disputed ? { kind: 'resume', note: note('dismissedJob') } : NONE;
     default:
       return NONE;
   }
@@ -90,27 +92,27 @@ const ORDER_ENDED: readonly OrderStatus[] = [ORDER_STATUS.Cancelled, ORDER_STATU
 export function orderEscrowDecision(change: OrderEscrowChange, held: number): EscrowDecision {
   if (held <= 0 || change.from === change.to) return NONE;
   const fromDispute = change.from === ORDER_STATUS.Disputed;
-  if (change.to === ORDER_STATUS.Disputed) return { kind: 'dispute', note: `Problem reported: held until ${APP_NAME}’s team resolves it` };
+  if (change.to === ORDER_STATUS.Disputed) return { kind: 'dispute', note: note('problemReported') };
   if (fromDispute && (change.to === ORDER_STATUS.Delivered || change.to === ORDER_STATUS.Collected)) {
-    return { kind: 'resume', note: 'Dispute dismissed: held until the customer confirms receipt' };
+    return { kind: 'resume', note: note('dismissedOrder') };
   }
   if (change.to === ORDER_STATUS.Completed) {
     if (fromDispute && change.disputeRefund) {
-      return { kind: 'settle', refund: Math.min(change.disputeRefund, held), note: 'Dispute resolved: part refunded to the customer, the rest released' };
+      return { kind: 'settle', refund: Math.min(change.disputeRefund, held), note: note('partRefund') };
     }
-    return { kind: 'release', note: fromDispute ? 'Dispute resolved in the vendor’s favour' : 'Order received' };
+    return { kind: 'release', note: note(fromDispute ? 'vendorFavour' : 'orderReceived') };
   }
   if (ORDER_ENDED.includes(change.to)) {
-    return { kind: 'refund', amount: held, note: fromDispute ? 'Dispute resolved: full refund to the customer' : 'Order didn’t go ahead: full refund' };
+    return { kind: 'refund', amount: held, note: note(fromDispute ? 'fullRefund' : 'orderDidntGoAhead') };
   }
   if (change.to === ORDER_STATUS.Confirmed && change.orderTotal < held) {
-    return { kind: 'refund', amount: held - Math.max(0, change.orderTotal), note: 'Out-of-stock items refunded' };
+    return { kind: 'refund', amount: held - Math.max(0, change.orderTotal), note: note('outOfStock') };
   }
   return NONE;
 }
 
 /** Money paid for something already fulfilled (e.g. paying after the job was confirmed) is released straight away. */
-export const holdDecision = (fulfilled: boolean): EscrowDecision => fulfilled ? { kind: 'release', note: 'Paid after completion' } : NONE;
+export const holdDecision = (fulfilled: boolean): EscrowDecision => fulfilled ? { kind: 'release', note: note('paidAfterCompletion') } : NONE;
 
 /* ---------- Ledger ---------- */
 
@@ -136,8 +138,8 @@ export function deriveEscrowStatus(escrow: Pick<Escrow, 'gross' | 'ledger'>): Es
   return ESCROW_STATUS.Released;
 }
 
-function entry(escrow: Escrow, type: EscrowLedgerEntry['type'], amount: number, at: string, note: string | null, commission = 0): EscrowLedgerEntry {
-  return { id: `${escrow.paymentReference}-${escrow.ledger.length + 1}`, type, at, amount, commission, note, paidOutAt: null };
+function entry(escrow: Escrow, type: EscrowLedgerEntry['type'], amount: number, at: string, text: Message | null, commission = 0): EscrowLedgerEntry {
+  return { id: `${escrow.paymentReference}-${escrow.ledger.length + 1}`, type, at, amount, commission, note: text, paidOutAt: null };
 }
 
 function append(escrow: Escrow, e: EscrowLedgerEntry): Escrow {
@@ -159,7 +161,7 @@ export function openEscrow(payment: Pick<Payment, 'reference' | 'subject' | 'ven
     status: ESCROW_STATUS.Held,
     ledger: []
   };
-  return append(base, entry(base, ESCROW_EVENT.Held, payment.amount, at, 'Paid in and held securely'));
+  return append(base, entry(base, ESCROW_EVENT.Held, payment.amount, at, note('paidIn')));
 }
 
 /** Applies a decision. Never moves more than is still held, and commission is only ever taken on releases. */
@@ -192,7 +194,7 @@ export function payOutEscrow(escrow: Escrow, at: string): Escrow {
   if (unpaid.length === 0) return escrow;
   const net = unpaid.reduce((s, e) => s + e.amount - e.commission, 0);
   const marked = { ...escrow, ledger: escrow.ledger.map((e) => unpaid.includes(e) ? { ...e, paidOutAt: at } : e) };
-  return append(marked, entry(marked, ESCROW_EVENT.PaidOut, net, at, 'Sent to the vendor’s bank account'));
+  return append(marked, entry(marked, ESCROW_EVENT.PaidOut, net, at, note('paidOut')));
 }
 
 /* ---------- Vendor earnings ---------- */

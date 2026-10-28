@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { ShieldCheckIcon } from 'lucide-react';
 import { CANCELLATION_POLICY, cancellationPolicyLines } from '../../cancellationPolicy';
+import { translate } from '../../../../i18n/message';
 
 /**
  * The cancellation policy in a few lines, from the policy config. Collapsed to one line until opened,
@@ -16,7 +17,7 @@ export function CancellationPolicySummary({ className = '' }: {className?: strin
         <span className="text-xs font-bold text-pine group-open:hidden">{t('policy.toggle')}</span>
       </summary>
       <ul className="mt-2 list-disc space-y-1 pl-6 text-muted">
-        {cancellationPolicyLines().map((line) =>
+        {cancellationPolicyLines().map(translate).map((line) =>
         <li key={line}>{line}</li>
         )}
       </ul>

@@ -1,10 +1,10 @@
 import i18n from '../../../i18n';
 import { transactionStatusLabel } from '../../../i18n/labels';
-import { formatDate } from '../../../utils/format';
+import { renderText, translate } from '../../../i18n/message';
+import { formatDate, formatSignedNaira } from '../../../utils/format';
 import notoBoldUrl from '@expo-google-fonts/noto-sans/700Bold/NotoSans_700Bold.ttf?url';
 import notoRegularUrl from '@expo-google-fonts/noto-sans/400Regular/NotoSans_400Regular.ttf?url';
 import { PAYMENT_SUBJECT, TRANSACTION_STATUS_META } from '../constants';
-import { formatSignedNaira } from './receiptData';
 import type { jsPDF } from 'jspdf';
 import type { ReceiptDocument } from '../types';
 import { APP_NAME } from '../../../config/brand';
@@ -130,7 +130,7 @@ export function drawReceipt(pdf: jsPDF, d: ReceiptDocument): void {
   c.text(`${d.platform.address} · ${d.platform.website} · ${d.platform.email}`, { size: 8, color: COLOR.muted });
   const afterBrand = c.y;
   c.y = top + 2;
-  c.text(d.title, { size: 13, bold: true, align: 'right', gap: 1 });
+  c.text(translate(d.title), { size: 13, bold: true, align: 'right', gap: 1 });
   c.text(d.viewer === 'vendor' ? r('vendorCopy') : r('customerCopy'), { size: 8, color: COLOR.muted, align: 'right' });
   c.y = Math.max(c.y, afterBrand);
   c.rule(COLOR.pine);
@@ -140,7 +140,7 @@ export function drawReceipt(pdf: jsPDF, d: ReceiptDocument): void {
   [r('date'), day(d.issuedAt)],
   [r('reference'), d.reference],
   [r('status'), transactionStatusLabel(d.status, TRANSACTION_STATUS_META[d.status].label)],
-  [r('method'), d.methodLabel],
+  [r('method'), translate(d.methodLabel)],
   [r('paidOn'), d.paidAt ? day(d.paidAt) : r('notPaid')]]
   );
   c.rule();
@@ -154,18 +154,18 @@ export function drawReceipt(pdf: jsPDF, d: ReceiptDocument): void {
   c.rule();
 
   c.heading(d.subject.kind === PAYMENT_SUBJECT.Job ? r('service') : r('items'));
-  b.items.forEach((l) => c.row(l.label, formatSignedNaira(l.amount)));
+  b.items.forEach((l) => c.row(renderText(l.label), formatSignedNaira(l.amount)));
   if (b.deliveryFee > 0) c.row(r('deliveryFee'), formatSignedNaira(b.deliveryFee));
   c.rule(COLOR.line, 2);
   c.row(r('totalPaid'), formatSignedNaira(b.total), { bold: true, size: 12 });
 
   if (b.fees.length) {
     c.heading(r('fees'));
-    b.fees.forEach((l) => c.row(l.label, formatSignedNaira(l.amount), { color: COLOR.muted }));
+    b.fees.forEach((l) => c.row(renderText(l.label), formatSignedNaira(l.amount), { color: COLOR.muted }));
   }
   if (b.refunds.length) {
     c.heading(r('refunds'));
-    b.refunds.forEach((l) => c.row(l.label, formatSignedNaira(-l.amount)));
+    b.refunds.forEach((l) => c.row(renderText(l.label), formatSignedNaira(-l.amount)));
     c.rule(COLOR.line, 2);
     c.row(r('afterRefunds'), formatSignedNaira(b.netPaid), { bold: true, size: 12 });
   }
@@ -179,7 +179,7 @@ export function drawReceipt(pdf: jsPDF, d: ReceiptDocument): void {
 
   if (d.notes.length) {
     c.y += 2;
-    d.notes.forEach((n) => c.text(n, { size: 9, color: COLOR.muted }));
+    d.notes.forEach((n) => c.text(renderText(n), { size: 9, color: COLOR.muted }));
   }
 
   c.rule();
@@ -233,7 +233,7 @@ export const receiptFileName = (d: Pick<ReceiptDocument, 'kind' | 'reference'>) 
 
 /** Saves one receipt (or refund note) as a PDF. */
 export async function downloadReceiptPdf(doc: ReceiptDocument): Promise<void> {
-  const pdf = await createPdf([doc], `${doc.title} ${doc.receiptNumber}`);
+  const pdf = await createPdf([doc], `${translate(doc.title)} ${doc.receiptNumber}`);
   pdf.save(receiptFileName(doc));
 }
 

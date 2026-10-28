@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { NAMESPACES } from './config';
 import { resources } from './resources';
+import { HAUSA_PENDING } from './pendingTranslations';
 
 /*
  * Every English key must exist in Hausa (the build of a page must never fall back to English silently),
- * with the same {{placeholders}}, and Hausa must not keep keys English no longer has.
+ * with the same {{placeholders}}, and Hausa must not keep keys English no longer has. The only exceptions
+ * are the keys waiting for a translator (pendingTranslations.ts), which show in English meanwhile.
  */
 
 type Tree = {[key: string]: string | Tree;};
@@ -25,9 +27,16 @@ describe.each(NAMESPACES)('locales: %s', (ns) => {
   const en = flatten(resources.en[ns] as Tree);
   const ha = flatten(resources.ha[ns] as Tree);
 
-  it('has every English key in Hausa', () => {
-    const missing = [...en.keys()].filter((k) => !ha.has(k));
+  const pending = HAUSA_PENDING.filter((k) => k.startsWith(`${ns}:`)).map((k) => k.slice(ns.length + 1));
+
+  it('has every English key in Hausa, except those waiting for a translator', () => {
+    const missing = [...en.keys()].filter((k) => !ha.has(k) && !pending.includes(k));
     expect(missing, `Missing in ha/${ns}.json`).toEqual([]);
+  });
+
+  it('lists only keys that English has and Hausa still lacks as waiting for a translator', () => {
+    expect(pending.filter((k) => !en.has(k)), `Not in en/${ns}.json`).toEqual([]);
+    expect(pending.filter((k) => ha.has(k)), `Already translated: remove from HAUSA_PENDING`).toEqual([]);
   });
 
   it('has no Hausa keys that English dropped', () => {

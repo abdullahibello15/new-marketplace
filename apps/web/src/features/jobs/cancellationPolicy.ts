@@ -1,6 +1,5 @@
 import { differenceInMinutes } from 'date-fns';
-import i18n from '../../i18n';
-import { formatNaira } from '../../utils/format';
+import { message, money, type Message } from '../../domain/message';
 import { JOB_STATUS } from './constants';
 import type { Job, JobActor, JobParty, JobStatus } from './types';
 
@@ -48,13 +47,13 @@ export interface CancellationTerms {
   /** Whole Naira; 0 when free. MOCK: displayed only, never charged. */
   fee: number;
   /** Shown prominently in the dialog, e.g. the late-cancellation warning. */
-  warning: string | null;
+  warning: Message | null;
   reasonRequired: boolean;
   rule: CancellationRule;
-  /** One-line explanation of the rule that applies, for the dialog. */
-  summary: string;
+  /** One-line explanation of the rule that applies, for the dialog (null for the platform). */
+  summary: Message | null;
   /** Why cancelling isn't possible, when `allowed` is false. */
-  blockedReason: string | null;
+  blockedReason: Message | null;
 }
 
 const HOURS = CANCELLATION_POLICY.freeCancellationHours;
@@ -65,7 +64,7 @@ export function lateFeeFor(agreedPrice: number | null): number {
   return Math.min(maximum, Math.max(minimum, Math.round(agreedPrice * percent / 100 / 100) * 100));
 }
 
-function blocked(rule: CancellationRule, reason: string): CancellationTerms {
+function blocked(rule: CancellationRule, reason: Message): CancellationTerms {
   return { allowed: false, fee: 0, warning: null, reasonRequired: false, rule, summary: reason, blockedReason: reason };
 }
 
@@ -75,17 +74,17 @@ function blocked(rule: CancellationRule, reason: string): CancellationTerms {
  */
 export function getCancellationTerms(job: Pick<Job, 'status' | 'scheduledAt' | 'agreedPrice'>, actor: JobActor, now = new Date()): CancellationTerms {
   // The platform (expired quotes, dispute outcomes) is never bound by the customer/vendor policy.
-  if (actor === 'system') return { allowed: true, fee: 0, warning: null, reasonRequired: false, rule: 'before_acceptance', summary: '', blockedReason: null };
+  if (actor === 'system') return { allowed: true, fee: 0, warning: null, reasonRequired: false, rule: 'before_acceptance', summary: null, blockedReason: null };
 
   if (actor === 'customer' && CANCELLATION_POLICY.reportInsteadFrom.includes(job.status)) {
-    return blocked('report_instead', i18n.t('jobs:policy.blockedStarted'));
+    return blocked('report_instead', message('jobs:policy.blockedStarted'));
   }
   if (!CANCELLATION_POLICY.cancellableFrom[actor].some((s) => s === job.status)) {
     return blocked(
       'not_allowed',
       actor === 'vendor' && job.status === JOB_STATUS.Requested ?
-      i18n.t('jobs:policy.blockedVendorDecline') :
-      i18n.t('jobs:policy.blockedStage')
+      message('jobs:policy.blockedVendorDecline') :
+      message('jobs:policy.blockedStage')
     );
   }
 
@@ -100,7 +99,7 @@ export function getCancellationTerms(job: Pick<Job, 'status' | 'scheduledAt' | '
       warning: null,
       reasonRequired,
       rule: 'before_acceptance',
-      summary: i18n.t('jobs:policy.freeBefore'),
+      summary: message('jobs:policy.freeBefore'),
       blockedReason: null
     };
   }
@@ -110,10 +109,10 @@ export function getCancellationTerms(job: Pick<Job, 'status' | 'scheduledAt' | '
     return {
       allowed: true,
       fee: 0,
-      warning: actor === 'vendor' && CANCELLATION_POLICY.countVendorCancellationsAfterAcceptance ? i18n.t('jobs:policy.vendorRecorded') : null,
+      warning: actor === 'vendor' && CANCELLATION_POLICY.countVendorCancellationsAfterAcceptance ? message('jobs:policy.vendorRecorded') : null,
       reasonRequired,
       rule: 'free_window',
-      summary: i18n.t('jobs:policy.freeWindow', { hours: HOURS }),
+      summary: message('jobs:policy.freeWindow', { hours: HOURS }),
       blockedReason: null
     };
   }
@@ -123,31 +122,31 @@ export function getCancellationTerms(job: Pick<Job, 'status' | 'scheduledAt' | '
     return {
       allowed: true,
       fee,
-      warning: fee ? i18n.t('jobs:policy.lateCustomerFee', { hours: HOURS, fee: formatNaira(fee) }) : i18n.t('jobs:policy.lateCustomer', { hours: HOURS }),
+      warning: fee ? message('jobs:policy.lateCustomerFee', { hours: HOURS, fee: money(fee) }) : message('jobs:policy.lateCustomer', { hours: HOURS }),
       reasonRequired,
       rule: 'late',
-      summary: i18n.t('jobs:policy.lateSummary', { hours: HOURS }),
+      summary: message('jobs:policy.lateSummary', { hours: HOURS }),
       blockedReason: null
     };
   }
   return {
     allowed: true,
     fee: 0,
-    warning: i18n.t('jobs:policy.lateVendor', { hours: HOURS }),
+    warning: message('jobs:policy.lateVendor', { hours: HOURS }),
     reasonRequired,
     rule: 'late',
-    summary: i18n.t('jobs:policy.lateSummary', { hours: HOURS }),
+    summary: message('jobs:policy.lateSummary', { hours: HOURS }),
     blockedReason: null
   };
 }
 
 /** Short, human summary of the policy for the request form and quote card. */
-export function cancellationPolicyLines(): string[] {
+export function cancellationPolicyLines(): Message[] {
   const { percent, minimum } = CANCELLATION_POLICY.lateFee;
   return [
-  i18n.t('jobs:policy.line1'),
-  i18n.t('jobs:policy.line2', { hours: HOURS }),
-  i18n.t('jobs:policy.line3', { hours: HOURS, percent, minimum: formatNaira(minimum) }),
-  i18n.t('jobs:policy.line4')];
+  message('jobs:policy.line1'),
+  message('jobs:policy.line2', { hours: HOURS }),
+  message('jobs:policy.line3', { hours: HOURS, percent, minimum: money(minimum) }),
+  message('jobs:policy.line4')];
 
 }

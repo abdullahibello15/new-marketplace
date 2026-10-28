@@ -1,7 +1,5 @@
 import { addMonths, differenceInCalendarDays, endOfDay, startOfDay } from 'date-fns';
-import i18n from '../../../i18n';
-import { planName } from '../../../i18n/labels';
-import { formatNaira } from '../../../utils/format';
+import { message, money, nested } from '../../../domain/message';
 import { INVOICE_KIND, SUBSCRIPTION_STATUS } from '../constants';
 import { planById } from '../plans';
 import { getSubscriptionStatus, nextPeriod } from './subscription';
@@ -57,6 +55,9 @@ export function changeKind(sub: Subscription, target: PlanId, now: Date): Invoic
  *   days left to prorate, so it's charged like a renewal on the new plan.
  * - Downgrade: the next period at the lower price, taking effect when the current period ends.
  */
+/** A plan's name as a message, with the English name from plans.ts as the fallback. */
+const planLabel = (plan: {id: PlanId;name: string;}) => message(`vendor:plan.${plan.id}.name`, undefined, plan.name);
+
 export function quoteChange(sub: Subscription, target: PlanId, now: Date): InvoiceQuote {
   const kind = changeKind(sub, target, now);
   const from = planById(sub.planId);
@@ -67,18 +68,18 @@ export function quoteChange(sub: Subscription, target: PlanId, now: Date): Invoi
   if (kind === INVOICE_KIND.Subscribe) {
     const start = startOfDay(now);
     const end = endOfDay(addMonths(now, 1));
-    return { ...base, kind, amount: to.price, lines: [{ label: i18n.t('vendor:subscription.line.month', { plan: planName(to.id, to.name) }), amount: to.price }], periodStart: start.toISOString(), periodEnd: end.toISOString(), effectiveAt: now.toISOString() };
+    return { ...base, kind, amount: to.price, lines: [{ label: message('vendor:subscription.line.month', { plan: nested(planLabel(to)) }), amount: to.price }], periodStart: start.toISOString(), periodEnd: end.toISOString(), effectiveAt: now.toISOString() };
   }
   if (kind === INVOICE_KIND.Upgrade && inPeriod) {
     const p = prorateUpgrade(from.price, to.price, sub.periodStart, sub.renewsOn, now);
-    const span = p.months > 1 ? i18n.t('vendor:subscription.line.span', { count: p.months }) : '';
+    const span = p.months > 1 ? nested(message('vendor:subscription.line.span', { count: p.months })) : '';
     return {
       ...base,
       kind,
       amount: p.due,
       lines: [
-      { label: i18n.t('vendor:subscription.line.upgrade', { plan: planName(to.id, to.name), price: formatNaira(to.price), span, left: p.remainingDays, total: p.totalDays }), amount: p.charge },
-      { label: i18n.t('vendor:subscription.line.credit', { plan: planName(from.id, from.name), price: formatNaira(from.price), span, left: p.remainingDays, total: p.totalDays }), amount: -p.credit }],
+      { label: message('vendor:subscription.line.upgrade', { plan: nested(planLabel(to)), price: money(to.price), span, left: p.remainingDays, total: p.totalDays }), amount: p.charge },
+      { label: message('vendor:subscription.line.credit', { plan: nested(planLabel(from)), price: money(from.price), span, left: p.remainingDays, total: p.totalDays }), amount: -p.credit }],
 
       periodStart: startOfDay(now).toISOString(),
       periodEnd: sub.renewsOn,
@@ -92,7 +93,7 @@ export function quoteChange(sub: Subscription, target: PlanId, now: Date): Invoi
     ...base,
     kind,
     amount: to.price,
-    lines: [{ label: i18n.t('vendor:subscription.line.month', { plan: planName(to.id, to.name) }), amount: to.price }],
+    lines: [{ label: message('vendor:subscription.line.month', { plan: nested(planLabel(to)) }), amount: to.price }],
     periodStart: period.start.toISOString(),
     periodEnd: period.end.toISOString(),
     effectiveAt: effective.toISOString()

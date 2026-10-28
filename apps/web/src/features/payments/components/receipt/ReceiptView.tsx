@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { renderText, translate } from '../../../../i18n/message';
 import { formatDate } from '../../../../utils/format';
 import { PAYMENT_SUBJECT } from '../../constants';
 import { TransactionStatusBadge } from '../transactions/TransactionStatusBadge';
@@ -35,7 +36,7 @@ export function ReceiptView({ receipt: d }: {receipt: ReceiptDocument;}) {
         </div>
         <div className="text-right">
           <h2 id="receipt-heading" className="text-lg font-extrabold text-ink">
-            {d.title}
+            {translate(d.title)}
           </h2>
           <p className="text-xs text-muted">{d.viewer === 'vendor' ? t('receipt.vendorCopy') : t('receipt.customerCopy')}</p>
         </div>
@@ -52,7 +53,7 @@ export function ReceiptView({ receipt: d }: {receipt: ReceiptDocument;}) {
         <Detail label={t('receipt.status')}>
           <TransactionStatusBadge status={d.status} />
         </Detail>
-        <Detail label={t('receipt.method')}>{d.methodLabel}</Detail>
+        <Detail label={t('receipt.method')}>{translate(d.methodLabel)}</Detail>
         <Detail label={t('receipt.paidOn')}>{d.paidAt ? when(d.paidAt) : t('receipt.notPaid')}</Detail>
       </dl>
 
@@ -71,7 +72,7 @@ export function ReceiptView({ receipt: d }: {receipt: ReceiptDocument;}) {
 
       {d.notes.length > 0 &&
       <ul className="mt-4 space-y-1 text-sm text-muted">
-          {d.notes.map((n) =>
+          {d.notes.map(renderText).map((n) =>
         <li key={n}>{n}</li>
         )}
         </ul>

@@ -4,6 +4,7 @@ import { Price } from '../../../../components/ui/Price';
 import { formatDate, formatNaira } from '../../../../utils/format';
 import { ESCROW_EVENT, ESCROW_EVENT_LABELS } from '../../constants';
 import type { Escrow } from '../../types';
+import { translate } from '../../../../i18n/message';
 
 interface EscrowLedgerProps {
   escrow: Pick<Escrow, 'ledger'>;
@@ -30,7 +31,7 @@ export function EscrowLedger({ escrow, showCommission = false, open = false }: E
             </p>
             <p className="text-xs text-muted">
               <time dateTime={e.at}>{formatDate(e.at, 'd MMM yyyy, h:mm a')}</time>
-              {e.note && ` · ${e.note}`}
+              {e.note && ` · ${translate(e.note)}`}
             </p>
             {showCommission && e.type === ESCROW_EVENT.Released &&
           <p className="text-xs text-muted">

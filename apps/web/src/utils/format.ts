@@ -31,6 +31,11 @@ export function formatNaira(amount: number): string {
   return `₦${amount.toLocaleString('en-NG')}`;
 }
 
+/** "₦1,500", or "−₦1,500" for negatives (formatNaira alone would give "₦-1,500"). Whole naira in. */
+export function formatSignedNaira(amount: number): string {
+  return amount < 0 ? `−${formatNaira(-amount)}` : formatNaira(amount);
+}
+
 /** Plain numbers (counts, stock), formatted like amounts in every language. */
 export const formatNumber = (n: number) => n.toLocaleString('en-NG');
 

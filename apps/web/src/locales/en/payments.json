@@ -228,6 +228,7 @@
     "refundWith": "Refund: {{note}}",
     "otherCharges": "Other charges",
     "adjustment": "Adjustment",
+    "lateFeeKept": "Late-cancellation fee (kept by the vendor)",
     "noteDisputed": "On hold while {{appName}}’s team reviews a reported problem.",
     "noteHeld": "Held securely in escrow until the work or order is confirmed.",
     "noteCashVendor": "Paid in cash directly to you: no commission was taken through Gwani.",
@@ -400,5 +401,22 @@
     "jobLoad": "We couldn’t load this job.",
     "jobDisputed": "You’ve already reported a problem with this job. {{appName}}’s team is reviewing it.",
     "jobReportWhen": "You can report a problem while the work is in progress or waiting for your confirmation. This job is {{status}}."
+  },
+  "escrowNote": {
+    "paidIn": "Paid in and held securely",
+    "jobConfirmed": "Job confirmed complete",
+    "orderReceived": "Order received",
+    "paidAfterCompletion": "Paid after completion",
+    "vendorFavour": "Dispute resolved in the vendor’s favour",
+    "partRefund": "Dispute resolved: part refunded to the customer, the rest released",
+    "fullRefund": "Dispute resolved: full refund to the customer",
+    "cancelledLessFee": "Cancelled: refunded less the {{fee}} late-cancellation fee",
+    "cancelledBeforeStart": "Cancelled before the job started: full refund",
+    "orderDidntGoAhead": "Order didn’t go ahead: full refund",
+    "outOfStock": "Out-of-stock items refunded",
+    "problemReported": "Problem reported: held until {{appName}}’s team resolves it",
+    "dismissedJob": "Dispute dismissed: held until the job is confirmed",
+    "dismissedOrder": "Dispute dismissed: held until the customer confirms receipt",
+    "paidOut": "Sent to the vendor’s bank account"
   }
 }

@@ -1,5 +1,5 @@
 import { addDays, addMonths, differenceInCalendarDays, endOfDay, max, startOfDay } from 'date-fns';
-import i18n from '../../../i18n';
+import { message, type Message } from '../../../domain/message';
 import { SUBSCRIPTION_STATUS } from '../constants';
 import { BILLING_RULES } from '../plans';
 import type { SubscriptionStatus } from '../types';
@@ -30,10 +30,10 @@ export function getSubscriptionStatus(renewsOn: string, now = new Date()): Subsc
 export const isSuspended = (renewsOn: string, now = new Date()) => getSubscriptionStatus(renewsOn, now) === SUBSCRIPTION_STATUS.Suspended;
 
 /** "5 days left", "Last day today", "Expired 3 days ago". */
-export function describeDaysLeft(days: number): string {
-  if (days > 0) return i18n.t('vendor:subscription.daysLeft', { count: days });
-  if (days === 0) return i18n.t('vendor:subscription.lastDay');
-  return i18n.t('vendor:subscription.expiredAgo', { count: Math.abs(days) });
+export function describeDaysLeft(days: number): Message {
+  if (days > 0) return message('vendor:subscription.daysLeft', { count: days });
+  if (days === 0) return message('vendor:subscription.lastDay');
+  return message('vendor:subscription.expiredAgo', { count: Math.abs(days) });
 }
 
 /** Renewing early adds a month to the current end date; renewing after it lapsed starts from today. */

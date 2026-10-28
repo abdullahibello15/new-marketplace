@@ -1,7 +1,5 @@
 import { addDays, addHours, subMinutes } from 'date-fns';
-import i18n from '../../i18n';
-import { jobStatusLabel } from '../../i18n/labels';
-import { formatDate } from '../../utils/format';
+import { date, message, nested, type Message } from '../../domain/message';
 import {
   AUTO_CLOSE_DAYS,
   AUTO_CONFIRM_HOURS,
@@ -73,7 +71,7 @@ export const JOB_TRANSITIONS: Record<JobStatus, Partial<Record<JobStatus, readon
   cancelled: {}
 };
 
-type Guard = (job: Job, now: Date) => string | null;
+type Guard = (job: Job, now: Date) => Message | null;
 
 /**
  * Timing rules that sit on top of the table: a move can be allowed in principle but not yet.
@@ -84,37 +82,41 @@ const GUARDS: Partial<Record<`${JobStatus}>${JobStatus}`, Partial<Record<JobActo
   'quoted>quote_rejected': { customer: quoteStillOpen },
   'scheduled>in_progress': {
     vendor: (job, now) => {
-      if (!job.scheduledAt) return i18n.t('jobs:error.noTime');
+      if (!job.scheduledAt) return message('jobs:error.noTime');
       const opensAt = subMinutes(new Date(job.scheduledAt), START_JOB_EARLY_MINUTES);
-      return now < opensAt ? i18n.t('jobs:error.startFrom', { date: formatDate(opensAt, 'EEE d MMM, h:mm a') }) : null;
+      return now < opensAt ? message('jobs:error.startFrom', { date: date(opensAt, 'weekdayDateTime') }) : null;
     }
   },
   'awaiting_confirmation>completed': {
     system: (job, now) => {
       const doneAt = reachedAt(job, JOB_STATUS.AwaitingConfirmation);
-      return doneAt && now >= addHours(new Date(doneAt), AUTO_CONFIRM_HOURS) ? null : i18n.t('jobs:error.stillTime');
+      return doneAt && now >= addHours(new Date(doneAt), AUTO_CONFIRM_HOURS) ? null : message('jobs:error.stillTime');
     }
   },
-  'disputed>in_progress': { system: (job) => statusBeforeDispute(job) === JOB_STATUS.InProgress ? null : i18n.t('jobs:error.wasntInProgress') },
+  'disputed>in_progress': { system: (job) => statusBeforeDispute(job) === JOB_STATUS.InProgress ? null : message('jobs:error.wasntInProgress') },
   'disputed>awaiting_confirmation': {
-    system: (job) => statusBeforeDispute(job) === JOB_STATUS.AwaitingConfirmation ? null : i18n.t('jobs:error.wasntAwaiting')
+    system: (job) => statusBeforeDispute(job) === JOB_STATUS.AwaitingConfirmation ? null : message('jobs:error.wasntAwaiting')
   },
   'completed>closed': {
     system: (job, now) => {
       const completedAt = reachedAt(job, JOB_STATUS.Completed);
-      return completedAt && now >= addDays(new Date(completedAt), AUTO_CLOSE_DAYS) ? null : i18n.t('jobs:error.reviewOpen');
+      return completedAt && now >= addDays(new Date(completedAt), AUTO_CLOSE_DAYS) ? null : message('jobs:error.reviewOpen');
     }
   }
 };
 
-function quoteStillOpen(job: Job, now: Date): string | null {
-  if (!job.quote) return i18n.t('jobs:error.noQuote');
-  return new Date(job.quote.expiresAt) <= now ? i18n.t('jobs:error.quoteExpired') : null;
+function quoteStillOpen(job: Job, now: Date): Message | null {
+  if (!job.quote) return message('jobs:error.noQuote');
+  return new Date(job.quote.expiresAt) <= now ? message('jobs:error.quoteExpired') : null;
 }
 
+/** A status label as a message, with the English label from JOB_STATUS_META as the fallback. */
+const statusLabel = (status: JobStatus) => message(`jobs:status.${status}.label`, undefined, JOB_STATUS_META[status].label);
+
+/** Thrown by applyTransition; `reason` says why, as a message (the Error message is its key). */
 export class JobTransitionError extends Error {
-  constructor(message: string) {
-    super(message);
+  constructor(readonly reason: Message) {
+    super(reason.key);
     this.name = 'JobTransitionError';
   }
 }
@@ -139,19 +141,19 @@ export function canTransition(from: JobStatus, to: JobStatus, by: JobActor): boo
  * Why `by` can't move the job to `to` right now, or null if they can. Covers the table, the timing guards and
  * the cancellation policy (including its reason requirement, checked against `note`).
  */
-export function transitionBlockedReason(job: Job, to: JobStatus, by: JobActor, now = new Date(), { note }: {note?: string;} = {}): string | null {
-  const from = jobStatusLabel(job.status, JOB_STATUS_META[job.status].label);
-  if (isEndState(job.status)) return i18n.t('jobs:error.ended', { status: from.toLowerCase() });
+export function transitionBlockedReason(job: Job, to: JobStatus, by: JobActor, now = new Date(), { note }: {note?: string;} = {}): Message | null {
+  const from = statusLabel(job.status);
+  if (isEndState(job.status)) return message('jobs:error.ended', { status: nested(from, { case: 'lower' }) });
   if (to === JOB_STATUS.Cancelled) {
     // One policy for every cancellation: the same terms the cancel dialog shows. Checked before the
     // table so a refusal explains the policy ("use Report a problem") rather than a bare status rule.
     const terms = getCancellationTerms(job, by, now);
     if (!terms.allowed) return terms.blockedReason;
-    if (terms.reasonRequired && !note?.trim()) return i18n.t('jobs:error.cancelReason');
+    if (terms.reasonRequired && !note?.trim()) return message('jobs:error.cancelReason');
   }
   if (!canTransition(job.status, to, by)) {
-    const toLabel = jobStatusLabel(to, JOB_STATUS_META[to].label);
-    return by === System ? i18n.t('jobs:error.cantMove', { from, to: toLabel }) : i18n.t('jobs:error.cantMoveBy', { from, to: toLabel, by: i18n.t(`jobs:actor.${by}`).toLowerCase() });
+    const labels = { from: nested(from), to: nested(statusLabel(to)) };
+    return by === System ? message('jobs:error.cantMove', labels) : message('jobs:error.cantMoveBy', { ...labels, by: nested(message(`jobs:actor.${by}`), { case: 'lower' }) });
   }
   return GUARDS[`${job.status}>${to}`]?.[by]?.(job, now) ?? null;
 }

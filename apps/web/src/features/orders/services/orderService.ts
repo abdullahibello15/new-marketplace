@@ -11,6 +11,7 @@ import { applyOrderEscrowChange } from '../../payments/services/escrowService';
 import { mockOrders } from '../mock/orders';
 import { removeOrderedLinesNow } from './cartService';
 import { OrderTransitionError, applyOrderTransition, orderTransitionBlockedReason, statusBeforeOrderDispute } from '../stateMachine';
+import { translate } from '../../../i18n/message';
 import { deliveryBlockedReason, enabledMethods, feeFor, fulfilmentFor } from '../utils/fulfilment';
 import type { Product, Vendor } from '../../../types/marketplace';
 import type { StarLevel } from '../../vendor-dashboard/types';
@@ -72,7 +73,7 @@ function transition(order: Order, to: OrderStatus, by: OrderActor, options: Para
     applyOrderEscrowChange(saved, order.status);
     return saved;
   } catch (e) {
-    if (e instanceof OrderTransitionError) throw new ApiError(e.message, 409);
+    if (e instanceof OrderTransitionError) throw new ApiError(translate(e.reason), 409);
     throw e;
   }
 }
@@ -297,7 +298,7 @@ export function confirmOrder(id: string, vendorId: string, outOfStockIds: string
       return transition(current, ORDER_STATUS.OutOfStock, ORDER_ACTOR.Vendor, { note: 'None of the items were in stock', changes: { items } });
     }
     const blocked = orderTransitionBlockedReason(current, ORDER_STATUS.Confirmed, ORDER_ACTOR.Vendor);
-    if (blocked) throw new ApiError(blocked, 409);
+    if (blocked) throw new ApiError(translate(blocked), 409);
 
     const products = findVendor(vendorId)?.products ?? [];
     for (const line of supplied) {
@@ -346,7 +347,7 @@ export function cancelOrder(id: string, reason: string): Promise<Order> {
   return mockResponse(() => {
     const current = customerOrder(id);
     const blocked = orderTransitionBlockedReason(current, ORDER_STATUS.Cancelled, ORDER_ACTOR.Customer);
-    if (blocked) throw new ApiError(blocked, 409);
+    if (blocked) throw new ApiError(translate(blocked), 409);
     return transition(current, ORDER_STATUS.Cancelled, ORDER_ACTOR.Customer, { note: reason || undefined, changes: releaseStock(current) });
   });
 }

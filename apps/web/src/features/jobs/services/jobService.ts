@@ -10,6 +10,7 @@ import { CANCELLATION_POLICY, getCancellationTerms } from '../cancellationPolicy
 import { mockJobs } from '../mock/jobs';
 import { pendingReschedule, rescheduleBlockedReason, rescheduleResponseBlockedReason } from '../reschedule';
 import { JobTransitionError, applyTransition, statusBeforeDispute, transitionBlockedReason } from '../stateMachine';
+import { translate } from '../../../i18n/message';
 import { recordJobEvent } from './notificationService';
 import { onJobRescheduled, onJobStatusChanged, onJobsLoaded } from '../../reminders/jobReminderEvents';
 import { deliverDueReminders } from '../../reminders/services/reminderService';
@@ -58,7 +59,7 @@ function transition(id: string, to: JobStatus, by: JobActor, options: Parameters
   try {
     updated = applyTransition(findJob(id), to, by, options);
   } catch (e) {
-    if (e instanceof JobTransitionError) throw new ApiError(e.message, 409);
+    if (e instanceof JobTransitionError) throw new ApiError(translate(e.reason), 409);
     throw e;
   }
   const change = updated.history[updated.history.length - 1];

@@ -1,3 +1,4 @@
+import type { Message, Text } from '../../domain/message';
 import type { ESCROW_EVENT, ESCROW_STATUS, PAYMENT_METHOD, PAYMENT_STATUS, PAYMENT_SUBJECT, TRANSACTION_STATUS, TRANSACTION_TYPE } from './constants';
 
 type ValueOf<T> = T[keyof T];
@@ -83,7 +84,7 @@ export interface Payable {
   customerId: string;
   customerName: string;
   /** Summary lines, e.g. items or the agreed job price, then delivery. */
-  lines: {label: string;amount: number;}[];
+  lines: {label: Text;amount: number;}[];
   total: number;
   /** Null when it can be paid; otherwise why not (not booked yet, cancelled…). */
   blockedReason: string | null;
@@ -121,7 +122,8 @@ export type ReceiptViewer = 'customer' | 'vendor';
 export type ReceiptKind = 'receipt' | 'refund_note';
 
 export interface ReceiptLine {
-  label: string;
+  /** A message, or data shown as written (an item name, the payment description). */
+  label: Text;
   /** Whole Naira, positive. */
   amount: number;
 }
@@ -164,7 +166,7 @@ export interface ReceiptCommission {
 export interface ReceiptDocument {
   receiptNumber: string;
   kind: ReceiptKind;
-  title: string;
+  title: Message;
   viewer: ReceiptViewer;
   issuedAt: string;
   paidAt: string | null;
@@ -177,11 +179,12 @@ export interface ReceiptDocument {
   reference: string;
   method: PaymentMethod;
   /** e.g. "USSD (GTBank)" */
-  methodLabel: string;
+  methodLabel: Message;
   status: TransactionStatus;
   breakdown: ReceiptBreakdown;
   commission: ReceiptCommission | null;
-  notes: string[];
+  /** Messages, plus the payment's outcome text (stored data, shown as written). */
+  notes: Text[];
 }
 
 /** Everything the receipt mapping needs, gathered by the service. */
@@ -267,7 +270,8 @@ export interface EscrowLedgerEntry {
   amount: number;
   /** Platform commission taken (released entries only; 0 otherwise). */
   commission: number;
-  note: string | null;
+  /** Stored as { key, params } (plain JSON: the API keeps it as jsonb); shown in the reader's language. */
+  note: Message | null;
   /** Released entries: when the vendor was paid out; null while it's still in their available balance. */
   paidOutAt: string | null;
 }

@@ -1,6 +1,4 @@
-import i18n from '../../../i18n';
-import { paymentMethodLabel } from '../../../i18n/labels';
-import { formatNaira } from '../../../utils/format';
+import { message, nested, type Message, type Text } from '../../../domain/message';
 import { RECEIPT_ISSUER } from '../config';
 import { ESCROW_CONFIG } from '../escrow/escrowConfig';
 import { commissionFor, escrowTotals } from '../escrow/escrowRules';
@@ -24,17 +22,13 @@ import type {
  * receiptData.test.ts. Amounts are whole Naira; `total` is always what was actually paid in.
  */
 
-/** "₦1,500", or "−₦1,500" for negatives (formatNaira alone would give "₦-1,500"). */
-export function formatSignedNaira(amount: number): string {
-  return amount < 0 ? `−${formatNaira(-amount)}` : formatNaira(amount);
-}
 
 /** How the money moved. Bank and code only; never the payer's card or account details. */
-export function methodLabel(payment: Pick<Payment, 'method' | 'transfer' | 'ussd' | 'cash'>): string {
-  if (payment.transfer) return i18n.t('payments:receipt.methodTransfer', { bank: payment.transfer.bankName });
-  if (payment.ussd) return i18n.t('payments:receipt.methodUssd', { bank: payment.ussd.bankName });
-  if (payment.cash) return paymentMethodLabel('cash', PAYMENT_METHOD_META.cash.label);
-  return paymentMethodLabel(payment.method, PAYMENT_METHOD_META[payment.method].label);
+export function methodLabel(payment: Pick<Payment, 'method' | 'transfer' | 'ussd' | 'cash'>): Message {
+  if (payment.transfer) return message('payments:receipt.methodTransfer', { bank: payment.transfer.bankName });
+  if (payment.ussd) return message('payments:receipt.methodUssd', { bank: payment.ussd.bankName });
+  const method = payment.cash ? 'cash' : payment.method;
+  return message(`payments:method.${method}`, undefined, PAYMENT_METHOD_META[method].label);
 }
 
 /**
@@ -63,9 +57,9 @@ export const hasReceipt = (payment: Pick<Payment, 'status'>) => payment.status =
 /** Refunds, from the escrow ledger; a payment refunded outside escrow counts as one full refund. */
 function refundLines(payment: Payment, escrow: Escrow | null): ReceiptLine[] {
   if (escrow) {
-    return escrow.ledger.filter((e) => e.type === ESCROW_EVENT.Refunded).map((e) => ({ label: e.note ? i18n.t('payments:receipt.refundWith', { note: e.note }) : i18n.t('payments:receipt.refund'), amount: e.amount }));
+    return escrow.ledger.filter((e) => e.type === ESCROW_EVENT.Refunded).map((e) => ({ label: e.note ? message('payments:receipt.refundWith', { note: nested(e.note) }) : message('payments:receipt.refund'), amount: e.amount }));
   }
-  return payment.status === PAYMENT_STATUS.Refunded ? [{ label: i18n.t('payments:receipt.refund'), amount: payment.amount }] : [];
+  return payment.status === PAYMENT_STATUS.Refunded ? [{ label: message('payments:receipt.refund'), amount: payment.amount }] : [];
 }
 
 /**
@@ -76,8 +70,8 @@ export function buildReceiptBreakdown({ payment, escrow, items, deliveryFee, can
   const total = payment.amount;
   const itemsTotal = items.reduce((s, l) => s + l.amount, 0);
   const difference = total - itemsTotal - deliveryFee;
-  const lines = items.length ? [...items] : [{ label: payment.description, amount: total - deliveryFee }];
-  if (items.length && difference !== 0) lines.push({ label: difference > 0 ? i18n.t('payments:receipt.otherCharges') : i18n.t('payments:receipt.adjustment'), amount: difference });
+  const lines: ReceiptLine[] = items.length ? [...items] : [{ label: payment.description, amount: total - deliveryFee }];
+  if (items.length && difference !== 0) lines.push({ label: difference > 0 ? message('payments:receipt.otherCharges') : message('payments:receipt.adjustment'), amount: difference });
 
   const refunds = refundLines(payment, escrow);
   const refundedTotal = Math.min(total, refunds.reduce((s, l) => s + l.amount, 0));
@@ -86,7 +80,7 @@ export function buildReceiptBreakdown({ payment, escrow, items, deliveryFee, can
   return {
     items: lines,
     deliveryFee,
-    fees: fee > 0 ? [{ label: 'Late-cancellation fee (kept by the vendor)', amount: fee }] : [],
+    fees: fee > 0 ? [{ label: message('payments:receipt.lateFeeKept'), amount: fee }] : [],
     total,
     refunds,
     refundedTotal,
@@ -124,17 +118,17 @@ export function buildReceiptDocument(source: ReceiptSource, viewer: ReceiptViewe
   const lastRefundAt = escrow ? [...escrow.ledger].reverse().find((e) => e.type === ESCROW_EVENT.Refunded)?.at : undefined;
   const status = transactionStatusOf(payment, escrow);
 
-  const notes: string[] = [];
-  if (escrow?.status === ESCROW_STATUS.Disputed) notes.push(i18n.t('payments:receipt.noteDisputed'));else
-  if (status === TRANSACTION_STATUS.Held) notes.push(i18n.t('payments:receipt.noteHeld'));
+  const notes: Text[] = [];
+  if (escrow?.status === ESCROW_STATUS.Disputed) notes.push(message('payments:receipt.noteDisputed'));else
+  if (status === TRANSACTION_STATUS.Held) notes.push(message('payments:receipt.noteHeld'));
   // Outcome texts are written to the customer ("returned to you"), so only their copy shows them.
   if (payment.outcome && viewer === 'customer') notes.push(payment.outcome);
-  if (viewer === 'vendor' && !escrow) notes.push(i18n.t('payments:receipt.noteCashVendor'));
+  if (viewer === 'vendor' && !escrow) notes.push(message('payments:receipt.noteCashVendor'));
 
   return {
     receiptNumber: receiptNumberFor(payment.reference, kind),
     kind,
-    title: fullyRefunded ? i18n.t('payments:receipt.titleRefund') : breakdown.refundedTotal > 0 ? i18n.t('payments:receipt.titleBoth') : i18n.t('payments:receipt.titleReceipt'),
+    title: message(fullyRefunded ? 'payments:receipt.titleRefund' : breakdown.refundedTotal > 0 ? 'payments:receipt.titleBoth' : 'payments:receipt.titleReceipt'),
     viewer,
     issuedAt: fullyRefunded && lastRefundAt ? lastRefundAt : payment.paidAt ?? payment.updatedAt,
     paidAt: payment.paidAt,
