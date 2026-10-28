@@ -80,6 +80,12 @@ The frontend's existing paths re-export them, so no page changes. One coupling h
 
 **Money is stored as `bigint` kobo.** The API contracts carry kobo too, and the frontend converts at its service boundary.
 
+**Every timestamp is `timestamptz`** (stored as UTC). The server runs with `TZ=Africa/Lagos` (Nigeria has no daylight
+saving), but that only affects the domain's day-boundary logic (start of day, renewal ranges, "due today"), never how
+times are stored.
+- TODO: make the domain take an explicit timezone parameter (e.g. `@date-fns/tz`), so it stops depending on
+  `process.env.TZ`.
+
 - **Identity:**
   - `users` (phone E.164, unique email, argon2 password hash, language, status)
   - `user_roles`
@@ -239,6 +245,11 @@ app.post('/v1/checkout', { ...customerOnly, schema: { body: checkoutSchema } }, 
 ---
 
 ## 6. Open items to confirm before the phase that needs them
+- **ROUNDING DECISION NEEDED BEFORE PHASE 4.** The domain's money maths (5% commission, late-cancellation fee,
+  proration, bundle discounts, dividends) runs in whole naira today; Phase 0 moves it unchanged. Before Phase 4,
+  switch it to kobo and confirm the rounding.
+  - Proposed default: integer kobo arithmetic with round-half-up, and ledger entries that always balance exactly
+    (any remainder goes to a defined side, never lost).
 - Commission (5%) and late-cancellation fee (both marked MOCK) → Phase 3/4.
 - `RECEIPT_ISSUER` business details, a Paystack business account, and Termii sender ID approval → Phase 1/4 (start early; approvals take weeks).
 - Session timing values marked PLACEHOLDER in `sessionConfig.ts` → Phase 1.
