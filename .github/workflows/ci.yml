@@ -1,0 +1,181 @@
+# Checks every pull request and every push to main. No secrets: nothing here deploys or publishes.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+# A new push to the same branch (or PR) cancels the run still going for the previous one.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: 22
+  npm_config_fund: false
+  npm_config_update_notifier: false
+
+jobs:
+  lint-typecheck:
+    name: Lint and typecheck
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+
+  web-unit:
+    # The domain rules depend on the server's timezone (BACKEND_PLAN §3), so they run under both.
+    # packages/domain joins this job when it is extracted.
+    name: Web unit tests (TZ=${{ matrix.tz }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        tz: [Africa/Lagos, UTC]
+    env:
+      TZ: ${{ matrix.tz }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - run: npm test --workspace apps/web
+
+  api-unit:
+    name: API unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - run: npm test --workspace apps/api
+
+  api-integration:
+    # Testcontainers starts its own Postgres (postgis/postgis:16-3.5) on the runner's Docker.
+    name: API integration tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - run: npm run test:integration
+
+  web-build:
+    name: Web production build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      # Also fails if test-mode code or banners reach the bundle (testModeSafety in vite.config.ts).
+      - run: npm run build
+
+  docker:
+    name: Docker image build and smoke test
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgis/postgis:16-3.5
+        env:
+          POSTGRES_USER: zamani
+          POSTGRES_PASSWORD: zamani
+          POSTGRES_DB: zamani
+        options: >-
+          --health-cmd "pg_isready -U zamani -d zamani"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 30
+      redis:
+        image: redis:7.4-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 30
+    steps:
+      - uses: actions/checkout@v7
+      # Built locally only; nothing is pushed anywhere.
+      - name: Build the image
+        run: docker build --tag zamani-api:ci .
+      - name: Smoke test
+        # The containers join the services' network, so they reach them as postgres and redis.
+        env:
+          IMAGE: zamani-api:ci
+          NETWORK: ${{ job.services.postgres.network }}
+          DATABASE_URL: postgres://zamani:zamani@postgres:5432/zamani
+          REDIS_URL: redis://redis:6379
+        run: scripts/ci/smoke-image.sh
+
+  terraform:
+    name: Terraform fmt and validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - name: Look for infra/terraform
+        id: tf
+        run: |
+          if [ -d infra/terraform ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::No infra/terraform yet; skipping fmt and validate."
+          fi
+      - if: steps.tf.outputs.present == 'true'
+        uses: hashicorp/setup-terraform@v4
+      - if: steps.tf.outputs.present == 'true'
+        name: terraform fmt -check
+        run: terraform -chdir=infra/terraform fmt -check -recursive
+      - if: steps.tf.outputs.present == 'true'
+        name: terraform validate
+        # No backend and no credentials: validate checks the configuration only.
+        run: |
+          terraform -chdir=infra/terraform init -backend=false -input=false
+          terraform -chdir=infra/terraform validate
+
+  audit:
+    # Warning only for now: known findings are tracked in BACKEND_PLAN §6. Per workspace, because
+    # `npm audit --omit=dev` from the root skips every workspace's production dependencies.
+    name: npm audit (production dependencies, warning only)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Audit each workspace
+        run: |
+          for workspace in apps/web apps/api packages/contracts; do
+            echo "--- $workspace"
+            if ! npm audit --omit=dev --workspace "$workspace"; then
+              echo "::warning title=npm audit::$workspace has production dependencies with known vulnerabilities (see this job's log)"
+            fi
+          done
