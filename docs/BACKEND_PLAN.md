@@ -268,6 +268,8 @@ app.post('/v1/checkout', { ...customerOnly, schema: { body: checkoutSchema } }, 
 - API image size (553 MB, of which ~190 MB is node_modules): `@sentry/node` 11 depends on `@sentry/bundler-plugins`
   (Sentry CLI, babel, oxc-parser, ~100 MB), and npm keeps `typescript` (`devOptional`) despite `--omit=dev`. Revisit
   before Phase 5 (a slimmer Sentry setup or pruning in the Dockerfile); it doesn't affect behaviour.
+- Hausa translator review: 16 pending keys in `apps/web/src/i18n/pendingTranslations.ts` (shown in English until
+  translated), plus the "wata 1" wording on invoice lines.
 - The root `package.json` lists `drizzle-orm` on purpose: npm kept installing it only under `apps/api`, where
   drizzle-kit (hoisted to the root) can't resolve it. Remove it once npm hoists it on its own.
 - **Before launch: the production app's DB role must not own `audit_log`.** Migrations run as a separate owner
