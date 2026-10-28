@@ -1,12 +1,12 @@
 {
   "meta": {
-    "title": "Gwani – ayyuka da shaguna na gida masu aminci a Minna",
+    "title": "{{appName}} – ayyuka da shaguna na gida masu aminci a Minna",
     "description": "Nemo masu aikin famfo, telolin, masu aikin wuta, masu kai kaya da shaguna da aka tantance a Minna da Jihar Neja. Kira aiki ko ka yi oda, ka biya lafiya."
   },
   "skip": "Tsallaka zuwa babban abun ciki",
   "nav": {
     "label": "Babba",
-    "home": "Shafin farko na Gwani",
+    "home": "Shafin farko na {{appName}}",
     "howItWorks": "Yadda yake aiki",
     "categories": "Rukunoni",
     "providers": "Ga masu sana’a",
@@ -70,7 +70,7 @@
     "intro": "An gina shi don abokan ciniki da masu sana’a su dogara da juna.",
     "verification": {
       "title": "Alamomin tantancewa",
-      "text": "Ma’aikatan Gwani suna duba takardun shaida da na sana’a na masu sana’a. Alamomi suna nuna abin da aka tantance."
+      "text": "Ma’aikatan {{appName}} suna duba takardun shaida da na sana’a na masu sana’a. Alamomi suna nuna abin da aka tantance."
     },
     "escrow": {
       "title": "Biya da ake riƙewa a amince",
@@ -82,7 +82,7 @@
     }
   },
   "providers": {
-    "title": "Bunƙasa <hl>kasuwancinka</hl> da Gwani",
+    "title": "Bunƙasa <hl>kasuwancinka</hl> da {{appName}}",
     "intro": "Kai ga ƙarin abokan ciniki a yankinka kuma ka gudanar da aikinka a wuri ɗaya.",
     "benefit1": "Shafin jama’a mai ayyukanka, farashinka, hotunanka da lokutan aikinka",
     "benefit2": "Buƙatun aiki da oda daga abokan ciniki kusa da kai",
@@ -97,8 +97,8 @@
   "faq": {
     "title": "Tambayoyi, da <hl>amsoshi</hl>",
     "q1": {
-      "q": "Menene Gwani?",
-      "a": "Gwani yana haɗa mutane a Minna da faɗin Jihar Neja da masu sana’a da shaguna na gida. Kana iya nemo mai sana’a, nemi farashi ko ka yi odar kaya, ka biya ta manhajar."
+      "q": "Menene {{appName}}?",
+      "a": "{{appName}} yana haɗa mutane a Minna da faɗin Jihar Neja da masu sana’a da shaguna na gida. Kana iya nemo mai sana’a, nemi farashi ko ka yi odar kaya, ka biya ta manhajar."
     },
     "q2": {
       "q": "Yaya biya yake aiki?",
@@ -110,7 +110,7 @@
     },
     "q4": {
       "q": "Yaya ake duba masu sana’a?",
-      "a": "Masu sana’a za su iya tantance shaidarsu da sana’arsu da takardu waɗanda ma’aikatan Gwani ke dubawa. Masu sana’a da aka tantance suna nuna alama a shafinsu."
+      "a": "Masu sana’a za su iya tantance shaidarsu da sana’arsu da takardu waɗanda ma’aikatan {{appName}} ke dubawa. Masu sana’a da aka tantance suna nuna alama a shafinsu."
     },
     "q5": {
       "q": "Ina buƙatar lambar waya don yin rajista?",
@@ -121,23 +121,23 @@
       "a": "Masu sana’a suna zaɓar tsarin wata-wata: Starter, Standard ko Premium. Farashin yana sashen Ga masu sana’a. Sabbin masu sana’a suna farawa da gwaji kyauta."
     },
     "q7": {
-      "q": "Zan iya amfani da Gwani da Hausa?",
-      "a": "Ee. Kana iya amfani da Gwani da Turanci ko Hausa, kuma ka canza a kowane lokaci."
+      "q": "Zan iya amfani da {{appName}} da Hausa?",
+      "a": "Ee. Kana iya amfani da {{appName}} da Turanci ko Hausa, kuma ka canza a kowane lokaci."
     },
     "q8": {
-      "q": "A ina ake samun Gwani?",
+      "q": "A ina ake samun {{appName}}?",
       "a": "A faɗin ƙananan hukumomi 25 na Jihar Neja, farawa da Minna."
     }
   },
   "footer": {
     "providerTerms": "Sharuɗɗan masu sana’a",
     "staffLogin": "Shigar ma’aikata",
-    "rights": "© {{year}} Gwani",
+    "rights": "© {{year}} {{appName}}",
     "termsShort": "Sharuɗɗa (na zuwa)",
     "privacyShort": "Sirri (na zuwa)"
   },
   "stats": {
-    "label": "Gwani a lambobi",
+    "label": "{{appName}} a lambobi",
     "providers_one": "mai sana’a a jere",
     "providers_other": "masu sana’a a jere",
     "reviews_one": "ra’ayin abokin ciniki",
@@ -166,7 +166,7 @@
   },
   "testimonials": {
     "title": "Abin da abokan ciniki ke <hl>faɗi</hl>",
-    "intro": "Da kalmominsu, daga ra’ayoyi a Gwani.",
+    "intro": "Da kalmominsu, daga ra’ayoyi a {{appName}}.",
     "about": "Game da {{vendor}}"
   },
   "finalCta": {

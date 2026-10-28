@@ -1,6 +1,6 @@
 {
   "app": {
-    "name": "Gwani"
+    "name": "{{appName}}"
   },
   "action": {
     "back": "Back",
@@ -18,7 +18,7 @@
     "logInOrSignUp": "Log in or sign up",
     "copy": "Copy",
     "download": "Download",
-    "aboutGwani": "About Gwani"
+    "aboutGwani": "About {{appName}}"
   },
   "state": {
     "loading": "Loading…",
@@ -36,7 +36,7 @@
   },
   "error": {
     "generic": "Something went wrong. Please try again.",
-    "network": "We couldn’t reach Gwani. Check your connection and try again.",
+    "network": "We couldn’t reach {{appName}}. Check your connection and try again.",
     "partialRefund": "A partial refund must be more than ₦0 and less than {{max}}."
   },
   "phone": {
@@ -111,13 +111,13 @@
     },
     "id": {
       "label": "ID-Verified",
-      "description": "Government ID checked by Gwani",
-      "explanation": "Gwani has checked this vendor’s government-issued ID, so you know who you’re dealing with. Their trade skills haven’t been assessed yet."
+      "description": "Government ID checked by {{appName}}",
+      "explanation": "{{appName}} has checked this vendor’s government-issued ID, so you know who you’re dealing with. Their trade skills haven’t been assessed yet."
     },
     "trade": {
       "label": "Trade-Verified",
       "description": "ID and trade skills checked",
-      "explanation": "Gwani has checked this vendor’s government-issued ID and confirmed their trade skills through a certificate or a practical test."
+      "explanation": "{{appName}} has checked this vendor’s government-issued ID and confirmed their trade skills through a certificate or a practical test."
     }
   },
   "lga": {
@@ -370,11 +370,11 @@
   },
   "message": {
     "disputeMessage": {
-      "title": "Message from Gwani about your dispute",
+      "title": "Message from {{appName}} about your dispute",
       "body": "{{text}}"
     },
     "disputeEvidence": {
-      "title": "Gwani needs more information about your dispute",
+      "title": "{{appName}} needs more information about your dispute",
       "body": "{{text}} Please reply within {{hours}} hours."
     },
     "disputeDecision": {
@@ -444,11 +444,11 @@
   },
   "market": {
     "skipToContent": "Skip to content",
-    "home": "Gwani home",
+    "home": "{{appName}} home",
     "searchIn": "Search in",
     "scopeProducts": "Products",
     "scopeServices": "Services",
-    "searchLabel": "Search Gwani",
+    "searchLabel": "Search {{appName}}",
     "searchPlaceholderProducts": "Search products, e.g. pipes, ankara",
     "searchPlaceholderServices": "Search services, e.g. plumber, tailor",
     "searchButton": "Search",
@@ -464,15 +464,15 @@
     "openMenu": "Open menu",
     "footer": {
       "help": "Help",
-      "howItWorks": "How Gwani works",
+      "howItWorks": "How {{appName}} works",
       "faq": "FAQs",
       "payments": "Payments and receipts",
       "about": "About",
-      "sell": "Sell or offer services on Gwani",
+      "sell": "Sell or offer services on {{appName}}",
       "providerTerms": "Provider terms",
       "contact": "Contact",
       "contactSoon": "Contact details coming soon",
-      "rights": "© {{year}} Gwani · Minna, Niger State",
+      "rights": "© {{year}} {{appName}} · Minna, Niger State",
       "staffLogin": "Staff login"
     }
   }

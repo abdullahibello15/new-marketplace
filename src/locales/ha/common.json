@@ -1,6 +1,6 @@
 {
   "app": {
-    "name": "Gwani"
+    "name": "{{appName}}"
   },
   "action": {
     "back": "Koma baya",
@@ -18,7 +18,7 @@
     "logInOrSignUp": "Shiga ko yi rajista",
     "copy": "Kwafa",
     "download": "Sauke",
-    "aboutGwani": "Game da Gwani"
+    "aboutGwani": "Game da {{appName}}"
   },
   "state": {
     "loading": "Ana lodawa…",
@@ -36,7 +36,7 @@
   },
   "error": {
     "generic": "Wani abu ya faru. Da fatan a sake gwadawa.",
-    "network": "Ba mu iya kai wa Gwani ba. Duba intanet ɗinka sannan ka sake gwadawa.",
+    "network": "Ba mu iya kai wa {{appName}} ba. Duba intanet ɗinka sannan ka sake gwadawa.",
     "partialRefund": "Mayar da wani ɓangare dole ya fi ₦0 kuma ya gaza {{max}}."
   },
   "phone": {
@@ -111,13 +111,13 @@
     },
     "id": {
       "label": "An tantance ID",
-      "description": "Gwani ta duba katin shaidar gwamnati",
-      "explanation": "Gwani ta duba katin shaidar gwamnati na wannan mai sana’ar, don haka ka san da wa kake mu’amala. Ba a gwada ƙwarewar sana’arsa ba tukuna."
+      "description": "{{appName}} ta duba katin shaidar gwamnati",
+      "explanation": "{{appName}} ta duba katin shaidar gwamnati na wannan mai sana’ar, don haka ka san da wa kake mu’amala. Ba a gwada ƙwarewar sana’arsa ba tukuna."
     },
     "trade": {
       "label": "An tantance sana’a",
       "description": "An duba ID da ƙwarewar sana’a",
-      "explanation": "Gwani ta duba katin shaidar gwamnati na wannan mai sana’ar, kuma ta tabbatar da ƙwarewarsa ta takardar shaida ko gwajin aiki."
+      "explanation": "{{appName}} ta duba katin shaidar gwamnati na wannan mai sana’ar, kuma ta tabbatar da ƙwarewarsa ta takardar shaida ko gwajin aiki."
     }
   },
   "lga": {
@@ -370,11 +370,11 @@
   },
   "message": {
     "disputeMessage": {
-      "title": "Saƙo daga Gwani game da ƙorafinka",
+      "title": "Saƙo daga {{appName}} game da ƙorafinka",
       "body": "{{text}}"
     },
     "disputeEvidence": {
-      "title": "Gwani tana buƙatar ƙarin bayani game da ƙorafinka",
+      "title": "{{appName}} tana buƙatar ƙarin bayani game da ƙorafinka",
       "body": "{{text}} Da fatan ka amsa cikin awa {{hours}}."
     },
     "disputeDecision": {
@@ -444,11 +444,11 @@
   },
   "market": {
     "skipToContent": "Tsallaka zuwa abun ciki",
-    "home": "Shafin farko na Gwani",
+    "home": "Shafin farko na {{appName}}",
     "searchIn": "Nemi a cikin",
     "scopeProducts": "Kayayyaki",
     "scopeServices": "Ayyuka",
-    "searchLabel": "Nemi a Gwani",
+    "searchLabel": "Nemi a {{appName}}",
     "searchPlaceholderProducts": "Nemi kayayyaki, misali bututu, atamfa",
     "searchPlaceholderServices": "Nemi ayyuka, misali mai gyaran famfo, tela",
     "searchButton": "Nema",
@@ -464,15 +464,15 @@
     "openMenu": "Buɗe menu",
     "footer": {
       "help": "Taimako",
-      "howItWorks": "Yadda Gwani ke aiki",
+      "howItWorks": "Yadda {{appName}} ke aiki",
       "faq": "Tambayoyi",
       "payments": "Biya da rasit",
       "about": "Game da mu",
-      "sell": "Sayar ko ba da ayyuka a Gwani",
+      "sell": "Sayar ko ba da ayyuka a {{appName}}",
       "providerTerms": "Sharuɗɗan masu sana’a",
       "contact": "Tuntuɓe mu",
       "contactSoon": "Bayanan tuntuɓa na zuwa nan ba da daɗewa ba",
-      "rights": "© {{year}} Gwani · Minna, Jihar Neja",
+      "rights": "© {{year}} {{appName}} · Minna, Jihar Neja",
       "staffLogin": "Shigar ma’aikata"
     }
   }

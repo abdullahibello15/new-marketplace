@@ -1,4 +1,4 @@
-# Gwani — Project Overview
+# ZAMANI NG MARKET HUB — Project Overview
 
 > What the `new-marketplace` project is, how it's built, how each part works, and what's still needed before it could be a real product. Last updated: October 2026.
 
@@ -6,7 +6,7 @@
 
 ## 1. What this project is
 
-**Gwani** is a **front-end prototype of a local marketplace** for **Minna and Niger State, Nigeria**. It connects customers with local tradespeople (plumbers, tailors, electricians, mechanics, dispatch riders) and shops (groceries, supplies). Prices are in Naira (₦), places are Niger State LGAs, and the copy is written for that audience.
+**ZAMANI NG MARKET HUB** is a **front-end prototype of a local marketplace** for **Minna and Niger State, Nigeria**. It connects customers with local tradespeople (plumbers, tailors, electricians, mechanics, dispatch riders) and shops (groceries, supplies). Prices are in Naira (₦), places are Niger State LGAs, and the copy is written for that audience.
 
 One single-page app holds **four areas**, each with its own layout and navigation:
 
@@ -14,8 +14,8 @@ One single-page app holds **four areas**, each with its own layout and navigatio
 |---|---|---|---|
 | **Customer** | `/` | People who need a job done or want to buy | Search vendors, book services, buy products, pay, track jobs and orders, see payments and receipts, report problems |
 | **Vendor ("Pro") portal** | `/pro` | Tradespeople and shops | Quote and run jobs, fulfil orders, manage catalogue and calendar, see earnings, manage their subscription, verification and account standing |
-| **Investor** | `/investor` | People with a stake in Gwani ventures | Read-only dividend ledger, payouts |
-| **Admin console** | `/admin` | Gwani staff | Vendor verification, dispute mediation, content moderation, analytics, audit log |
+| **Investor** | `/investor` | People with a stake in ZAMANI NG MARKET HUB ventures | Read-only dividend ledger, payouts |
+| **Admin console** | `/admin` | ZAMANI NG MARKET HUB staff | Vendor verification, dispute mediation, content moderation, analytics, audit log |
 
 **It has no backend.** Every "API" is a TypeScript service that keeps data in memory and answers through a fake network delay (see §4.2). Data resets on reload, except for a few things kept in `localStorage`: the cart, the selected place, and the demo admin sign-in.
 
@@ -192,7 +192,7 @@ Its own layout and sidebar, with a hamburger menu on mobile. Sections: **Verific
 Requested → Quoted → Scheduled → In progress → Awaiting confirmation → Completed → Closed
    │decline   │reject   │cancel        └──── report a problem ────┤
    ▼          ▼         ▼                                          ▼
-Declined  Quote rejected  Cancelled                            Disputed → (Gwani) Completed / Cancelled,
+Declined  Quote rejected  Cancelled                            Disputed → (ZAMANI NG MARKET HUB) Completed / Cancelled,
                                                                or dismissed: back to where it was
 ```
 

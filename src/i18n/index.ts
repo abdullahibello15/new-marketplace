@@ -1,5 +1,6 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
+import { APP_NAME } from '../config/brand';
 import { APP_LANGUAGES, DEFAULT_LANGUAGE, NAMESPACES, isAppLanguage, type AppLanguage } from './config';
 import { initialLanguage } from './detect';
 import { resources } from './resources';
@@ -18,7 +19,8 @@ void i18n.use(initReactI18next).init({
   ns: [...NAMESPACES],
   defaultNS: 'common',
   fallbackNS: 'common',
-  interpolation: { escapeValue: false },
+  // {{appName}} in any translation is the platform name (config/brand.ts), the same in every language.
+  interpolation: { escapeValue: false, defaultVariables: { appName: APP_NAME } },
   returnNull: false,
   saveMissing: import.meta.env.DEV,
   missingKeyHandler: (languages, namespace, key) => {

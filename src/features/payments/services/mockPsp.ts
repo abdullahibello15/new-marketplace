@@ -2,6 +2,7 @@ import i18n from '../../../i18n';
 import { MOCK_PSP } from '../config';
 import type { NigerianBank } from '../../../data/nigerianBanks';
 import type { PaymentMethod } from '../types';
+import { APP_NAME } from '../../../config/brand';
 
 /*
  * MOCK payment service provider (think Paystack or Flutterwave). This file stands in for the PSP's
@@ -57,7 +58,7 @@ export function issueVirtualAccount(reference: string): {bankName: string;accoun
   return {
     bankName: MOCK_PSP.transferBankName,
     accountNumber: `9${String(hash).padStart(9, '0').slice(-9)}`,
-    accountName: `Gwani Checkout ${reference.slice(-6)}`
+    accountName: `${APP_NAME} Checkout ${reference.slice(-6)}`
   };
 }
 

@@ -1,12 +1,12 @@
 {
   "meta": {
-    "title": "Gwani – trusted local services and shops in Minna",
+    "title": "{{appName}} – trusted local services and shops in Minna",
     "description": "Find verified plumbers, tailors, electricians, riders and shops across Minna and Niger State. Book or order, and pay safely with escrow."
   },
   "skip": "Skip to main content",
   "nav": {
     "label": "Main",
-    "home": "Gwani home",
+    "home": "{{appName}} home",
     "howItWorks": "How it works",
     "categories": "Categories",
     "providers": "For providers",
@@ -70,7 +70,7 @@
     "intro": "Built so customers and providers can rely on each other.",
     "verification": {
       "title": "Verification badges",
-      "text": "Gwani's team checks providers' ID and trade documents. Badges show what has been verified."
+      "text": "{{appName}}'s team checks providers' ID and trade documents. Badges show what has been verified."
     },
     "escrow": {
       "title": "Escrow-protected payments",
@@ -82,7 +82,7 @@
     }
   },
   "providers": {
-    "title": "Grow your <hl>business</hl> with Gwani",
+    "title": "Grow your <hl>business</hl> with {{appName}}",
     "intro": "Reach more customers in your area and manage your work in one place.",
     "benefit1": "A public profile with your services, prices, photos and working hours",
     "benefit2": "Job requests and orders from customers near you",
@@ -97,8 +97,8 @@
   "faq": {
     "title": "Questions, <hl>answered</hl>",
     "q1": {
-      "q": "What is Gwani?",
-      "a": "Gwani connects people in Minna and across Niger State with local service providers and shops. You can find a provider, request a quote or order products, and pay through the app."
+      "q": "What is {{appName}}?",
+      "a": "{{appName}} connects people in Minna and across Niger State with local service providers and shops. You can find a provider, request a quote or order products, and pay through the app."
     },
     "q2": {
       "q": "How do payments work?",
@@ -110,7 +110,7 @@
     },
     "q4": {
       "q": "How are providers checked?",
-      "a": "Providers can verify their identity and their trade with documents that Gwani's team reviews. Verified providers show a badge on their profile."
+      "a": "Providers can verify their identity and their trade with documents that {{appName}}'s team reviews. Verified providers show a badge on their profile."
     },
     "q5": {
       "q": "Do I need a phone number to sign up?",
@@ -121,23 +121,23 @@
       "a": "Providers choose a monthly plan: Starter, Standard or Premium. The prices are shown in the For providers section. New providers start with a free trial."
     },
     "q7": {
-      "q": "Can I use Gwani in Hausa?",
-      "a": "Yes. You can use Gwani in English or Hausa, and switch at any time."
+      "q": "Can I use {{appName}} in Hausa?",
+      "a": "Yes. You can use {{appName}} in English or Hausa, and switch at any time."
     },
     "q8": {
-      "q": "Where is Gwani available?",
+      "q": "Where is {{appName}} available?",
       "a": "Across the 25 LGAs of Niger State, starting with Minna."
     }
   },
   "footer": {
     "providerTerms": "Provider terms",
     "staffLogin": "Staff login",
-    "rights": "© {{year}} Gwani",
+    "rights": "© {{year}} {{appName}}",
     "termsShort": "Terms (coming soon)",
     "privacyShort": "Privacy (coming soon)"
   },
   "stats": {
-    "label": "Gwani in numbers",
+    "label": "{{appName}} in numbers",
     "providers_one": "provider listed",
     "providers_other": "providers listed",
     "reviews_one": "customer review",
@@ -166,7 +166,7 @@
   },
   "testimonials": {
     "title": "What customers <hl>say</hl>",
-    "intro": "In their own words, from reviews on Gwani.",
+    "intro": "In their own words, from reviews on {{appName}}.",
     "about": "About {{vendor}}"
   },
   "finalCta": {

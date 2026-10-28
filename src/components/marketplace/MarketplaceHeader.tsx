@@ -8,6 +8,7 @@ import { AccountMenu } from './AccountMenu';
 import { CategoryNav } from './CategoryNav';
 import { HeaderSearch } from './HeaderSearch';
 import { MobileMenu } from './MobileMenu';
+import { APP_INITIAL, APP_NAME } from '../../config/brand';
 
 /**
  * The marketplace header, sticky on every buyer page: logo, the big search, account and cart; category
@@ -35,8 +36,9 @@ export function MarketplaceHeader() {
           <MenuIcon className="h-6 w-6" aria-hidden="true" />
         </button>
         <Link to="/" aria-label={t('market.home')} className="flex shrink-0 items-center gap-2 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-mustard text-lg font-extrabold text-ink" aria-hidden="true">G</span>
-          <span className="text-xl font-extrabold tracking-tight">Gwani</span>
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-mustard text-lg font-extrabold text-ink" aria-hidden="true">{APP_INITIAL}</span>
+          {/* The name is long: two short lines on narrow phones, one line from sm up. */}
+          <span className="max-w-[7.5rem] text-sm font-extrabold leading-tight tracking-tight sm:max-w-none sm:text-lg lg:text-xl">{APP_NAME}</span>
         </Link>
         <div className="hidden min-w-0 flex-1 md:block">
           <HeaderSearch />

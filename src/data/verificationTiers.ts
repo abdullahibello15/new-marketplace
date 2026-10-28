@@ -1,4 +1,5 @@
 import type { Verification, VerificationTierOption } from '../types/marketplace';
+import { APP_NAME } from '../config/brand';
 
 export const VERIFICATION = {
   Unverified: 'unverified',
@@ -17,14 +18,14 @@ export const verificationTiers: VerificationTierOption[] = [
 {
   id: VERIFICATION.Id,
   label: 'ID-Verified',
-  description: 'Government ID checked by Gwani',
-  explanation: 'Gwani has checked this vendor’s government-issued ID, so you know who you’re dealing with. Their trade skills haven’t been assessed yet.'
+  description: `Government ID checked by ${APP_NAME}`,
+  explanation: `${APP_NAME} has checked this vendor’s government-issued ID, so you know who you’re dealing with. Their trade skills haven’t been assessed yet.`
 },
 {
   id: VERIFICATION.Trade,
   label: 'Trade-Verified',
   description: 'ID and trade skills checked',
-  explanation: 'Gwani has checked this vendor’s government-issued ID and confirmed their trade skills through a certificate or a practical test.'
+  explanation: `${APP_NAME} has checked this vendor’s government-issued ID and confirmed their trade skills through a certificate or a practical test.`
 }];
 
 

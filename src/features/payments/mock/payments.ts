@@ -3,6 +3,7 @@ import { PAYMENT_METHOD, PAYMENT_STATUS, PAYMENT_SUBJECT } from '../constants';
 import { mockJobs } from '../../jobs/mock/jobs';
 import { mockOrders } from '../../orders/mock/orders';
 import type { Payment, PaymentMethod, PaymentStatus, PaymentSubjectKind } from '../types';
+import { APP_NAME } from '../../../config/brand';
 
 /* Mock payments, relative to now. No card data anywhere: card payments are just a reference and a result. */
 
@@ -76,7 +77,7 @@ payment({
   method: PAYMENT_METHOD.Transfer,
   status: PAYMENT_STATUS.Paid,
   hoursAgo: 6 * 24,
-  transfer: { bankName: 'Wema Bank', accountNumber: '9012448871', accountName: 'Gwani Checkout ED-2293' }
+  transfer: { bankName: 'Wema Bank', accountNumber: '9012448871', accountName: `${APP_NAME} Checkout ED-2293` }
 }),
 payment({
   reference: 'GW-SEED-5007',
@@ -104,7 +105,7 @@ payment({
   method: PAYMENT_METHOD.Transfer,
   status: PAYMENT_STATUS.Refunded,
   hoursAgo: 9 * 24 + 1,
-  transfer: { bankName: 'Wema Bank', accountNumber: '9014420502', accountName: 'Gwani Checkout ED-5002' },
+  transfer: { bankName: 'Wema Bank', accountNumber: '9014420502', accountName: `${APP_NAME} Checkout ED-5002` },
   outcome: 'Order didn’t go ahead: full refund. ₦17,000 returned to you (mock).'
 }),
 // A declined card for an order she hasn't paid for yet.
@@ -132,7 +133,7 @@ payment({
   status: PAYMENT_STATUS.Expired,
   hoursAgo: 30,
   expiredHoursAgo: 29.5,
-  transfer: { bankName: 'Wema Bank', accountNumber: '9015562291', accountName: 'Gwani Checkout ED-2291' },
+  transfer: { bankName: 'Wema Bank', accountNumber: '9015562291', accountName: `${APP_NAME} Checkout ED-2291` },
   outcome: 'This payment expired before any money arrived. Start a new one to try again.'
 }),
 // Last month: cancelled late, so refunded less the late-cancellation fee (job #2280).
@@ -183,7 +184,7 @@ payment({
   hoursAgo: 40,
   cash: { vendorAmount: 10000, vendorConfirmedAt: ago(41), customerAmount: 12000, customerConfirmedAt: ago(40) },
   reviewFlag:
-  'The amounts don’t match: Bala Plumbing Services says ₦10,000 was received, the customer says ₦12,000 was paid. Gwani’s team will review it and contact you both.'
+  `The amounts don’t match: Bala Plumbing Services says ₦10,000 was received, the customer says ₦12,000 was paid. ${APP_NAME}’s team will review it and contact you both.`
 })];
 
 /** When something happened, as hours ago (for the seed helper). */
@@ -211,7 +212,7 @@ function disputePayments(existing: Payment[]): Payment[] {
     method: i % 3 === 1 ? PAYMENT_METHOD.Transfer : PAYMENT_METHOD.Card,
     status: PAYMENT_STATUS.Paid,
     hoursAgo: hoursSince(j.history.find((h) => h.status === 'scheduled')?.at ?? j.createdAt),
-    transfer: i % 3 === 1 ? { bankName: 'Wema Bank', accountNumber: `90177${j.id}0`, accountName: `Gwani Checkout ED-${j.id}` } : undefined
+    transfer: i % 3 === 1 ? { bankName: 'Wema Bank', accountNumber: `90177${j.id}0`, accountName: `${APP_NAME} Checkout ED-${j.id}` } : undefined
   })
   );
   const orders = mockOrders.

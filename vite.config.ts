@@ -1,5 +1,6 @@
 import { defineConfig, loadEnv, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
+import { APP_NAME } from './src/config/brand'
 import { DEV_ONLY_ATTRIBUTE, TEST_DEMO_PASSWORD, TEST_OTP_CODE } from './src/features/auth/testMode'
 
 /**
@@ -30,6 +31,12 @@ function testModeSafety(): Plugin {
   }
 }
 
+/** Puts the platform name (src/config/brand.ts) into index.html wherever it says %APP_NAME%, in dev and build. */
+function appName(): Plugin {
+  // 'pre': before Vite's own %ENV% replacement, which would warn about an unknown name.
+  return { name: 'app-name', transformIndexHtml: { order: 'pre', handler: (html) => html.replaceAll('%APP_NAME%', APP_NAME) } }
+}
+
 // https://vitejs.dev/config/
 export default defineConfig(({ command, mode }) => {
   // Mock sign-in (a fixed one-time code) must never ship: refuse to build while it's switched on,
@@ -40,5 +47,5 @@ export default defineConfig(({ command, mode }) => {
       'VITE_MOCK_AUTH=true is set. Mock sign-in accepts a fixed code and must never be built. Unset it (it belongs in .env.development only) and build again.'
     )
   }
-  return { plugins: [react(), ...(command === 'build' && mode === 'production' ? [testModeSafety()] : [])] }
+  return { plugins: [react(), appName(), ...(command === 'build' && mode === 'production' ? [testModeSafety()] : [])] }
 })

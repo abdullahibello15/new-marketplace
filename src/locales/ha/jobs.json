@@ -42,7 +42,7 @@
     },
     "disputed": {
       "label": "Akwai ƙorafi",
-      "description": "Abokin ciniki ya kai ƙorafi. Ma’aikatan Gwani suna dubawa."
+      "description": "Abokin ciniki ya kai ƙorafi. Ma’aikatan {{appName}} suna dubawa."
     }
   },
   "rescheduleStatus": {
@@ -66,7 +66,7 @@
   "actor": {
     "customer": "Abokin ciniki",
     "vendor": "Mai sana’a",
-    "system": "Gwani",
+    "system": "{{appName}}",
     "you": "Kai"
   },
   "timeWindow": {
@@ -187,9 +187,9 @@
     "customerTitle": "Ka kai ƙorafi",
     "vendorTitle": "Abokin ciniki ya kai ƙorafi",
     "refunded": "An mayar wa abokin ciniki {{amount}}.",
-    "reason": "Dalilin Gwani: {{reason}}",
+    "reason": "Dalilin {{appName}}: {{reason}}",
     "decided": "An yanke hukunci {{date}}.",
-    "reported": "An kai ƙorafi {{date}}. Ma’aikatan Gwani za su tuntuɓe ku duka cikin kwanakin aiki 2."
+    "reported": "An kai ƙorafi {{date}}. Ma’aikatan {{appName}} za su tuntuɓe ku duka cikin kwanakin aiki 2."
   },
   "rescheduleHistory": {
     "title": "Tarihin canza lokaci",
@@ -286,7 +286,7 @@
   },
   "panel": {
     "somethingWrong": "Akwai matsala?",
-    "startedText": "An fara aikin, don haka ba za a iya soke shi ba. Idan akwai matsala, kai ƙorafi Gwani za ta shiga tsakani.",
+    "startedText": "An fara aikin, don haka ba za a iya soke shi ba. Idan akwai matsala, kai ƙorafi {{appName}} za ta shiga tsakani.",
     "report": "Kai ƙorafi",
     "noQuote": "Babu farashi tukuna. {{name}} zai aiko shi a nan."
   },
@@ -346,7 +346,7 @@
   },
   "report": {
     "title": "Kai ƙorafi",
-    "text": "Wannan zai dakatar da aikin maimakon a tabbatar da shi. Ma’aikatan Gwani za su duba shi tare da kai da {{name}}.",
+    "text": "Wannan zai dakatar da aikin maimakon a tabbatar da shi. Ma’aikatan {{appName}} za su duba shi tare da kai da {{name}}.",
     "what": "Me ya faru ba daidai ba?",
     "happened": "Me ya faru?",
     "placeholder": "misali Bututun yana ɗiga idan an buɗe famfo.",
@@ -386,7 +386,7 @@
   },
   "toast": {
     "confirmed": "Mun gode da tabbatarwa. Da fatan ka ba aikin ƙima.",
-    "reported": "An kai ƙorafi. Ma’aikatan Gwani za su tuntuɓe ka.",
+    "reported": "An kai ƙorafi. Ma’aikatan {{appName}} za su tuntuɓe ka.",
     "reviewed": "Mun gode! An wallafa ra’ayinka.",
     "closed": "An rufe aikin.",
     "moved": "An matsar zuwa {{date}}.",
@@ -489,7 +489,7 @@
       },
       "disputed": {
         "label": "Akwai ƙorafi",
-        "description": "Abokin ciniki ya kai ƙorafi. Ma’aikatan Gwani suna dubawa, kuma kuɗin yana nan a riƙe."
+        "description": "Abokin ciniki ya kai ƙorafi. Ma’aikatan {{appName}} suna dubawa, kuma kuɗin yana nan a riƙe."
       }
     },
     "method": {
@@ -576,7 +576,7 @@
       "keep": "Bar shi",
       "browseProducts": "Duba kayayyaki",
       "signInToCheckout": "Shiga don biya",
-      "newCustomer": "Sabo a Gwani? Buɗe asusu",
+      "newCustomer": "Sabo a {{appName}}? Buɗe asusu",
       "guestNote": "An ajiye kwandon ka a wannan na’ura. Bayan ka shiga ko ka buɗe asusu, za ka dawo kai tsaye wurin biya.",
       "merged": "Mun ƙara kayan da aka ajiye a asusun ka cikin kwandon ka.",
       "syncing": "Ana shirya kwandon ka…",
@@ -681,7 +681,7 @@
     "toast": {
       "cancelled": "An soke oda #{{id}}. An sanar da {{name}}.",
       "received": "Mun gode da tabbatarwa. Odar ta kammala.",
-      "reported": "An kai ƙorafi. Ma’aikatan Gwani za su tuntuɓe ka, kuma kuɗinka yana nan a riƙe har a warware.",
+      "reported": "An kai ƙorafi. Ma’aikatan {{appName}} za su tuntuɓe ka, kuma kuɗinka yana nan a riƙe har a warware.",
       "reviewed": "Mun gode! Ra’ayinka yana kan shafinsa.",
       "skipped": "To, babu ra’ayi."
     },
@@ -789,7 +789,7 @@
     },
     "disputeResolved": {
       "title": "An warware ƙorafi",
-      "body": "Ma’aikatan Gwani sun warware matsalar {{ref}}. Duba aikin don ganin sakamako."
+      "body": "Ma’aikatan {{appName}} sun warware matsalar {{ref}}. Duba aikin don ganin sakamako."
     },
     "autoConfirmedCustomer": {
       "title": "An tabbatar da aiki kai tsaye",
@@ -809,7 +809,7 @@
     },
     "disputedCustomer": {
       "title": "Mun karɓi ƙorafinka",
-      "body": "Ma’aikatan Gwani za su duba {{ref}} su tuntuɓe ka cikin kwanakin aiki 2."
+      "body": "Ma’aikatan {{appName}} za su duba {{ref}} su tuntuɓe ka cikin kwanakin aiki 2."
     },
     "reviewed": {
       "title": "Sabon ra’ayi",
@@ -869,7 +869,7 @@
     "bookingText": "Muna tunatar da kai {{leads}} kafin kowane aikin da aka tsara. Kullum za ka gan su a Sabbin bayanai a manhajar.",
     "and": " da ",
     "push": "Sanarwar push",
-    "pushText": "A wayarka, daga manhajar Gwani.",
+    "pushText": "A wayarka, daga manhajar {{appName}}.",
     "sms": "SMS",
     "smsText": "Saƙon tes, ko babu data.",
     "phone": "Lambar waya don SMS",

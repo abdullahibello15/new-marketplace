@@ -1,11 +1,11 @@
-# Gwani Backend: Build Plan
+# ZAMANI NG MARKET HUB Backend: Build Plan
 
 > How the real backend replaces the mock services. Written October 2026, before any backend code exists.
 
 
 ## Context
 
-Gwani is a working front-end prototype with **no backend**. About 45 service files in `src/features/*/services/` hold all the data in memory and answer through `mockResponse()` in [src/services/mockApi.ts](../src/services/mockApi.ts). Real users, money and documents need a real backend before launch: a database, real authentication, Paystack payments with escrow, SMS and email, file storage, and server-side enforcement of every rule the browser checks today.
+ZAMANI NG MARKET HUB is a working front-end prototype with **no backend**. About 45 service files in `src/features/*/services/` hold all the data in memory and answer through `mockResponse()` in [src/services/mockApi.ts](../src/services/mockApi.ts). Real users, money and documents need a real backend before launch: a database, real authentication, Paystack payments with escrow, SMS and email, file storage, and server-side enforcement of every rule the browser checks today.
 
 The prototype was built with a backend in mind, which makes this easier:
 - **Every service is already async.** Each returns a Promise and throws `ApiError(message, status)`, so a service body can become a `fetch` without changing any page.

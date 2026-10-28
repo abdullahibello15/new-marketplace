@@ -1,4 +1,5 @@
 import type { DisputeOutcome, DisputeReason, JobActor, JobStatus, RescheduleStatus, TimeWindow } from './types';
+import { APP_NAME } from '../../config/brand';
 
 /**
  * Every job status, in one place. Main path:
@@ -112,7 +113,7 @@ export const JOB_STATUS_META: Record<JobStatus, {label: string;badgeClass: strin
     label: 'Disputed',
     badgeClass: 'bg-[#8F3916] text-white',
     dotClass: 'bg-white',
-    description: 'The customer reported a problem. Gwani’s team is reviewing it.'
+    description: `The customer reported a problem. ${APP_NAME}’s team is reviewing it.`
   }
 };
 
@@ -193,7 +194,7 @@ export const JOB_ACTOR = {
 export const JOB_ACTOR_LABELS: Record<JobActor, string> = {
   customer: 'Customer',
   vendor: 'Vendor',
-  system: 'Gwani'
+  system: APP_NAME
 };
 
 export const TIME_WINDOW = {

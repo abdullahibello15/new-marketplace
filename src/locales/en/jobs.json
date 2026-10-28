@@ -42,7 +42,7 @@
     },
     "disputed": {
       "label": "Disputed",
-      "description": "The customer reported a problem. Gwani’s team is reviewing it."
+      "description": "The customer reported a problem. {{appName}}’s team is reviewing it."
     }
   },
   "rescheduleStatus": {
@@ -66,7 +66,7 @@
   "actor": {
     "customer": "Customer",
     "vendor": "Vendor",
-    "system": "Gwani",
+    "system": "{{appName}}",
     "you": "You"
   },
   "timeWindow": {
@@ -187,9 +187,9 @@
     "customerTitle": "You reported a problem",
     "vendorTitle": "The customer reported a problem",
     "refunded": "{{amount}} refunded to the customer.",
-    "reason": "Gwani’s reason: {{reason}}",
+    "reason": "{{appName}}’s reason: {{reason}}",
     "decided": "Decided {{date}}.",
-    "reported": "Reported {{date}}. Gwani’s team will contact both of you within 2 working days."
+    "reported": "Reported {{date}}. {{appName}}’s team will contact both of you within 2 working days."
   },
   "rescheduleHistory": {
     "title": "Reschedule history",
@@ -286,7 +286,7 @@
   },
   "panel": {
     "somethingWrong": "Something wrong?",
-    "startedText": "The job has started, so it can’t be cancelled. If there’s a problem, report it and Gwani will step in.",
+    "startedText": "The job has started, so it can’t be cancelled. If there’s a problem, report it and {{appName}} will step in.",
     "report": "Report a problem",
     "noQuote": "No quote yet. {{name}} will send one here."
   },
@@ -346,7 +346,7 @@
   },
   "report": {
     "title": "Report a problem",
-    "text": "This puts the job on hold instead of confirming it. Gwani’s team will look into it with you and {{name}}.",
+    "text": "This puts the job on hold instead of confirming it. {{appName}}’s team will look into it with you and {{name}}.",
     "what": "What went wrong?",
     "happened": "What happened?",
     "placeholder": "e.g. The pipe still leaks when the tap is on.",
@@ -386,7 +386,7 @@
   },
   "toast": {
     "confirmed": "Thanks for confirming. Please rate the job.",
-    "reported": "Problem reported. Gwani’s team will be in touch.",
+    "reported": "Problem reported. {{appName}}’s team will be in touch.",
     "reviewed": "Thanks! Your review is posted.",
     "closed": "Job closed.",
     "moved": "Moved to {{date}}.",
@@ -489,7 +489,7 @@
       },
       "disputed": {
         "label": "Disputed",
-        "description": "The customer reported a problem. Gwani’s team is reviewing it, and the payment stays held."
+        "description": "The customer reported a problem. {{appName}}’s team is reviewing it, and the payment stays held."
       }
     },
     "method": {
@@ -576,7 +576,7 @@
       "keep": "Keep it",
       "browseProducts": "Browse products",
       "signInToCheckout": "Log in to check out",
-      "newCustomer": "New to Gwani? Create an account",
+      "newCustomer": "New to {{appName}}? Create an account",
       "guestNote": "Your cart is saved on this device. After you log in or create an account, you’ll come straight back to checkout.",
       "merged": "We added the items saved to your account to your cart.",
       "syncing": "Getting your cart ready…",
@@ -681,7 +681,7 @@
     "toast": {
       "cancelled": "Order #{{id}} cancelled. {{name}} has been told.",
       "received": "Thanks for confirming. The order is complete.",
-      "reported": "Problem reported. Gwani’s team will be in touch, and your payment stays held until it’s resolved.",
+      "reported": "Problem reported. {{appName}}’s team will be in touch, and your payment stays held until it’s resolved.",
       "reviewed": "Thanks! Your review is on their profile.",
       "skipped": "Okay, no review."
     },
@@ -789,7 +789,7 @@
     },
     "disputeResolved": {
       "title": "Dispute resolved",
-      "body": "Gwani’s team resolved the problem with {{ref}}. See the job for the outcome."
+      "body": "{{appName}}’s team resolved the problem with {{ref}}. See the job for the outcome."
     },
     "autoConfirmedCustomer": {
       "title": "Job confirmed automatically",
@@ -809,7 +809,7 @@
     },
     "disputedCustomer": {
       "title": "We’ve got your report",
-      "body": "Gwani’s team will review {{ref}} and contact you within 2 working days."
+      "body": "{{appName}}’s team will review {{ref}} and contact you within 2 working days."
     },
     "reviewed": {
       "title": "New review",
@@ -869,7 +869,7 @@
     "bookingText": "We remind you {{leads}} before each booked job. You always see them in Updates in the app.",
     "and": " and ",
     "push": "Push notifications",
-    "pushText": "On your phone, from the Gwani app.",
+    "pushText": "On your phone, from the {{appName}} app.",
     "sms": "SMS",
     "smsText": "A text message, even without data.",
     "phone": "Phone number for SMS",

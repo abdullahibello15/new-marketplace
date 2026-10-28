@@ -44,7 +44,7 @@
     "service": "Ayyuka",
     "retail": "Odar kaya"
   },
-  "cashNote": "<strong>Tsabar kuɗi ba ta da kariya.</strong> Biyan tsabar kuɗi ba ya cikin escrow ko mayar da kuɗi na Gwani. Ka ba da tsabar kuɗi ne kawai bayan an gama aikin (ko ka karɓi odarka), kuma ku duka ku tabbatar da adadin a manhajar.",
+  "cashNote": "<strong>Tsabar kuɗi ba ta da kariya.</strong> Biyan tsabar kuɗi ba ya cikin escrow ko mayar da kuɗi na {{appName}}. Ka ba da tsabar kuɗi ne kawai bayan an gama aikin (ko ka karɓi odarka), kuma ku duka ku tabbatar da adadin a manhajar.",
   "copy": {
     "copied": "An kwafa",
     "copy": "Kwafa",
@@ -101,7 +101,7 @@
     "last": "An duba na ƙarshe {{time}}",
     "check": "Sake dubawa"
   },
-  "secure": "Biya mai tsaro. Ana shigar da bayanan kati ne a shafin abokin hulɗarmu na biya kawai, ba a Gwani ba, kuma ba ma ajiye su.",
+  "secure": "Biya mai tsaro. Ana shigar da bayanan kati ne a shafin abokin hulɗarmu na biya kawai, ba a {{appName}} ba, kuma ba ma ajiye su.",
   "secureEscrow": " Ana riƙe kuɗinka a escrow har sai an gama aikin, kuma a mayar maka idan mai sana’a ya soke ko bai iya cika odarka ba.",
   "cardPanel": {
     "closed": "Ka rufe tagar biya kafin ka gama. Ba a cire kuɗi ba.",
@@ -116,7 +116,7 @@
   "hosted": {
     "title": "Biya ta {{provider}}",
     "description": "Kwaikwayon shafin biya",
-    "payGwani": "Biya Gwani",
+    "payGwani": "Biya {{appName}}",
     "reference": "Lambar shaida {{reference}}",
     "text": "A ainihin shafin za ka shigar da katinka a nan, a shafin mai ba da sabis na biya. Wannan gwajin ba ya taɓa tambayar bayanan kati. Zaɓi abin da zai faru:",
     "success": "Kwaikwayo: biya ya yi nasara",
@@ -132,7 +132,7 @@
     "confirmPaid": "Tabbatar na biya",
     "receivedTitle": "An karɓi tsabar kuɗi: {{amount}}?",
     "paidTitle": "Ka biya {{amount}}?",
-    "dialogText": "Ba za a iya canzawa bayan haka ba. Idan {{name}} ya tabbatar da wani adadi daban, ma’aikatan Gwani za su duba.",
+    "dialogText": "Ba za a iya canzawa bayan haka ba. Idan {{name}} ya tabbatar da wani adadi daban, ma’aikatan {{appName}} za su duba.",
     "yesReceived": "Eh, na karɓa",
     "yesPaid": "Eh, na biya",
     "goBack": "Koma baya",
@@ -143,15 +143,15 @@
     "intro": "Biya {{name}} <strong>{{amount}}</strong> tsabar kuɗi {{when}}. Ku duka za ku tabbatar da adadin a manhajar.",
     "choose": "Biya tsabar kuɗi bayan an gama",
     "dialogTitle": "Ka biya da tsabar kuɗi?",
-    "dialogChoose": "Biyan tsabar kuɗi ba ya cikin escrow ko mayar da kuɗi na Gwani. Har yanzu za ka iya komawa biya ta yanar gizo kafin a gama aikin.",
+    "dialogChoose": "Biyan tsabar kuɗi ba ya cikin escrow ko mayar da kuɗi na {{appName}}. Har yanzu za ka iya komawa biya ta yanar gizo kafin a gama aikin.",
     "yes": "Eh, zan biya tsabar kuɗi",
-    "toastMismatch": "Adadin bai yi daidai ba, don haka ma’aikatan Gwani za su duba.",
+    "toastMismatch": "Adadin bai yi daidai ba, don haka ma’aikatan {{appName}} za su duba.",
     "toastBoth": "Ɓangarorin biyu sun tabbatar da {{amount}}. Biyan ya kammala.",
     "toastWaitCustomer": "Mun gode. Ana jiran abokin ciniki ya tabbatar.",
     "toastWaitVendor": "Mun gode. Ana jiran mai sana’a ya tabbatar."
   },
   "dispute": {
-    "title": "Gwaji · Shugaban Gwani: warware wannan ƙorafin",
+    "title": "Gwaji · Shugaban {{appName}}: warware wannan ƙorafin",
     "text": "Yana maye gurbin kayan aikin ma’aikatan dubawa. Kowane zaɓi yana daidaita kuɗin da ke escrow.",
     "dialogText": "Mayar wa {{customer}}: {{amount}}. Sauran kuɗin da aka riƙe za a sakar wa {{vendor}}, bayan cire kwamishon. Ba za a iya janyewa ba.",
     "resolve": "Warware ƙorafi",
@@ -163,7 +163,7 @@
     "alreadyRefunded": " An riga an mayar da {{amount}}.",
     "heldVendorJob": "Za a sakar maka idan {{customer}} ya tabbatar, ko kai tsaye awa {{hours}} bayan ka nuna an gama. Ana cire kwamishon dandali kashi {{percent}}% lokacin sakarwa.",
     "heldVendorOrder": "Za a sakar maka idan {{customer}} ya tabbatar, ko kai tsaye awa {{hours}} bayan ka nuna an kai ko an ɗauka. Ana cire kwamishon dandali kashi {{percent}}% lokacin sakarwa.",
-    "disputed": "A dakatar yayin da ma’aikatan Gwani ke duba ƙorafin. Ba wanda zai iya motsa wannan kuɗin har sai an warware.",
+    "disputed": "A dakatar yayin da ma’aikatan {{appName}} ke duba ƙorafin. Ba wanda zai iya motsa wannan kuɗin har sai an warware.",
     "releasedCustomer": "An sakar wa {{vendor}} a {{date}}.",
     "releasedVendor": "An sakar maka a {{date}}: {{net}} bayan kwamishon {{commission}}.",
     "refundedCustomer": "An mayar maka {{amount}} a {{date}}.",
@@ -228,7 +228,7 @@
     "refundWith": "Mayar da kuɗi: {{note}}",
     "otherCharges": "Wasu caji",
     "adjustment": "Gyara",
-    "noteDisputed": "A dakatar yayin da ma’aikatan Gwani ke duba ƙorafi.",
+    "noteDisputed": "A dakatar yayin da ma’aikatan {{appName}} ke duba ƙorafi.",
     "noteHeld": "A riƙe lafiya a escrow har sai an tabbatar da aikin ko odar.",
     "noteCashVendor": "An biya maka tsabar kuɗi kai tsaye: ba a cire kwamishon ta Gwani ba.",
     "location": "{{lga}}, Jihar Neja",
@@ -268,9 +268,9 @@
     "codeLabel": "Lambar USSD ta {{bank}}",
     "dial": "Danna {{code}}",
     "step1": "Danna lambar daga wayar da ka yi rajista da {{bank}}.",
-    "step2": "Tabbatar da biyan <strong>{{amount}}</strong> ga Gwani ka shigar da PIN ɗinka a allon wayarka.",
+    "step2": "Tabbatar da biyan <strong>{{amount}}</strong> ga {{appName}} ka shigar da PIN ɗinka a allon wayarka.",
     "step3": "Dawo nan. Za mu tabbatar da kanmu.",
-    "fee": "Bankinka zai iya cajin ɗan kuɗin USSD. Kada ka taɓa ba kowa PIN ɗinka, har da Gwani ko mai sana’a.",
+    "fee": "Bankinka zai iya cajin ɗan kuɗin USSD. Kada ka taɓa ba kowa PIN ɗinka, har da {{appName}} ko mai sana’a.",
     "simulatorTitle": "abin da kake yi a wayarka",
     "send": "Gwaji: aika wannan amsar"
   },
@@ -341,9 +341,9 @@
     "goToJob": "Je aiki #{{id}}",
     "goToOrder": "Je oda #{{id}}",
     "somethingWrong": "Akwai matsala?",
-    "reportText": "Kai ƙorafi game da wannan biyan. Ma’aikatan Gwani za su duba, kuma kuɗin da ke riƙe a escrow zai ci gaba da kasancewa a riƙe har a warware.",
+    "reportText": "Kai ƙorafi game da wannan biyan. Ma’aikatan {{appName}} za su duba, kuma kuɗin da ke riƙe a escrow zai ci gaba da kasancewa a riƙe har a warware.",
     "report": "Kai ƙorafi game da wannan biyan",
-    "toastReported": "An kai ƙorafi. Ma’aikatan Gwani za su tuntuɓe ka, kuma biyan zai ci gaba da kasancewa a riƙe har a warware."
+    "toastReported": "An kai ƙorafi. Ma’aikatan {{appName}} za su tuntuɓe ka, kuma biyan zai ci gaba da kasancewa a riƙe har a warware."
   },
   "payable": {
     "jobTitle": "Aiki #{{id}}",
@@ -356,7 +356,7 @@
     "jobDeclined": "Mai sana’a ya ƙi wannan aikin.",
     "jobQuoteRejected": "Ka ƙi farashin.",
     "jobCancelled": "An soke wannan aikin.",
-    "jobOnHold": "Biya yana a dakatar yayin da Gwani ke duba ƙorafin da ka kai.",
+    "jobOnHold": "Biya yana a dakatar yayin da {{appName}} ke duba ƙorafin da ka kai.",
     "orderDeclined": "Mai sana’a ya ƙi wannan odar.",
     "orderCancelled": "An soke wannan odar.",
     "orderOutOfStock": "Wannan odar ta ƙare saboda babu kaya ko ɗaya.",
@@ -376,7 +376,7 @@
     "expired": "Wannan biyan ya ƙare kafin wani kuɗi ya iso. Fara sabo don sake gwadawa.",
     "short": "Mun karɓi {{received}}, saura {{short}}. Tura ƙarin {{short}} zuwa asusun ɗaya kafin ya ƙare.",
     "replaced": "An maye gurbinsa da sabon biya.",
-    "mismatch": "Adadin bai yi daidai ba: {{vendor}} ya ce an karɓi {{vendorAmount}}, abokin ciniki ya ce an biya {{customerAmount}}. Ma’aikatan Gwani za su duba su tuntuɓe ku duka.",
+    "mismatch": "Adadin bai yi daidai ba: {{vendor}} ya ce an karɓi {{vendorAmount}}, abokin ciniki ya ce an biya {{customerAmount}}. Ma’aikatan {{appName}} za su duba su tuntuɓe ku duka.",
     "cardDeclined": "Bankinka ya ƙi katin. Ba a cire kuɗi ba.",
     "ussdCancelled": "An soke biyan a wayarka. Ba a cire kuɗi ba."
   },
@@ -395,10 +395,10 @@
     "noReceipt": "Babu rasiti har sai biyan ya tafi.",
     "tooManyReceipts": "Wannan ya fi rasitoci {{max}}. Zaɓi gajeren lokaci.",
     "orderLoad": "Ba mu iya lodo wannan odar ba.",
-    "orderDisputed": "Ka riga ka kai ƙorafi game da wannan odar. Ma’aikatan Gwani suna dubawa.",
+    "orderDisputed": "Ka riga ka kai ƙorafi game da wannan odar. Ma’aikatan {{appName}} suna dubawa.",
     "orderReportWhen": "Za ka iya kai ƙorafi da zarar an kai ko an ɗauki odar, har sai ka tabbatar ka karɓa.",
     "jobLoad": "Ba mu iya lodo wannan aikin ba.",
-    "jobDisputed": "Ka riga ka kai ƙorafi game da wannan aikin. Ma’aikatan Gwani suna dubawa.",
+    "jobDisputed": "Ka riga ka kai ƙorafi game da wannan aikin. Ma’aikatan {{appName}} suna dubawa.",
     "jobReportWhen": "Za ka iya kai ƙorafi yayin da ake aikin ko ana jiran tabbatarwarka. Wannan aikin yana matsayin “{{status}}”."
   }
 }

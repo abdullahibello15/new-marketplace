@@ -3,6 +3,7 @@ import { formatDateIn } from '../../utils/format';
 import type { AppLanguage } from '../../i18n/config';
 import type { JobParty } from '../jobs/types';
 import type { ReminderMessage, ReminderRuleId, SubscriptionAudience, SubscriptionReminderPhase } from './types';
+import { APP_NAME } from '../../config/brand';
 
 type Wording = {pushTitle: string;pushBody: string;sms: string;};
 
@@ -25,7 +26,7 @@ export const REMINDER_TEMPLATES: Record<AppLanguage, Record<ReminderRuleId, Reco
       customer: {
         pushTitle: 'Booking tomorrow',
         pushBody: 'Reminder: your [service] with [vendor] is [day] at [time]. [address]',
-        sms: 'Gwani: Your [service] with [vendor] is [day] at [time]. [address]'
+        sms: `${APP_NAME}: Your [service] with [vendor] is [day] at [time]. [address]`
       },
       vendor: {
         pushTitle: 'Job tomorrow',
@@ -37,7 +38,7 @@ export const REMINDER_TEMPLATES: Record<AppLanguage, Record<ReminderRuleId, Reco
       customer: {
         pushTitle: 'Starting in [lead]',
         pushBody: 'Your [service] with [vendor] starts in [lead], at [time]. [address]',
-        sms: 'Gwani: Your [service] with [vendor] starts in [lead], at [time]. [address]'
+        sms: `${APP_NAME}: Your [service] with [vendor] starts in [lead], at [time]. [address]`
       },
       vendor: {
         pushTitle: 'Job in [lead]',
@@ -51,7 +52,7 @@ export const REMINDER_TEMPLATES: Record<AppLanguage, Record<ReminderRuleId, Reco
       customer: {
         pushTitle: 'Tsari gobe',
         pushBody: 'Tunatarwa: [service] ɗinka da [vendor] [day] da [time]. [address]',
-        sms: 'Gwani: [service] ɗinka da [vendor] [day] da [time]. [address]'
+        sms: `${APP_NAME}: [service] ɗinka da [vendor] [day] da [time]. [address]`
       },
       vendor: {
         pushTitle: 'Aiki gobe',
@@ -63,7 +64,7 @@ export const REMINDER_TEMPLATES: Record<AppLanguage, Record<ReminderRuleId, Reco
       customer: {
         pushTitle: 'Zai fara cikin [lead]',
         pushBody: '[service] ɗinka da [vendor] zai fara cikin [lead], da [time]. [address]',
-        sms: 'Gwani: [service] ɗinka da [vendor] zai fara cikin [lead], da [time]. [address]'
+        sms: `${APP_NAME}: [service] ɗinka da [vendor] zai fara cikin [lead], da [time]. [address]`
       },
       vendor: {
         pushTitle: 'Aiki cikin [lead]',

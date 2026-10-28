@@ -1,5 +1,6 @@
 import { ESCROW_CONFIG } from '../payments/escrow/escrowConfig';
 import type { FulfilmentMethod, OrderActor, OrderStatus } from './types';
+import { APP_NAME } from '../../config/brand';
 
 /**
  * Without a reply, a delivered or collected order completes automatically after this long. It's the
@@ -147,7 +148,7 @@ export const ORDER_STATUS_META: Record<OrderStatus, {label: string;badgeClass: s
     label: 'Disputed',
     badgeClass: 'bg-[#8F3916] text-white',
     dotClass: 'bg-white',
-    description: 'The customer reported a problem. Gwani’s team is reviewing it, and the payment stays held.'
+    description: `The customer reported a problem. ${APP_NAME}’s team is reviewing it, and the payment stays held.`
   }
 };
 
@@ -191,7 +192,7 @@ export const ORDER_ACTOR = {
 export const ORDER_ACTOR_LABELS: Record<OrderActor, string> = {
   customer: 'Customer',
   vendor: 'Vendor',
-  system: 'Gwani'
+  system: APP_NAME
 };
 
 

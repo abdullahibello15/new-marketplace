@@ -6,6 +6,7 @@ import { LanguageSelector } from '../../../components/LanguageSelector';
 import { AUTH_ROUTES } from '../../auth/constants';
 import { LANDING_NAV, MAIN_ID, type LandingSectionId } from '../constants';
 import { LandingCtas } from './LandingCtas';
+import { APP_INITIAL, APP_NAME } from '../../../config/brand';
 
 interface LandingHeaderProps {
   from?: string;
@@ -72,8 +73,8 @@ export function LandingHeader({ from, menuOpen, onMenuChange, onOpenSection }: L
       </a>
       <div className="mx-auto flex h-full max-w-7xl items-center gap-3 px-4 sm:px-6">
         <Link to="/" aria-label={t('nav.home')} className="flex shrink-0 items-center gap-2 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-pine/40">
-          <span className="landing-display flex h-10 w-10 items-center justify-center rounded-full border border-[#B98C34]/70 bg-white/60 text-xl text-[#1F4B4D]" aria-hidden="true">G</span>
-          <span className="landing-display text-2xl text-[#16302F]">Gwani</span>
+          <span className="landing-display flex h-10 w-10 items-center justify-center rounded-full border border-[#B98C34]/70 bg-white/60 text-xl text-[#1F4B4D]" aria-hidden="true">{APP_INITIAL}</span>
+          <span className="landing-display max-w-[8rem] text-base leading-tight text-[#16302F] sm:max-w-none sm:text-2xl">{APP_NAME}</span>
         </Link>
 
         <nav aria-label={t('nav.label')} className="ml-4 hidden xl:block">

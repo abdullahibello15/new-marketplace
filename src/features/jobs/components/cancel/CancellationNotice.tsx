@@ -4,12 +4,13 @@ import { XCircleIcon } from 'lucide-react';
 import { Price } from '../../../../components/ui/Price';
 import { JOB_ACTOR } from '../../constants';
 import type { Job, JobCancellation, JobParty } from '../../types';
+import { APP_NAME } from '../../../../config/brand';
 
 /** Who cancelled, when, why, and any fee. Shown to both sides on a cancelled job. */
 export function CancellationNotice({ job, cancellation, viewer }: {job: Job;cancellation: JobCancellation;viewer: JobParty;}) {
   const { t } = useTranslation('jobs');
   const who =
-  cancellation.by === viewer ? null : cancellation.by === JOB_ACTOR.Customer ? job.customerName : cancellation.by === JOB_ACTOR.Vendor ? job.vendorName : 'Gwani';
+  cancellation.by === viewer ? null : cancellation.by === JOB_ACTOR.Customer ? job.customerName : cancellation.by === JOB_ACTOR.Vendor ? job.vendorName : APP_NAME;
   return (
     <section aria-labelledby="cancelled-heading" className="rounded-2xl border border-line bg-sand p-4 lg:p-5">
       <h2 id="cancelled-heading" className="flex items-center gap-2 text-base font-bold text-ink">

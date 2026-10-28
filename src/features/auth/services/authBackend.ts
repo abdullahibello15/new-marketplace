@@ -9,6 +9,7 @@ import { ADMIN_ROLE, isAdminRole } from '../../admin/config/roles';
 import { randomDigits, randomToken } from '../utils/random';
 import { endUserSessionsNow } from './sessionBackend';
 import type { OtpRequestResult, SessionEndReason, User, VerifyOtpResult } from '../types';
+import { APP_NAME } from '../../../config/brand';
 
 export { randomDigits, randomToken };
 
@@ -265,7 +266,7 @@ export function requestOtpNow(raw: string, now: Date): OtpRequestResult {
   simulateNetworkFailure(phone);
   const challenge = loginOtp.issue(phone, now);
   const code = challenge.code ?? '';
-  devSend({ kind: 'otp', to: phone, text: `Your Gwani code is ${code}. It expires in ${OTP.expiresMinutes} minutes.`, value: code }, now);
+  devSend({ kind: 'otp', to: phone, text: `Your ${APP_NAME} code is ${code}. It expires in ${OTP.expiresMinutes} minutes.`, value: code }, now);
   return { phone, expiresAt: challenge.expiresAt.toISOString(), resendAvailableAt: challenge.resendAvailableAt.toISOString(), devCode: MOCK_AUTH ? code : null };
 }
 
@@ -423,7 +424,7 @@ export function sendEmailCodeNow(user: StoredUser, now: Date): CodeSent {
   if (!user.email) throw new AuthError('invalid_email', i18n.t('auth:error.invalidEmail'), 400);
   const challenge = emailOtp.issue(user.email, now);
   const code = challenge.code ?? '';
-  devSend({ kind: 'email_code', to: user.email, text: `Your Gwani email code is ${code}.`, value: code }, now);
+  devSend({ kind: 'email_code', to: user.email, text: `Your ${APP_NAME} email code is ${code}.`, value: code }, now);
   return { target: user.email, expiresAt: challenge.expiresAt.toISOString(), resendAvailableAt: challenge.resendAvailableAt.toISOString(), devCode: MOCK_AUTH ? code : null };
 }
 
@@ -454,7 +455,7 @@ export function sendPhoneCodeNow(user: StoredUser, rawPhone: string, now: Date):
   const saved = phone === user.phone ? user : saveUser({ ...user, phone, phoneVerified: false });
   const challenge = loginOtp.issue(phone, now);
   const code = challenge.code ?? '';
-  devSend({ kind: 'otp', to: phone, text: `Your Gwani code is ${code}. It expires in ${OTP.expiresMinutes} minutes.`, value: code }, now);
+  devSend({ kind: 'otp', to: phone, text: `Your ${APP_NAME} code is ${code}. It expires in ${OTP.expiresMinutes} minutes.`, value: code }, now);
   return { user: saved, sent: { target: phone, expiresAt: challenge.expiresAt.toISOString(), resendAvailableAt: challenge.resendAvailableAt.toISOString(), devCode: MOCK_AUTH ? code : null } };
 }
 

@@ -44,7 +44,7 @@
     "service": "Services",
     "retail": "Retail orders"
   },
-  "cashNote": "<strong>Cash isn’t protected.</strong> Cash payments aren’t covered by Gwani’s escrow or refunds. Only hand over cash once the work is done (or you have your order), and both confirm the amount in the app.",
+  "cashNote": "<strong>Cash isn’t protected.</strong> Cash payments aren’t covered by {{appName}}’s escrow or refunds. Only hand over cash once the work is done (or you have your order), and both confirm the amount in the app.",
   "copy": {
     "copied": "Copied",
     "copy": "Copy",
@@ -101,7 +101,7 @@
     "last": "Last checked {{time}}",
     "check": "Check again"
   },
-  "secure": "Secure payment. Card details are entered only on our payment partner’s page, never in Gwani, and we never store them.",
+  "secure": "Secure payment. Card details are entered only on our payment partner’s page, never in {{appName}}, and we never store them.",
   "secureEscrow": " Your money is held in escrow until the work is done, and refunded if the vendor cancels or can’t fill your order.",
   "cardPanel": {
     "closed": "You closed the payment window before finishing. No money was taken.",
@@ -116,7 +116,7 @@
   "hosted": {
     "title": "{{provider}} checkout",
     "description": "Simulated hosted payment page",
-    "payGwani": "Pay Gwani",
+    "payGwani": "Pay {{appName}}",
     "reference": "Reference {{reference}}",
     "text": "On the real page you’d enter your card here, on the payment provider’s site. This demo never asks for card details. Choose what happens:",
     "success": "Simulate: payment succeeds",
@@ -132,7 +132,7 @@
     "confirmPaid": "Confirm I paid",
     "receivedTitle": "Cash received: {{amount}}?",
     "paidTitle": "You paid {{amount}}?",
-    "dialogText": "This can’t be changed afterwards. If {{name}} confirms a different amount, Gwani’s team will review it.",
+    "dialogText": "This can’t be changed afterwards. If {{name}} confirms a different amount, {{appName}}’s team will review it.",
     "yesReceived": "Yes, I received it",
     "yesPaid": "Yes, I paid it",
     "goBack": "Go back",
@@ -143,15 +143,15 @@
     "intro": "Pay {{name}} <strong>{{amount}}</strong> in cash {{when}}. You’ll both confirm the amount in the app.",
     "choose": "Pay cash on completion",
     "dialogTitle": "Pay in cash?",
-    "dialogChoose": "Cash payments aren’t covered by Gwani’s escrow or refunds. You can still switch to an online method before the work is done.",
+    "dialogChoose": "Cash payments aren’t covered by {{appName}}’s escrow or refunds. You can still switch to an online method before the work is done.",
     "yes": "Yes, I’ll pay cash",
-    "toastMismatch": "The amounts don’t match, so Gwani’s team will review it.",
+    "toastMismatch": "The amounts don’t match, so {{appName}}’s team will review it.",
     "toastBoth": "Both sides confirmed {{amount}}. Payment complete.",
     "toastWaitCustomer": "Thanks. Waiting for the customer to confirm.",
     "toastWaitVendor": "Thanks. Waiting for the vendor to confirm."
   },
   "dispute": {
-    "title": "Demo · Gwani admin: resolve this dispute",
+    "title": "Demo · {{appName}} admin: resolve this dispute",
     "text": "Stands in for the review team’s tool. Each choice settles the escrowed money.",
     "dialogText": "Refund to {{customer}}: {{amount}}. The rest of the held money is released to {{vendor}}, less commission. This can’t be undone.",
     "resolve": "Resolve dispute",
@@ -163,7 +163,7 @@
     "alreadyRefunded": " {{amount}} has already been refunded.",
     "heldVendorJob": "Released to you when {{customer}} confirms, or automatically {{hours}} hours after you mark it done. A {{percent}}% platform commission is taken at release.",
     "heldVendorOrder": "Released to you when {{customer}} confirms, or automatically {{hours}} hours after you mark it delivered or collected. A {{percent}}% platform commission is taken at release.",
-    "disputed": "On hold while Gwani’s team reviews the reported problem. Nobody can move this money until it’s resolved.",
+    "disputed": "On hold while {{appName}}’s team reviews the reported problem. Nobody can move this money until it’s resolved.",
     "releasedCustomer": "Released to {{vendor}} on {{date}}.",
     "releasedVendor": "Released to you on {{date}}: {{net}} after {{commission}} commission.",
     "refundedCustomer": "{{amount}} refunded to you on {{date}}.",
@@ -228,7 +228,7 @@
     "refundWith": "Refund: {{note}}",
     "otherCharges": "Other charges",
     "adjustment": "Adjustment",
-    "noteDisputed": "On hold while Gwani’s team reviews a reported problem.",
+    "noteDisputed": "On hold while {{appName}}’s team reviews a reported problem.",
     "noteHeld": "Held securely in escrow until the work or order is confirmed.",
     "noteCashVendor": "Paid in cash directly to you: no commission was taken through Gwani.",
     "location": "{{lga}}, Niger State",
@@ -268,9 +268,9 @@
     "codeLabel": "{{bank}} USSD code",
     "dial": "Dial {{code}}",
     "step1": "Dial the code from the phone number registered with {{bank}}.",
-    "step2": "Confirm the payment of <strong>{{amount}}</strong> to Gwani and enter your PIN on your phone’s screen.",
+    "step2": "Confirm the payment of <strong>{{amount}}</strong> to {{appName}} and enter your PIN on your phone’s screen.",
     "step3": "Come back here. We’ll confirm it automatically.",
-    "fee": "Your bank may charge a small USSD fee. Never share your PIN, including with Gwani or the vendor.",
+    "fee": "Your bank may charge a small USSD fee. Never share your PIN, including with {{appName}} or the vendor.",
     "simulatorTitle": "what you do on your phone",
     "send": "Demo: send that response"
   },
@@ -341,9 +341,9 @@
     "goToJob": "Go to job #{{id}}",
     "goToOrder": "Go to order #{{id}}",
     "somethingWrong": "Something wrong?",
-    "reportText": "Report a problem with this payment. Gwani’s team reviews it, and money held in escrow stays held until it’s resolved.",
+    "reportText": "Report a problem with this payment. {{appName}}’s team reviews it, and money held in escrow stays held until it’s resolved.",
     "report": "Report a problem with this payment",
-    "toastReported": "Problem reported. Gwani’s team will be in touch, and the payment stays held until it’s resolved."
+    "toastReported": "Problem reported. {{appName}}’s team will be in touch, and the payment stays held until it’s resolved."
   },
   "payable": {
     "jobTitle": "Job #{{id}}",
@@ -356,7 +356,7 @@
     "jobDeclined": "The vendor declined this job.",
     "jobQuoteRejected": "You turned down the quote.",
     "jobCancelled": "This job was cancelled.",
-    "jobOnHold": "Payment is on hold while Gwani reviews the problem you reported.",
+    "jobOnHold": "Payment is on hold while {{appName}} reviews the problem you reported.",
     "orderDeclined": "The vendor declined this order.",
     "orderCancelled": "This order was cancelled.",
     "orderOutOfStock": "This order ended because nothing was in stock.",
@@ -376,7 +376,7 @@
     "expired": "This payment expired before any money arrived. Start a new one to try again.",
     "short": "We received {{received}}, which is {{short}} short. Send {{short}} more to the same account before it expires.",
     "replaced": "Replaced by a new payment.",
-    "mismatch": "The amounts don’t match: {{vendor}} says {{vendorAmount}} was received, the customer says {{customerAmount}} was paid. Gwani’s team will review it and contact you both.",
+    "mismatch": "The amounts don’t match: {{vendor}} says {{vendorAmount}} was received, the customer says {{customerAmount}} was paid. {{appName}}’s team will review it and contact you both.",
     "cardDeclined": "Your bank declined the card. No money was taken.",
     "ussdCancelled": "The payment was cancelled on your phone. No money was taken."
   },
@@ -395,10 +395,10 @@
     "noReceipt": "There’s no receipt until the payment goes through.",
     "tooManyReceipts": "That’s more than {{max}} receipts. Choose a shorter date range.",
     "orderLoad": "We couldn’t load this order.",
-    "orderDisputed": "You’ve already reported a problem with this order. Gwani’s team is reviewing it.",
+    "orderDisputed": "You’ve already reported a problem with this order. {{appName}}’s team is reviewing it.",
     "orderReportWhen": "You can report a problem once the order is delivered or collected, until you confirm you received it.",
     "jobLoad": "We couldn’t load this job.",
-    "jobDisputed": "You’ve already reported a problem with this job. Gwani’s team is reviewing it.",
+    "jobDisputed": "You’ve already reported a problem with this job. {{appName}}’s team is reviewing it.",
     "jobReportWhen": "You can report a problem while the work is in progress or waiting for your confirmation. This job is {{status}}."
   }
 }

@@ -7,6 +7,7 @@ import { PAYMENT_SUBJECT, TRANSACTION_STATUS_META } from '../constants';
 import { formatSignedNaira } from './receiptData';
 import type { jsPDF } from 'jspdf';
 import type { ReceiptDocument } from '../types';
+import { APP_NAME } from '../../../config/brand';
 
 /*
  * Receipt PDFs, generated in the browser with jsPDF. Text uses Noto Sans (embedded), because jsPDF's
@@ -222,7 +223,7 @@ async function createPdf(docs: readonly ReceiptDocument[], title: string): Promi
   const [{ jsPDF: JsPdf }, fonts] = await Promise.all([import('jspdf'), loadFonts()]);
   const pdf = new JsPdf({ unit: 'mm', format: 'a4' });
   registerFonts(pdf, fonts);
-  pdf.setProperties({ title, creator: docs[0]?.platform.name ?? 'Gwani' });
+  pdf.setProperties({ title, creator: docs[0]?.platform.name ?? APP_NAME });
   drawReceipts(pdf, docs);
   return pdf;
 }

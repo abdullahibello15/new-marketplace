@@ -1,5 +1,6 @@
+import { APP_NAME } from '../../config/brand';
 /** Who subscription payments go to (the platform, not a vendor). */
-export const GWANI_PAYEE = { id: 'gwani', name: 'Gwani' } as const;
+export const GWANI_PAYEE = { id: 'gwani', name: APP_NAME } as const;
 
 /**
  * The platform as printed on every receipt (screen and PDF).

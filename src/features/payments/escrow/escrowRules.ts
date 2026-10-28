@@ -7,6 +7,7 @@ import { ESCROW_CONFIG } from './escrowConfig';
 import type { JobStatus } from '../../jobs/types';
 import type { OrderStatus } from '../../orders/types';
 import type { EarningsBuckets, Escrow, EscrowLedgerEntry, EscrowStatus, EscrowTotals, Payment, PaymentSubjectKind } from '../types';
+import { APP_NAME } from '../../../config/brand';
 
 /*
  * Escrow money rules. Pure functions only: no state, no dates read from the clock, no I/O. The escrow
@@ -62,7 +63,7 @@ export function jobEscrowDecision(change: JobEscrowChange, held: number): Escrow
         { kind: 'refund', amount: held, note: 'Cancelled before the job started: full refund' };
       }
     case JOB_STATUS.Disputed:
-      return { kind: 'dispute', note: 'Problem reported: held until Gwani’s team resolves it' };
+      return { kind: 'dispute', note: `Problem reported: held until ${APP_NAME}’s team resolves it` };
     case JOB_STATUS.InProgress:
     case JOB_STATUS.AwaitingConfirmation:
       return change.from === JOB_STATUS.Disputed ? { kind: 'resume', note: 'Dispute dismissed: held until the job is confirmed' } : NONE;
@@ -89,7 +90,7 @@ const ORDER_ENDED: readonly OrderStatus[] = [ORDER_STATUS.Cancelled, ORDER_STATU
 export function orderEscrowDecision(change: OrderEscrowChange, held: number): EscrowDecision {
   if (held <= 0 || change.from === change.to) return NONE;
   const fromDispute = change.from === ORDER_STATUS.Disputed;
-  if (change.to === ORDER_STATUS.Disputed) return { kind: 'dispute', note: 'Problem reported: held until Gwani’s team resolves it' };
+  if (change.to === ORDER_STATUS.Disputed) return { kind: 'dispute', note: `Problem reported: held until ${APP_NAME}’s team resolves it` };
   if (fromDispute && (change.to === ORDER_STATUS.Delivered || change.to === ORDER_STATUS.Collected)) {
     return { kind: 'resume', note: 'Dispute dismissed: held until the customer confirms receipt' };
   }
