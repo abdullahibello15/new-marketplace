@@ -9,6 +9,7 @@
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "preview": "npx vite preview",
     "test": "vitest run",
+    "test:tz": "TZ=Africa/Lagos vitest run && TZ=UTC vitest run",
     "i18n:check": "vitest run src/i18n/locales.test.ts"
   },
   "dependencies": {

@@ -279,10 +279,14 @@ describe('subscriptions', () => {
   });
 
   it('counts back-to-back monthly renewals as renewed', () => {
+    // Local start and end of day, like real covers: UTC end-of-day times would land on the next day in
+    // timezones east of UTC (e.g. Africa/Lagos), outside the local-day range.
+    const dayStart = (m: number, day: number) => new Date(2026, m - 1, day).toISOString();
+    const dayEnd = (m: number, day: number) => new Date(2026, m - 1, day, 23, 59, 59, 999).toISOString();
     const monthly = coverByVendor([
-    cover('m', '2026-07-01T00:00:00.000Z', '2026-07-31T23:59:59.999Z'),
-    cover('m', '2026-07-31T00:00:00.000Z', '2026-08-31T23:59:59.999Z'),
-    cover('m', '2026-08-31T00:00:00.000Z', '2026-09-30T23:59:59.999Z')]
+    cover('m', dayStart(7, 1), dayEnd(7, 31)),
+    cover('m', dayStart(7, 31), dayEnd(8, 31)),
+    cover('m', dayStart(8, 31), dayEnd(9, 30))]
     );
     expect(renewalRate(monthly, range('2026-07-01', '2026-08-31'), NOW)).toEqual({ ended: 2, renewed: 2, rate: 100 });
   });
