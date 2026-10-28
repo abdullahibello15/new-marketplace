@@ -109,7 +109,7 @@ times are stored.
   - `admin_staff`
   - `verification_applications` + `verification_documents` (S3 keys; ID numbers **encrypted with KMS**, reveal is audited)
   - `disputes`, `dispute_messages`, `evidence_requests`, `moderation_items`, `appeals`
-  - `audit_log` (append-only: a DB trigger rejects UPDATE and DELETE)
+  - `audit_log` (append-only: a DB trigger rejects UPDATE, DELETE and TRUNCATE, and the app role lacks those grants; see §6)
   - `profile_invites`, `vendor_imports`
 - **Investor (later):** `stakes`, `investor_ledger_entries`, `payout_requests`
 
@@ -254,6 +254,22 @@ app.post('/v1/checkout', { ...customerOnly, schema: { body: checkoutSchema } }, 
 - `RECEIPT_ISSUER` business details, a Paystack business account, and Termii sender ID approval → Phase 1/4 (start early; approvals take weeks).
 - Session timing values marked PLACEHOLDER in `sessionConfig.ts` → Phase 1.
 - Plan features and limits, bundle tiers, dividend rules → Phase 7/8.
+- **Web toolchain upgrade, on its own branch (not Phase 0):** the web app's dev and test tools carry the critical and
+  high `npm audit` findings: vitest 2.1 (and its tinypool, vite-node and @vitest/mocker) and vite 5.4 (and its
+  esbuild). None ship in the production bundle. Upgrade vitest and vite to their current majors (the API already
+  uses vitest 5), fix what breaks, then run the full `npm run test:tz` (both timezones), `lint`, `typecheck` and a
+  production `build`. Never `npm audit fix --force`.
+  - On that branch or the next, react-router-dom 6 → 7: the only finding in what ships (2 moderate). Not exploitable
+    here today: `safeReturnPath` already rejects backslash paths (the open-redirect advisory), and the other
+    advisory affects SSR hydration only.
+- Audit what ships per workspace: `npm audit --omit=dev --workspace apps/web` (and `apps/api`). From the root,
+  `--omit=dev` audits only the root package and misses every workspace's production dependencies.
+- The root `package.json` lists `drizzle-orm` on purpose: npm kept installing it only under `apps/api`, where
+  drizzle-kit (hoisted to the root) can't resolve it. Remove it once npm hoists it on its own.
+- **Before launch: the production app's DB role must not own `audit_log`.** Migrations run as a separate owner
+  role; the app role gets SELECT and INSERT only, with UPDATE, DELETE and TRUNCATE revoked. The trigger alone isn't
+  enough: a superuser or the table owner can disable triggers (`ALTER TABLE … DISABLE TRIGGER`). Same for the later
+  append-only tables (`ledger_entries`, `job_events`). Locally, one `zamani` role owns everything.
 
 ---
 
