@@ -35,9 +35,8 @@ jobs:
       - run: npm run typecheck
 
   web-unit:
-    # The domain rules depend on the server's timezone (BACKEND_PLAN §3), so they run under both.
-    # packages/domain joins this job when it is extracted.
-    name: Web unit tests (TZ=${{ matrix.tz }})
+    # The domain rules depend on the server's timezone (BACKEND_PLAN §3), so they and the web app run under both.
+    name: Web and domain unit tests (TZ=${{ matrix.tz }})
     runs-on: ubuntu-latest
     timeout-minutes: 15
     strategy:
@@ -53,7 +52,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
       - run: npm ci
-      - run: npm test --workspace apps/web
+      - run: npm test --workspace apps/web --workspace packages/domain
 
   api-unit:
     name: API unit tests
@@ -173,7 +172,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
       - name: Audit each workspace
         run: |
-          for workspace in apps/web apps/api packages/contracts; do
+          for workspace in apps/web apps/api packages/contracts packages/domain; do
             echo "--- $workspace"
             if ! npm audit --omit=dev --workspace "$workspace"; then
               echo "::warning title=npm audit::$workspace has production dependencies with known vulnerabilities (see this job's log)"

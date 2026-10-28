@@ -10,12 +10,14 @@ WORKDIR /app
 ENV npm_config_update_notifier=false npm_config_fund=false npm_config_audit=false
 
 # Only the manifests, so the dependency layers stay cached until a package.json or the lockfile changes.
-# apps/web's manifest is needed because the lockfile lists it as a workspace; none of its code is copied.
+# apps/web's and packages/domain's manifests are needed because the lockfile lists them as workspaces; none
+# of their code is copied (the API doesn't use the domain package yet).
 FROM base AS manifests
 COPY package.json package-lock.json ./
 COPY apps/api/package.json apps/api/
 COPY apps/web/package.json apps/web/
 COPY packages/contracts/package.json packages/contracts/
+COPY packages/domain/package.json packages/domain/
 
 FROM manifests AS build
 RUN --mount=type=cache,target=/root/.npm npm ci --workspace apps/api --include-workspace-root=false
