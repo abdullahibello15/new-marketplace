@@ -1,3 +1,5 @@
+import { existsSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { defineConfig, loadEnv, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import { APP_NAME } from './src/config/brand'
@@ -41,6 +43,11 @@ function appName(): Plugin {
 export default defineConfig(({ command, mode }) => {
   // Mock sign-in (a fixed one-time code) must never ship: refuse to build while it's switched on,
   // whichever .env file or shell variable turned it on.
+  // The dev server needs .env.development, which isn't in git (see README): say so plainly instead of
+  // starting with test mode silently off.
+  if (command === 'serve' && mode === 'development' && !existsSync(resolve(process.cwd(), '.env.development'))) {
+    throw new Error('Missing .env.development. Create it from the example first:  cp .env.example .env.development')
+  }
   const env = loadEnv(mode, process.cwd(), '')
   if (command === 'build' && env.VITE_MOCK_AUTH === 'true') {
     throw new Error(

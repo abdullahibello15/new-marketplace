@@ -23,7 +23,8 @@ dist-ssr
 *.sln
 *.sw?
 
-# Environment files
+# Environment files (copy .env.example to .env.development; never commit real ones)
 .env
 .env.*
+.env.development
 !.env.example
