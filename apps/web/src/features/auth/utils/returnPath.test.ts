@@ -14,6 +14,14 @@ describe('safeReturnPath', () => {
     }
   });
 
+  // React Router 6 can turn a backslash in <Link to> / navigate() into another host (GHSA-wrjc-x8rr-h8h6),
+  // and has no 6.x fix. This guard is what keeps the post-sign-in redirect safe until the v7 upgrade.
+  it('refuses backslash and protocol-relative paths that could reach another host', () => {
+    for (const from of ['\\evil.com', '//evil.com', '/\\evil.com', '\\\\evil.com', '/\\/evil.com', '//\\evil.com', '/checkout\\..\\evil.com']) {
+      expect(safeReturnPath(from), JSON.stringify(from)).toBeUndefined();
+    }
+  });
+
   it('refuses sign-in pages, which would loop', () => {
     expect(safeReturnPath('/login')).toBeUndefined();
     expect(safeReturnPath('/login/forgot')).toBeUndefined();
