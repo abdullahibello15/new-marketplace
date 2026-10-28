@@ -258,7 +258,8 @@ app.post('/v1/checkout', { ...customerOnly, schema: { body: checkoutSchema } }, 
   high `npm audit` findings: vitest 2.1 (and its tinypool, vite-node and @vitest/mocker) and vite 5.4 (and its
   esbuild). None ship in the production bundle. Upgrade vitest and vite to their current majors (the API already
   uses vitest 5), fix what breaks, then run the full `npm run test:tz` (both timezones), `lint`, `typecheck` and a
-  production `build`. Never `npm audit fix --force`.
+  production `build`. Never `npm audit fix --force`. ESLint 8 (end of life, used by both apps) → 9 with flat config
+  belongs on the same branch.
   - On that branch or the next, react-router-dom 6 → 7: the only finding in what ships (2 moderate). Not exploitable
     here today: `safeReturnPath` already rejects backslash paths (the open-redirect advisory), and the other
     advisory affects SSR hydration only.

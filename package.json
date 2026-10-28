@@ -12,6 +12,8 @@
   "scripts": {
     "dev": "npm run dev --workspace apps/web",
     "build": "npm run build --workspace apps/web",
+    "dev:api": "npm run dev --workspace apps/api",
+    "build:api": "npm run build --workspace apps/api",
     "preview": "npm run preview --workspace apps/web",
     "test": "npm run test --workspaces --if-present",
     "test:tz": "npm run test:tz --workspaces --if-present",

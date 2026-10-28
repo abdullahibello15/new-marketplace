@@ -5,7 +5,7 @@ import * as schema from './schema/index.js'
 export function createDb(databaseUrl: string) {
   // Timestamps are timestamptz stored as UTC (BACKEND_PLAN §3); pin the session so `now()` and
   // casts never depend on the server's default.
-  const sql = postgres(databaseUrl, { connection: { TimeZone: 'UTC' } })
+  const sql = postgres(databaseUrl, { connection: { TimeZone: 'UTC' }, connect_timeout: 10 })
   return { db: drizzle(sql, { schema }), sql }
 }
 
