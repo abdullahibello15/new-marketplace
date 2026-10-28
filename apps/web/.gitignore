@@ -1,0 +1,11 @@
+# The web app's build output and local env files
+dist
+dist-ssr
+*.local
+.vite
+
+# Copy .env.example to .env.development; never commit real env files
+.env
+.env.*
+.env.development
+!.env.example

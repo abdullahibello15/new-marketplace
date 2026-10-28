@@ -1,54 +1,22 @@
 {
-  "name": "magic-patterns-vite-template",
-  "version": "0.0.1",
+  "name": "zamani-ng-market-hub",
   "private": true,
-  "type": "module",
+  "description": "ZAMANI NG MARKET HUB monorepo: the web app, the API and the shared packages.",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
-    "dev": "npx vite",
-    "build": "npx vite build",
-    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
-    "preview": "npx vite preview",
-    "test": "vitest run",
-    "test:tz": "TZ=Africa/Lagos vitest run && TZ=UTC vitest run",
-    "i18n:check": "vitest run src/i18n/locales.test.ts"
-  },
-  "dependencies": {
-    "@emotion/react": "^11.13.3",
-    "@expo-google-fonts/noto-sans": "^0.4.2",
-    "@hookform/resolvers": "^5.9.1",
-    "date-fns": "^4.0.0",
-    "framer-motion": "^11.5.4",
-    "i18next": "^26.4.2",
-    "jspdf": "^4.2.1",
-    "leaflet": "^1.9.4",
-    "leaflet.markercluster": "^1.5.3",
-    "lucide-react": "0.522.0",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "react-hook-form": "^7.89.0",
-    "react-i18next": "^17.0.16",
-    "react-router-dom": "^6.26.2",
-    "read-excel-file": "^9.3.10",
-    "recharts": "^2.12.7",
-    "zod": "^4.6.5"
-  },
-  "devDependencies": {
-    "@types/leaflet": "^1.9.22",
-    "@types/leaflet.markercluster": "^1.5.6",
-    "@types/node": "^20.11.18",
-    "@types/react": "^18.3.1",
-    "@types/react-dom": "^18.3.1",
-    "@typescript-eslint/eslint-plugin": "^5.54.0",
-    "@typescript-eslint/parser": "^5.54.0",
-    "@vitejs/plugin-react": "^4.2.1",
-    "autoprefixer": "latest",
-    "eslint": "^8.50.0",
-    "eslint-plugin-react-hooks": "^4.6.0",
-    "eslint-plugin-react-refresh": "^0.4.1",
-    "postcss": "latest",
-    "tailwindcss": "3.4.17",
-    "typescript": "^5.5.4",
-    "vite": "^5.2.0",
-    "vitest": "^2.1.9"
+    "dev": "npm run dev --workspace apps/web",
+    "build": "npm run build --workspace apps/web",
+    "preview": "npm run preview --workspace apps/web",
+    "test": "npm run test --workspaces --if-present",
+    "test:tz": "npm run test:tz --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "i18n:check": "npm run i18n:check --workspace apps/web"
   }
 }
