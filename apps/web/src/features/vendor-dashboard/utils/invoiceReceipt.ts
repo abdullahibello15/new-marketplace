@@ -6,6 +6,7 @@ import { escapeHtml } from '../../payments/utils/receipt';
 import { INVOICE_KIND_LABELS, INVOICE_STATUS_META } from '../constants';
 import { planById } from '../plans';
 import type { Invoice } from '../types';
+import { translate } from '../../../i18n/message';
 
 const day = (iso: string) => formatDate(iso, 'd MMM yyyy');
 
@@ -15,7 +16,7 @@ export const invoiceMethodLabel = (invoice: Invoice) => invoice.method ? payment
 /** A standalone HTML receipt for "Download". Every value is escaped. */
 export function invoiceReceiptHtml(invoice: Invoice, vendorName: string): string {
   const rows = invoice.lines.
-  map((l) => `<tr><td>${escapeHtml(l.label)}</td><td style="text-align:right">${escapeHtml(l.amount < 0 ? `−${formatNaira(-l.amount)}` : formatNaira(l.amount))}</td></tr>`).
+  map((l) => `<tr><td>${escapeHtml(translate(l.label))}</td><td style="text-align:right">${escapeHtml(l.amount < 0 ? `−${formatNaira(-l.amount)}` : formatNaira(l.amount))}</td></tr>`).
   join('');
   const t = (key: string, options?: Record<string, unknown>) => escapeHtml(i18n.t(`vendor:subscription.receipt.${key}`, options));
   const plan = planById(invoice.planId);

@@ -8,6 +8,7 @@ import { Price } from '../../../../components/ui/Price';
 import { INVOICE_KIND } from '../../constants';
 import type { PendingPlanAction } from '../../hooks/useSubscription';
 import type { InvoiceQuote } from '../../types';
+import { translate } from '../../../../i18n/message';
 
 interface PlanActionDialogProps {
   action: PendingPlanAction | null;
@@ -62,8 +63,8 @@ export function PlanActionDialog({ action, loading, onConfirm, onCancel }: PlanA
             <span className="block">{effectText(q, name)}</span>
             <span className="block rounded-xl bg-sand p-3">
               {q.lines.map((l) =>
-          <span key={l.label} className="flex justify-between gap-3 text-ink">
-                  <span className="min-w-0">{l.label}</span>
+          <span key={translate(l.label)} className="flex justify-between gap-3 text-ink">
+                  <span className="min-w-0">{translate(l.label)}</span>
                   <span className="shrink-0">
                     {l.amount < 0 && '−'}
                     <Price amount={Math.abs(l.amount)} />

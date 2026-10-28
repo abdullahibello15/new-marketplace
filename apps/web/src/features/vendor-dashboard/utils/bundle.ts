@@ -1,6 +1,5 @@
 import { differenceInCalendarDays } from 'date-fns';
-import i18n from '../../../i18n';
-import { formatNaira } from '../../../utils/format';
+import { message, money } from '../../../domain/message';
 import { BUNDLE_RULES } from '../bundles';
 import type { InvoiceLine } from '../types';
 
@@ -29,8 +28,8 @@ export function quoteBundle(memberNames: readonly string[], planPrice: number, p
   const discount = Math.round(subtotal * percentOff / 100);
   return {
     lines: [
-    ...memberNames.map((name) => ({ label: i18n.t('vendor:association.line.member', { name, plan: planName }), amount: planPrice })),
-    ...(discount ? [{ label: i18n.t('vendor:association.line.discount', { percent: percentOff, count: memberNames.length }), amount: -discount }] : [])],
+    ...memberNames.map((name) => ({ label: message('vendor:association.line.member', { name, plan: planName }), amount: planPrice })),
+    ...(discount ? [{ label: message('vendor:association.line.discount', { percent: percentOff, count: memberNames.length }), amount: -discount }] : [])],
 
     subtotal,
     discount,
@@ -59,8 +58,8 @@ now: Date)
   const discount = Math.round(subtotal * percentOff / 100);
   return {
     lines: [
-    ...newNames.map((name) => ({ label: i18n.t('vendor:association.line.prorated', { name, price: formatNaira(planPrice), left: remainingDays, total: totalDays }), amount: prorated })),
-    ...(discount ? [{ label: i18n.t('vendor:association.line.discountAfter', { percent: percentOff, count: membersAfter }), amount: -discount }] : [])],
+    ...newNames.map((name) => ({ label: message('vendor:association.line.prorated', { name, price: money(planPrice), left: remainingDays, total: totalDays }), amount: prorated })),
+    ...(discount ? [{ label: message('vendor:association.line.discountAfter', { percent: percentOff, count: membersAfter }), amount: -discount }] : [])],
 
     subtotal,
     discount,

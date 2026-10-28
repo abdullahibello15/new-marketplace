@@ -7,6 +7,7 @@ import { INVOICE_KIND_LABELS, INVOICE_STATUS_META } from '../../constants';
 import { planById } from '../../plans';
 import { invoiceMethodLabel } from '../../utils/invoiceReceipt';
 import type { Invoice } from '../../types';
+import { translate } from '../../../../i18n/message';
 
 const day = (iso: string) => format(iso, 'd MMM yyyy');
 
@@ -59,8 +60,8 @@ export function InvoiceReceipt({ invoice, vendorName }: {invoice: Invoice;vendor
         <caption className="sr-only">{t('subscription.receipt.charges')}</caption>
         <tbody>
           {invoice.lines.map((l) =>
-          <tr key={l.label}>
-              <th scope="row" className="py-1 text-left font-normal text-muted">{l.label}</th>
+          <tr key={translate(l.label)}>
+              <th scope="row" className="py-1 text-left font-normal text-muted">{translate(l.label)}</th>
               <td className="py-1 text-right text-ink">
                 {l.amount < 0 && '−'}
                 <Price amount={Math.abs(l.amount)} />

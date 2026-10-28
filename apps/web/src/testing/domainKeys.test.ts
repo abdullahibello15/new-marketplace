@@ -10,10 +10,12 @@ import { resources } from '../i18n/resources';
 import { JOB_ACTOR, JOB_STATUS } from '../features/jobs/constants';
 import { ORDER_STATUS } from '../features/orders/constants';
 import { PAYMENT_METHOD } from '../features/payments/constants';
+import { PLAN_ID } from '../features/vendor-dashboard/constants';
 import { collectReturned, collectStored } from './domainTextScenarios';
 
 /*
- * Every message key the domain can return, returned or stored, must exist in English and in Hausa. A key
+ * Every message key the domain can return, returned or stored (seed data included), must exist in English
+ * and in Hausa. A key
  * missing from Hausa must be listed in HAUSA_PENDING (it shows in English until a translator adds it).
  */
 
@@ -26,7 +28,9 @@ const DOMAIN_FILES = [
   'features/vendor-dashboard/utils/billing.ts',
   'features/vendor-dashboard/utils/bundle.ts',
   'features/payments/escrow/escrowRules.ts',
-  'features/payments/utils/receiptData.ts'
+  'features/payments/utils/receiptData.ts',
+  // Seed data stores messages too.
+  'features/vendor-dashboard/mock/subscription.ts'
 ];
 
 function keysIn(value: unknown, into: Set<string>) {
@@ -58,6 +62,7 @@ function domainKeys(): Set<string> {
   for (const s of Object.values(ORDER_STATUS)) keys.add(`jobs:order.status.${s}.label`);
   for (const a of Object.values(JOB_ACTOR)) keys.add(`jobs:actor.${a}`);
   for (const m of Object.values(PAYMENT_METHOD)) keys.add(`payments:method.${m}`);
+  for (const p of Object.values(PLAN_ID)) keys.add(`vendor:plan.${p}.name`);
   return keys;
 }
 

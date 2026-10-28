@@ -6,6 +6,7 @@ import { Button } from '../../../../components/ui/Button';
 import { Price } from '../../../../components/ui/Price';
 import { BUNDLE_RULES } from '../../bundles';
 import type { InvoiceQuote, SubscriptionPlan } from '../../types';
+import { translate } from '../../../../i18n/message';
 
 interface BundleSummaryProps {
   plan: SubscriptionPlan;
@@ -21,8 +22,8 @@ function Lines({ quote }: {quote: InvoiceQuote;}) {
   return (
     <dl className="space-y-1 text-sm">
       {quote.lines.map((l) =>
-      <div key={l.label} className="flex justify-between gap-3">
-          <dt className="min-w-0 text-muted">{l.label}</dt>
+      <div key={translate(l.label)} className="flex justify-between gap-3">
+          <dt className="min-w-0 text-muted">{translate(l.label)}</dt>
           <dd className={l.amount < 0 ? 'text-pine' : 'text-ink'}>
             {l.amount < 0 && '−'}
             <Price amount={Math.abs(l.amount)} />

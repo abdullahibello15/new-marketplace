@@ -84,7 +84,7 @@ export interface Payable {
   customerId: string;
   customerName: string;
   /** Summary lines, e.g. items or the agreed job price, then delivery. */
-  lines: {label: string;amount: number;}[];
+  lines: {label: Text;amount: number;}[];
   total: number;
   /** Null when it can be paid; otherwise why not (not booked yet, cancelled…). */
   blockedReason: string | null;
@@ -270,7 +270,8 @@ export interface EscrowLedgerEntry {
   amount: number;
   /** Platform commission taken (released entries only; 0 otherwise). */
   commission: number;
-  note: string | null;
+  /** Stored as { key, params } (plain JSON: the API keeps it as jsonb); shown in the reader's language. */
+  note: Message | null;
   /** Released entries: when the vendor was paid out; null while it's still in their available balance. */
   paidOutAt: string | null;
 }

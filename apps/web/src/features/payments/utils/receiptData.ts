@@ -1,4 +1,4 @@
-import { message, type Message, type Text } from '../../../domain/message';
+import { message, nested, type Message, type Text } from '../../../domain/message';
 import { RECEIPT_ISSUER } from '../config';
 import { ESCROW_CONFIG } from '../escrow/escrowConfig';
 import { commissionFor, escrowTotals } from '../escrow/escrowRules';
@@ -57,7 +57,7 @@ export const hasReceipt = (payment: Pick<Payment, 'status'>) => payment.status =
 /** Refunds, from the escrow ledger; a payment refunded outside escrow counts as one full refund. */
 function refundLines(payment: Payment, escrow: Escrow | null): ReceiptLine[] {
   if (escrow) {
-    return escrow.ledger.filter((e) => e.type === ESCROW_EVENT.Refunded).map((e) => ({ label: e.note ? message('payments:receipt.refundWith', { note: e.note }) : message('payments:receipt.refund'), amount: e.amount }));
+    return escrow.ledger.filter((e) => e.type === ESCROW_EVENT.Refunded).map((e) => ({ label: e.note ? message('payments:receipt.refundWith', { note: nested(e.note) }) : message('payments:receipt.refund'), amount: e.amount }));
   }
   return payment.status === PAYMENT_STATUS.Refunded ? [{ label: message('payments:receipt.refund'), amount: payment.amount }] : [];
 }

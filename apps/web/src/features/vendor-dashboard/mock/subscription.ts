@@ -5,6 +5,7 @@ import { formerVendors } from '../../../data/formerVendors';
 import { quoteBundle } from '../utils/bundle';
 import { mockAssociations } from './associations';
 import { daysFromNow } from './time';
+import { message, nested } from '../../../domain/message';
 import type { Invoice, Subscription } from '../types';
 
 /** Standard plan that renews in 5 days, so the "ends soon" warning shows by default. */
@@ -22,6 +23,14 @@ export const mockSubscription: Subscription = {
 };
 
 /** Past invoices: three monthly Standard renewals and the original Starter sign-up. */
+const PLAN_NAMES: Record<Invoice['planId'], string> = { starter: 'Starter', standard: 'Standard', premium: 'Premium' };
+
+/** "Standard, 1 month": stored as a message, like the invoices the billing rules create. */
+const monthLine = (planId: Invoice['planId'], amount: number) => ({
+  label: message('vendor:subscription.line.month', { plan: nested(message(`vendor:plan.${planId}.name`, undefined, PLAN_NAMES[planId])) }),
+  amount
+});
+
 function paidInvoice(id: string, monthsAgo: number, planId: Invoice['planId'], kind: Invoice['kind'], method: Invoice['method'], amount: number): Invoice {
   const start = startOfDay(subMonths(new Date(periodStart), monthsAgo));
   const paidAt = new Date(start.getTime() - 2 * 86_400_000).toISOString();
@@ -34,7 +43,7 @@ function paidInvoice(id: string, monthsAgo: number, planId: Invoice['planId'], k
     planId,
     fromPlanId: planId,
     amount,
-    lines: [{ label: `${planId === PLAN_ID.Starter ? 'Starter' : 'Standard'}, 1 month`, amount }],
+    lines: [monthLine(planId, amount)],
     periodStart: start.toISOString(),
     periodEnd: endOfDay(addMonths(start, 1)).toISOString(),
     effectiveAt: start.toISOString(),
@@ -95,7 +104,6 @@ const DIRECTORY: DirectorySeed[] = [
 
 
 const PRICES: Record<Invoice['planId'], number> = { starter: 2000, standard: 7000, premium: 15000 };
-const PLAN_NAMES: Record<Invoice['planId'], string> = { starter: 'Starter', standard: 'Standard', premium: 'Premium' };
 const METHODS: NonNullable<Invoice['method']>[] = ['card', 'ussd', 'transfer'];
 
 let historyId = 1;
@@ -115,7 +123,7 @@ function historyInvoice(vendorId: string, end: Date, planId: Invoice['planId'], 
     planId,
     fromPlanId,
     amount,
-    lines: [{ label: `${PLAN_NAMES[planId]}, 1 month`, amount }],
+    lines: [monthLine(planId, amount)],
     periodStart: start.toISOString(),
     periodEnd: end.toISOString(),
     effectiveAt: start.toISOString(),

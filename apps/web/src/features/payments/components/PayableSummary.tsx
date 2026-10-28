@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Price } from '../../../components/ui/Price';
 import type { Payable } from '../types';
+import { renderText } from '../../../i18n/message';
 
 /** Order summary on the payment screen: what's being paid for, line by line, and the total. */
 export function PayableSummary({ payable }: {payable: Payable;}) {
@@ -13,8 +14,8 @@ export function PayableSummary({ payable }: {payable: Payable;}) {
       <p className="text-sm text-muted">{payable.vendorName}</p>
       <dl className="mt-3 space-y-1.5 text-sm">
         {payable.lines.map((l) =>
-        <div key={l.label} className="flex justify-between gap-3">
-            <dt className="min-w-0 text-muted">{l.label}</dt>
+        <div key={renderText(l.label)} className="flex justify-between gap-3">
+            <dt className="min-w-0 text-muted">{renderText(l.label)}</dt>
             <dd>
               <Price amount={l.amount} className="text-ink" />
             </dd>

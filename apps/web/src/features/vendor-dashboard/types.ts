@@ -1,3 +1,4 @@
+import type { Message } from '../../domain/message';
 import type { EscrowLedgerEntry, PaymentMethod } from '../payments/types';
 import type {
   CALENDAR_VIEW,
@@ -245,7 +246,8 @@ export interface Association {
 
 /** The working behind an invoice amount, shown to the vendor before they pay. */
 export interface InvoiceLine {
-  label: string;
+  /** Stored as { key, params } (plain JSON: the API keeps it as jsonb); shown in the reader's language. */
+  label: Message;
   /** Whole Naira; negative for a credit. */
   amount: number;
 }

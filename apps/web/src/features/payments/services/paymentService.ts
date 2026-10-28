@@ -30,6 +30,7 @@ import type {
   PaymentOverview,
   PaymentSubjectRef } from
 '../types';
+import { translate } from '../../../i18n/message';
 
 /*
  * The payment API the app talks to (our backend, mocked). It owns amounts and statuses: the browser
@@ -177,7 +178,8 @@ function reconcile(p: Payment, payable: Payable, now = new Date()): Payment {
   if (p.status === PAYMENT_STATUS.Paid) {
     const escrow = escrowForPayment(p.reference);
     if (escrow?.status === ESCROW_STATUS.Refunded) {
-      const note = [...escrow.ledger].reverse().find((e) => e.type === ESCROW_EVENT.Refunded)?.note ?? i18n.t('payments:outcome.refundedFallback');
+      const stored = [...escrow.ledger].reverse().find((e) => e.type === ESCROW_EVENT.Refunded)?.note;
+      const note = stored ? translate(stored) : i18n.t('payments:outcome.refundedFallback');
       return save({ ...p, status: PAYMENT_STATUS.Refunded, updatedAt: at, outcome: i18n.t('payments:outcome.refunded', { note, amount: formatNaira(p.amount) }) });
     }
     // Paid before escrow existed for it (e.g. seeded data): settle it now.

@@ -17,6 +17,9 @@ import {
 './escrowRules';
 import type { JobEscrowChange } from './escrowRules';
 
+// Any stored note will do for the money tests.
+const NOTE = { key: 'payments:escrowNote.paidIn' };
+
 const T0 = '2026-10-01T10:00:00.000Z';
 const T1 = '2026-10-02T10:00:00.000Z';
 const T2 = '2026-10-03T10:00:00.000Z';
@@ -167,9 +170,9 @@ describe('order rules', () => {
 
 describe('safety', () => {
   it('never refunds or releases more than is held, and does nothing once settled', () => {
-    const refunded = applyEscrowDecision(held(), { kind: 'refund', amount: 50_000, note: 'x' }, T1);
+    const refunded = applyEscrowDecision(held(), { kind: 'refund', amount: 50_000, note: NOTE }, T1);
     expect(escrowTotals(refunded).refunded).toBe(10_000);
-    const again = applyEscrowDecision(refunded, { kind: 'release', note: 'x' }, T2);
+    const again = applyEscrowDecision(refunded, { kind: 'release', note: NOTE }, T2);
     expect(again).toBe(refunded);
   });
 });
@@ -177,9 +180,9 @@ describe('safety', () => {
 describe('vendor earnings', () => {
   it('splits into pending (held), available (released) and paid out, net of commission', () => {
     const pending = held(10_000);
-    const available = applyEscrowDecision(held(20_000), { kind: 'release', note: 'x' }, T1);
-    const paid = payOutEscrow(applyEscrowDecision(held(5_000), { kind: 'release', note: 'x' }, T1), T2);
-    const refunded = applyEscrowDecision(held(7_000), { kind: 'refund', amount: 7_000, note: 'x' }, T1);
+    const available = applyEscrowDecision(held(20_000), { kind: 'release', note: NOTE }, T1);
+    const paid = payOutEscrow(applyEscrowDecision(held(5_000), { kind: 'release', note: NOTE }, T1), T2);
+    const refunded = applyEscrowDecision(held(7_000), { kind: 'refund', amount: 7_000, note: NOTE }, T1);
     expect(earningsBuckets([pending, available, paid, refunded])).toEqual({
       pending: 10_000 - commissionFor(10_000),
       available: 20_000 - commissionFor(20_000),
@@ -189,7 +192,7 @@ describe('vendor earnings', () => {
   });
 
   it('paying out twice changes nothing the second time', () => {
-    const once = payOutEscrow(applyEscrowDecision(held(), { kind: 'release', note: 'x' }, T1), T2);
+    const once = payOutEscrow(applyEscrowDecision(held(), { kind: 'release', note: NOTE }, T1), T2);
     expect(payOutEscrow(once, T2)).toBe(once);
   });
 });
