@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { date, message, money, nested } from '../domain/message';
 import i18n from './index';
+import { formatNaira } from '../utils/format';
 import { renderText, translate } from './message';
 
 // test:tz runs every test under TZ=Africa/Lagos (UTC+1, no DST) and TZ=UTC.
@@ -9,6 +10,15 @@ const zone = offsetMinutes === -60 ? 'Africa/Lagos' : offsetMinutes === 0 ? 'UTC
 
 beforeAll(() => i18n.changeLanguage('en'));
 afterAll(() => i18n.changeLanguage('en'));
+
+// From domain/message.test.ts (now in packages/domain): this case needs the web app's formatter.
+describe('money(): the text at the boundary', () => {
+  it('shows the same text the naira amount showed (the web app formats kobo / 100)', () => {
+    for (const naira of [0, 1, 1000, 1600, 1250, 20_000, 1234.5, 1234.56, 999.99, 0.01, 1_000_000.25]) {
+      expect(formatNaira(money(naira).kobo / 100), String(naira)).toBe(formatNaira(naira));
+    }
+  });
+});
 
 describe('translate()', () => {
   it('formats money params from kobo', () => {

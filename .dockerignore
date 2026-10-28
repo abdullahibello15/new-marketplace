@@ -6,6 +6,7 @@
 !apps/web/package.json
 !apps/api
 !packages/contracts
+!packages/domain/package.json
 
 # Never send these, even inside the allowed folders.
 **/node_modules
