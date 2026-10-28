@@ -19,7 +19,7 @@ export function DesktopFilterPanel({ filters, activeCount, onApply, onClearAll }
   return (
     <section
       aria-labelledby="desktop-filters-heading"
-      className="sticky top-6 max-h-[calc(100vh-3rem)] overflow-y-auto rounded-2xl border border-line bg-white p-5">
+      className="sticky top-32 max-h-[calc(100vh-9rem)] overflow-y-auto rounded-2xl border border-line bg-white p-5">
 
       <div className="mb-4 flex items-baseline justify-between gap-3">
         <h2 id="desktop-filters-heading" className="text-base font-extrabold text-ink">

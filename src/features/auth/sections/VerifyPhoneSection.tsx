@@ -11,6 +11,7 @@ import { useOtpFlow, type OtpApi } from '../hooks/useOtpFlow';
 import { sendPhoneCode, verifyPhone } from '../services/accountService';
 import { OtpCodeStep } from '../components/OtpCodeStep';
 import { PhoneInput } from '../components/PhoneInput';
+import { safeReturnPath } from '../utils/returnPath';
 import type { SignupFlowState } from './SignupSection';
 import type { User } from '../types';
 
@@ -26,7 +27,7 @@ export function VerifyPhoneSection() {
   const navigate = useNavigate();
   const toast = useToast();
   // A provider without a vendor profile goes on to vendor setup.
-  const next = state?.next ?? (user?.roles.includes(ROLE.Provider) && !user.vendorId ? AUTH_ROUTES.vendorSetup : homeFor());
+  const next = safeReturnPath(state?.next) ?? (user?.roles.includes(ROLE.Provider) && !user.vendorId ? AUTH_ROUTES.vendorSetup : homeFor());
   const goNext = () => navigate(next, { replace: true });
 
   const api = useMemo<OtpApi<User>>(() => ({

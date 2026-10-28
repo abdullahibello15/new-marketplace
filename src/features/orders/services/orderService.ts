@@ -9,6 +9,7 @@ import { formatNaira } from '../../../utils/format';
 import { CART_CHANGE_KIND, FULFILMENT_METHOD, ORDER_ACTOR, ORDER_AUTO_COMPLETE_HOURS, ORDER_STATUS } from '../constants';
 import { applyOrderEscrowChange } from '../../payments/services/escrowService';
 import { mockOrders } from '../mock/orders';
+import { removeOrderedLinesNow } from './cartService';
 import { OrderTransitionError, applyOrderTransition, orderTransitionBlockedReason, statusBeforeOrderDispute } from '../stateMachine';
 import { deliveryBlockedReason, enabledMethods, feeFor, fulfilmentFor } from '../utils/fulfilment';
 import type { Product, Vendor } from '../../../types/marketplace';
@@ -203,7 +204,10 @@ export function checkCart(items: CartItem[]): Promise<CartCheck> {
  */
 export function placeOrders(input: CheckoutInput): Promise<CheckoutResult> {
   return mockResponse(() => {
+    // Signed-in customers with a verified email or phone only (401/403 otherwise): a guest can't skip
+    // sign-up by calling checkout directly.
     requireVerifiedContact();
+    const customerId = currentCustomerId();
     if (input.orders.length === 0) throw new ApiError(i18n.t('jobs:order.error.emptyCart'), 400);
     const asCart: CartItem[] = input.orders.flatMap((o) =>
     o.items.map((i) => ({
@@ -246,7 +250,7 @@ export function placeOrders(input: CheckoutInput): Promise<CheckoutResult> {
         checkoutRef,
         vendorId: vendor.id,
         vendorName: vendor.name,
-        customerId: currentCustomerId(),
+        customerId,
         customerName: requireUser().name,
         items,
         method: o.method,
@@ -266,6 +270,8 @@ export function placeOrders(input: CheckoutInput): Promise<CheckoutResult> {
       };
     });
     orders = [...created, ...orders];
+    // What was just ordered leaves the cart saved to their account (other devices see it gone too).
+    removeOrderedLinesNow(customerId, input.orders.flatMap((o) => o.items.map((i) => ({ vendorId: o.vendorId, productId: i.productId }))));
     return { checkoutRef, orders: created };
   }, 900);
 }

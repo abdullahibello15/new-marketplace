@@ -1,9 +1,15 @@
 {
   "home": {
     "greeting": "Sannu, {{name}} 👋",
-    "titleSignedOut": "Nemo taimako amintacce kusa da kai",
     "browseCategories": "Duba rukunoni",
-    "nearYou": "Kusa da kai · {{place}}"
+    "nearYou": "Kusa da kai · {{place}}",
+    "heroTitle": "Saya a gida. Ɗauki taimako amintacce.",
+    "heroText": "Kayayyaki daga shaguna a faɗin Jihar Neja, da masu gyaran famfo, teloli da masu wutar lantarki da ke zuwa wurinka. Biya cikin aminci: ana riƙe kuɗinka har sai an gama aikin.",
+    "shopProducts": "Sayi kayayyaki",
+    "findService": "Nemi aiki",
+    "rowPopular": "Shahararru kusa da {{place}}",
+    "rowBudget": "Ƙasa da {{amount}}",
+    "rowTopShops": "Daga shaguna mafi kyawun ƙima"
   },
   "sort": {
     "label": "Jera ta",
@@ -245,5 +251,57 @@
       "timeBetween": "Zaɓi lokaci tsakanin {{from}} da {{to}}.",
       "timePassed": "Wannan lokacin ya wuce. Zaɓi lokaci na gaba."
     }
+  },
+  "products": {
+    "title": "Sayi kayayyaki",
+    "subtitle": "Daga shagunan gida kusa da {{place}}",
+    "count_one": "Kaya {{count}}",
+    "count_other": "Kayayyaki {{count}}",
+    "loading": "Ana loda kayayyaki…",
+    "showing": "Ana nuna {{shown}} cikin kayayyaki {{total}}",
+    "seeAll": "Duba duka",
+    "emptyTitle": "Ba a sami kaya ba",
+    "emptyText": "Shagunan gida ba su saka kayayyaki ba tukuna. Ka dawo nan gaba.",
+    "emptyFiltered": "Gwada wani bincike ko rage matattara.",
+    "clearSearch": "Share bincike da matattara",
+    "shopUnavailable": "Wannan shago ba ya karɓar oda yanzu.",
+    "backToShop": "Duk kayayyaki",
+    "notFoundTitle": "Ba a sami kayan ba",
+    "notFoundText": "Wataƙila ya ƙare an cire shi, ko kuma mahaɗin ba daidai ba ne.",
+    "browseAll": "Duba duk kayayyaki",
+    "photos": "Hotunan kaya",
+    "photoN": "Hoto {{n}} cikin {{total}}",
+    "buy": "Farashi da adadi",
+    "checkoutNote": "Ba sai kana da asusu ba don cika kwandon ka. Za ka shiga ko ka yi rajista a lokacin biya.",
+    "description": "Game da wannan kaya",
+    "soldBy": "Mai sayarwa",
+    "visitShop": "Ziyarci shago",
+    "errors": {
+      "notFound": "Ba mu sami wannan kayan ba."
+    },
+    "filters": {
+      "category": "Rukunin kaya",
+      "allCategories": "Duka",
+      "price": "Iyakar farashi",
+      "minPrice": "Ƙaramin farashi",
+      "maxPrice": "Babban farashi",
+      "any": "Kowane",
+      "apply": "Yi amfani",
+      "inStockOnly": "Masu samuwa kawai",
+      "clear": "Share matattara ({{count}})",
+      "button": "Matattara",
+      "buttonCount": "Matattara ({{count}})",
+      "done": "An gama"
+    },
+    "sort": {
+      "recommended": "Shawarwari",
+      "price_asc": "Farashi: daga ƙasa zuwa sama",
+      "price_desc": "Farashi: daga sama zuwa ƙasa",
+      "rating": "Shaguna mafi kyawun ƙima"
+    },
+    "breadcrumb": "Hanyar shafi",
+    "resultsFor": "Sakamako na “{{query}}”",
+    "noDescription": "Shagon bai saka bayani ba tukuna.",
+    "shopReviewsNote": "Ra’ayoyin abokan ciniki da suka yi oda ko ɗaukar aiki daga {{name}}."
   }
 }

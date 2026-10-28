@@ -12,11 +12,31 @@ import { ORDER_ROUTES } from '../constants';
 import { CartChangesNotice } from '../components/checkout/CartChangesNotice';
 import { CheckoutForm } from '../components/checkout/CheckoutForm';
 import { CheckoutSuccess } from '../components/checkout/CheckoutSuccess';
+import { useCart } from '../hooks/useCart';
 import { useCheckout } from '../hooks/useCheckout';
 
 
-/** Checkout: confirm any price or stock changes, choose pickup or delivery per vendor, place one order per vendor. */
+/**
+ * Checkout: confirm any price or stock changes, choose pickup or delivery per vendor, place one order per
+ * vendor. Signed-in customers only (the route's RequireAuth sends guests to login and back here, and
+ * placeOrders checks again). Right after signing in, it waits for the guest cart to be merged with the
+ * saved one, so the order covers both.
+ */
 export function CheckoutSection() {
+  const { t } = useTranslation('jobs');
+  const { syncing } = useCart();
+  if (syncing) {
+    return (
+      <>
+        <PageHeader title={t('order.checkout.title')} subtitle={t('order.checkout.subtitle')} />
+        <PageContainer><LoadingState label={t('order.cart.syncing')} rows={2} rowClassName="h-48" /></PageContainer>
+      </>);
+
+  }
+  return <Checkout />;
+}
+
+function Checkout() {
   const { t } = useTranslation('jobs');
   const BACK = { to: ORDER_ROUTES.cart, label: t('order.checkout.back') };
   const c = useCheckout();

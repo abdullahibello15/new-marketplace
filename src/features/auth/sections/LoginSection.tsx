@@ -19,6 +19,7 @@ import { loginWithPassword } from '../services/authService';
 import { DemoAccountsPanel } from '../components/DemoAccountsPanel';
 import { PasswordInput } from '../components/PasswordInput';
 import { PhoneOtpForm } from '../components/PhoneOtpForm';
+import { safeReturnPath } from '../utils/returnPath';
 import type { LoginRedirectState } from '../components/guards';
 import type { DemoAccount } from '../mock/demoAccounts';
 import type { VerifyOtpResult } from '../types';
@@ -111,7 +112,7 @@ export function LoginSection() {
   const { user, homeFor } = useAuth();
   const navigate = useNavigate();
   const redirect = useLocation().state as LoginPageState | null;
-  const from = redirect?.from;
+  const from = safeReturnPath(redirect?.from);
   const [tab, setTab] = useState<Tab>('password');
   // Phone codes remember this device by default; password sign-in doesn't.
   const [remember, setRemember] = useState<Record<Tab, boolean>>({ password: false, code: true });

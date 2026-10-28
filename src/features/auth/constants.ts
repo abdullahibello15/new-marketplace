@@ -29,10 +29,12 @@ export const ROLE_META: Record<Role, {label: string;description: string;home: st
 
 export const AUTH_ROUTES = {
   /**
-   * The public landing page signed-out visitors land on (features/landing). The same path is the customer
-   * home once signed in. Not /welcome: that's the onboarding after signup.
+   * The marketplace home: open to guests (browse, search, add to cart) and the customer home once signed
+   * in. Not /welcome: that's the onboarding after signup.
    */
   start: '/',
+  /** The public landing page about Gwani (features/landing). */
+  about: '/about',
   login: '/login',
   /** Gwani staff sign in here (phone + one-time code); linked discreetly from the landing footer. */
   staffLogin: '/admin/login',

@@ -565,7 +565,7 @@
       "vendors_other": "masu sana’a {{count}}",
       "subtitleEmpty": "Kayan da ka saka daga shagunan masu sana’a",
       "emptyTitle": "Kwandonka babu komai",
-      "emptyText": "Buɗe shafin mai sana’a ka danna “Saka a kwando” a kan kowane kaya a shagonsa.",
+      "emptyText": "Duba kayayyaki daga shagunan gida ka danna “Saka a kwando”. Ba sai kana da asusu ba sai lokacin biya.",
       "browse": "Duba masu sana’a",
       "summary": "Taƙaitawa",
       "itemsTotal": "Jimillar kaya",
@@ -573,7 +573,14 @@
       "checkout": "Je wurin biya",
       "removeTitle": "Ka cire daga kwando?",
       "removeText": "Za a cire {{name}} daga {{vendor}} daga kwandonka.",
-      "keep": "Bar shi"
+      "keep": "Bar shi",
+      "browseProducts": "Duba kayayyaki",
+      "signInToCheckout": "Shiga don biya",
+      "newCustomer": "Sabo a Gwani? Buɗe asusu",
+      "guestNote": "An ajiye kwandon ka a wannan na’ura. Bayan ka shiga ko ka buɗe asusu, za ka dawo kai tsaye wurin biya.",
+      "merged": "Mun ƙara kayan da aka ajiye a asusun ka cikin kwandon ka.",
+      "syncing": "Ana shirya kwandon ka…",
+      "invalid": "Ba a iya ajiye kwandon ka ba. Da fatan a sake gwadawa."
     },
     "changes": {
       "priceUp": "Farashi ya hau daga {{before}} zuwa {{after}}.",

@@ -87,7 +87,7 @@ export function JobDetailsSection() {
             <JobDetails job={job} />
             <MessagesPlaceholder otherParty={job.vendorName} />
           </div>
-          <aside className="space-y-5 lg:sticky lg:top-6 lg:self-start" aria-label={t('page.aside')}>
+          <aside className="space-y-5 lg:sticky lg:top-32 lg:self-start" aria-label={t('page.aside')}>
             <CustomerJobPanel job={job} onUpdated={replace} />
             <JobRemindersLine job={job} viewer="customer" />
             <JobActivity job={job} viewer="customer" />

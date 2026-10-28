@@ -85,7 +85,7 @@ export function OrderDetailsSection() {
             <OrderItemsList order={order} />
             <OrderFulfilmentDetails order={order} />
           </div>
-          <aside className="space-y-5 lg:sticky lg:top-6 lg:self-start" aria-label={t('order.page.aside')}>
+          <aside className="space-y-5 lg:sticky lg:top-32 lg:self-start" aria-label={t('order.page.aside')}>
             <CustomerOrderPanel order={order} onUpdated={replace} />
             <OrderStatusHistory order={order} viewer={ORDER_ACTOR.Customer} />
             <Link to={vendorProfilePath(order.vendorId)} className={buttonClasses({ variant: 'secondary', fullWidth: true })}>

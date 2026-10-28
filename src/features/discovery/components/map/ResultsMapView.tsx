@@ -49,7 +49,7 @@ export function ResultsMapView(props: ResultsMapViewProps) {
   const count = result.pins.length + result.missingLocation;
 
   return (
-    <div className="fixed inset-0 z-30 flex flex-col bg-cream lg:sticky lg:inset-auto lg:top-6 lg:z-auto lg:h-[calc(100vh-3rem)] lg:overflow-hidden lg:rounded-2xl lg:border lg:border-line">
+    <div className="fixed inset-0 z-40 flex flex-col bg-cream lg:sticky lg:inset-auto lg:top-32 lg:z-auto lg:h-[calc(100vh-9rem)] lg:overflow-hidden lg:rounded-2xl lg:border lg:border-line">
       <div className="flex items-center justify-between gap-3 border-b border-line bg-cream px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] lg:hidden">
         <Button variant="outline" size="sm" icon={ListIcon} onClick={props.onShowList}>
           {t('map.list')}

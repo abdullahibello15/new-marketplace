@@ -14,6 +14,7 @@ import {
   PackageIcon,
   ReceiptTextIcon,
   ShoppingCartIcon,
+  StoreIcon,
   StarIcon,
   TruckIcon,
   UserIcon,
@@ -26,11 +27,12 @@ import type { NavItem } from '../types/navigation';
 
 export const customerNav: NavItem[] = [
 { to: '/', label: 'Home', labelKey: 'nav.home', icon: HomeIcon, match: (p) => p === '/' || p.startsWith('/vendor/') || p.startsWith('/vendors/') },
+{ to: '/products', label: 'Shop', labelKey: 'nav.shop', icon: StoreIcon, match: (p) => p.startsWith('/products') },
 { to: '/jobs', label: 'My Jobs', labelKey: 'nav.myJobs', icon: CalendarCheckIcon, match: (p) => p.startsWith('/jobs') || p.startsWith('/bookings') },
 { to: '/orders', label: 'My Orders', labelKey: 'nav.myOrders', shortLabel: 'Orders', shortLabelKey: 'nav.ordersShort', icon: PackageIcon, match: (p) => p.startsWith('/orders') },
 { to: '/payments', label: 'Payments', labelKey: 'nav.payments', icon: ReceiptTextIcon, mobile: 'more', match: (p) => p.startsWith('/payments') },
 { to: '/cart', label: 'Cart', labelKey: 'nav.cart', icon: ShoppingCartIcon, badgeStyle: 'count', match: (p) => p.startsWith('/cart') || p.startsWith('/checkout') },
-{ to: '/inbox', label: 'Inbox', labelKey: 'nav.inbox', icon: MessageSquareIcon, match: (p) => p.startsWith('/inbox') },
+{ to: '/inbox', label: 'Inbox', labelKey: 'nav.inbox', icon: MessageSquareIcon, mobile: 'more', match: (p) => p.startsWith('/inbox') },
 { to: '/profile', label: 'Profile', labelKey: 'nav.profile', icon: UserIcon, mobile: 'more', match: (p) => p.startsWith('/profile') }];
 
 

@@ -13,6 +13,7 @@ import { RoleSetupForm, type RoleSetupValues } from '../components/RoleSetupForm
 import { CustomerSignupForm } from '../components/signup/CustomerSignupForm';
 import { ProviderSignupForm } from '../components/signup/ProviderSignupForm';
 import type { LoginRedirectState } from '../components/guards';
+import { safeReturnPath } from '../utils/returnPath';
 import type { VerifyOtpResult } from '../types';
 
 /** Where to go after verification and onboarding (passed along from the landing page). */
@@ -25,7 +26,8 @@ const isSignupRole = (v: string | undefined): v is SignupRole => SIGNUP_ROLES.so
 
 /**
  * /signup — "How will you use Gwani?" → /signup/:role, that role's form. The ONE signup path per role:
- *  - customer: name, email, password → verify the email → short welcome → customer home;
+ *  - customer: name, email, password → verify the email → short welcome → customer home (or, when they
+ *    came from somewhere, e.g. checkout with a guest cart, straight back there, skipping the welcome);
  *  - provider: name, phone, email, location, password, terms → verify the phone → vendor setup → dashboard;
  *  - rider: phone + one-time code → name, area and vehicle → rider home.
  */
@@ -33,7 +35,7 @@ export function SignupSection() {
   const { t } = useTranslation('auth');
   const { role } = useParams();
   const { user, homeFor } = useAuth();
-  const from = (useLocation().state as LoginRedirectState | null)?.from;
+  const from = safeReturnPath((useLocation().state as LoginRedirectState | null)?.from);
   const navigate = useNavigate();
   const back = () => navigate(AUTH_ROUTES.signup, { state: { from } satisfies LoginRedirectState });
 
@@ -56,7 +58,7 @@ export function SignupSection() {
     return (
       <CustomerSignupForm
         onBack={back}
-        onDone={() => navigate(AUTH_ROUTES.verifyEmail, { replace: true, state: { from, next: AUTH_ROUTES.welcome } satisfies SignupFlowState })} />);
+        onDone={() => navigate(AUTH_ROUTES.verifyEmail, { replace: true, state: { from, next: from ?? AUTH_ROUTES.welcome } satisfies SignupFlowState })} />);
 
   }
   if (role === ROLE.Provider) {

@@ -16,7 +16,7 @@ import { AuthLayout } from './features/auth/components/AuthLayout';
 import { DevAuthBanner } from './features/auth/components/DevAuthBanner';
 import { LoginGate, RequireAuth, RequireRole, RequireVendorProfile } from './features/auth/components/guards';
 import { AUTH_ROUTES, ROLE } from './features/auth/constants';
-import { LandingGate } from './features/landing/components/LandingGate';
+import { AboutPage, LandingGate } from './features/landing/components/LandingGate';
 import { LanguageSync } from './i18n/LanguageSync';
 import { PlaceProvider } from './features/discovery/context/PlaceProvider';
 import { CartProvider } from './features/orders/context/CartProvider';
@@ -39,6 +39,10 @@ import('./features/public-profile/sections/VendorProfileSection').then((m) => ({
 const JobRequestSection = lazy(() => import('./features/jobs/sections/JobRequestSection').then((m) => ({ default: m.JobRequestSection })));
 const MyJobsSection = lazy(() => import('./features/jobs/sections/MyJobsSection').then((m) => ({ default: m.MyJobsSection })));
 const JobDetailsSection = lazy(() => import('./features/jobs/sections/JobDetailsSection').then((m) => ({ default: m.JobDetailsSection })));
+const ProductsSection = lazy(() => import('./features/discovery/sections/ProductsSection').then((m) => ({ default: m.ProductsSection })));
+const ProductDetailSection = lazy(() =>
+import('./features/discovery/sections/ProductDetailSection').then((m) => ({ default: m.ProductDetailSection }))
+);
 const SearchResultsSection = lazy(() =>
 import('./features/discovery/sections/SearchResultsSection').then((m) => ({ default: m.SearchResultsSection }))
 );
@@ -164,10 +168,12 @@ const router = createBrowserRouter(
           <Route path="/account/vendor-setup" element={<VendorSetupSection />} />
         </Route>
       </Route>
+      {/* The public landing page about Gwani, with its own header and footer. */}
+      <Route path={AUTH_ROUTES.about} element={<AboutPage />} />
       {/*
-        Customer shell. At "/" the LandingGate shows the public landing page to signed-out visitors and sends
-        other roles to their home; customers get their home as before. Booking, ordering, payments and the
-        account need sign-in.
+        Customer shell. "/" is the marketplace home for guests and customers (the LandingGate sends other
+        roles to their own home). Guests can browse, search, view shops and products, and fill the cart;
+        checkout, payments, bookings and the account need sign-in (RequireAuth sends them to login and back).
        */}
       <Route
         element={
@@ -182,6 +188,8 @@ const router = createBrowserRouter(
 
         <Route path="/" element={<HomeSection />} />
         <Route path="/search" element={<SearchResultsSection />} />
+        <Route path="/products" element={<ProductsSection />} />
+        <Route path="/products/:vendorId/:productId" element={<ProductDetailSection />} />
         <Route path="/vendors/:vendorId" element={<VendorProfileSection />} />
         <Route path="/vendor/:vendorId" element={<LegacyVendorRedirect />} />
         <Route path="/cart" element={<CartSection />} />
@@ -297,7 +305,7 @@ const router = createBrowserRouter(
         <Route index element={<RiderDashboardSection />} />
       </Route>
       {/* The Investor role: a read-only dividend ledger (front end and mock data only). */}
-      <Route path="/investor" element={<EnglishOnly><InvestorShell /></EnglishOnly>}>
+      <Route path="/investor" element={<RequireAuth><EnglishOnly><InvestorShell /></EnglishOnly></RequireAuth>}>
         <Route index element={<InvestorOverviewSection />} />
         <Route path="ledger" element={<InvestorLedgerSection />} />
         <Route path="payouts" element={<InvestorPayoutsSection />} />

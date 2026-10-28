@@ -565,7 +565,7 @@
       "vendors_other": "{{count}} vendors",
       "subtitleEmpty": "Products you add from vendor shops",
       "emptyTitle": "Your cart is empty",
-      "emptyText": "Open a vendor’s profile and tap Add to cart on any product in their shop.",
+      "emptyText": "Browse products from local shops and tap Add to cart. No account needed until checkout.",
       "browse": "Browse vendors",
       "summary": "Summary",
       "itemsTotal": "Items total",
@@ -573,7 +573,14 @@
       "checkout": "Go to checkout",
       "removeTitle": "Remove from cart?",
       "removeText": "{{name}} from {{vendor}} will be removed from your cart.",
-      "keep": "Keep it"
+      "keep": "Keep it",
+      "browseProducts": "Browse products",
+      "signInToCheckout": "Log in to check out",
+      "newCustomer": "New to Gwani? Create an account",
+      "guestNote": "Your cart is saved on this device. After you log in or create an account, you’ll come straight back to checkout.",
+      "merged": "We added the items saved to your account to your cart.",
+      "syncing": "Getting your cart ready…",
+      "invalid": "Your cart couldn’t be saved. Please try again."
     },
     "changes": {
       "priceUp": "Price went up from {{before}} to {{after}}.",

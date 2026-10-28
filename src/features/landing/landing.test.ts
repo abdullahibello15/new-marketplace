@@ -7,7 +7,7 @@ import { landingSearchUrl } from './utils/searchLink';
 
 describe('landing page', () => {
   it('is public, and so is the staff login, even while login is required', () => {
-    expect(isPublicPath(AUTH_ROUTES.start)).toBe(true);
+    expect(isPublicPath(AUTH_ROUTES.about)).toBe(true);
     expect(isPublicPath(AUTH_ROUTES.staffLogin)).toBe(true);
     expect(isPublicPath('/search')).toBe(false);
   });

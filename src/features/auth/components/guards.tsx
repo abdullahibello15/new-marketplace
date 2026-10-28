@@ -81,7 +81,7 @@ export function RequireRole({ role, fallback, loginTo, children }: {role: Role;f
 
 /**
  * The whole-app login requirement (REQUIRE_LOGIN in config.ts). Signed out on anything but a public page
- * → the landing page, remembering where they were going. With REQUIRE_LOGIN off it lets everything
+ * → the landing page (/about), remembering where they were going. With REQUIRE_LOGIN off it lets everything
  * through and each page's own guard (RequireAuth/RequireRole) decides, as before.
  */
 export function LoginGate({ children }: {children?: ReactNode;}) {
@@ -91,7 +91,7 @@ export function LoginGate({ children }: {children?: ReactNode;}) {
   if (status === 'loading') return <Checking />;
   if (status === 'signed_out') {
     const from = `${location.pathname}${location.search}${location.hash}`;
-    return <Navigate to={AUTH_ROUTES.start} replace state={{ from } satisfies LoginRedirectState} />;
+    return <Navigate to={AUTH_ROUTES.about} replace state={{ from } satisfies LoginRedirectState} />;
   }
   return <>{children ?? <Outlet />}</>;
 }

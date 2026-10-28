@@ -12,7 +12,7 @@ interface MobileBookingBarProps {
 export function MobileBookingBar({ fromPrice, children }: MobileBookingBarProps) {
   const { t } = useTranslation('discovery');
   return (
-    <div className="fixed inset-x-0 bottom-[calc(4.25rem+env(safe-area-inset-bottom))] z-20 border-t border-line bg-white/95 px-4 py-3 backdrop-blur lg:hidden">
+    <div className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-white/95 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur lg:hidden">
       <div className="mx-auto flex max-w-xl items-center gap-4">
         {fromPrice !== null &&
         <p className="shrink-0 text-sm text-muted">

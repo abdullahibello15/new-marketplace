@@ -8,16 +8,26 @@ import { ConfirmDialog } from '../../../components/ui/ConfirmDialog';
 import { EmptyState } from '../../../components/ui/EmptyState';
 import { PageContainer } from '../../../components/ui/PageContainer';
 import { Price } from '../../../components/ui/Price';
-import { SEARCH_ROUTE } from '../../discovery/constants';
+import { AUTH_ROUTES, ROLE } from '../../auth/constants';
+import { useAuth } from '../../auth/hooks/useAuth';
+import { PRODUCT_ROUTES } from '../../discovery/constants';
+import type { LoginRedirectState } from '../../auth/components/guards';
 import { ORDER_ROUTES } from '../constants';
 import { CartVendorGroup } from '../components/cart/CartVendorGroup';
 import { SeparateFulfilmentNote } from '../components/SeparateFulfilmentNote';
 import { useCart } from '../hooks/useCart';
 import type { CartItem } from '../types';
 
-/** The multi-vendor cart, grouped by vendor, with an overall total and a link to checkout. */
+/** After signing in or up from the cart, people come straight back to checkout. */
+const TO_CHECKOUT: LoginRedirectState = { from: ORDER_ROUTES.checkout };
+
+/**
+ * The multi-vendor cart, grouped by vendor, with an overall total and a link to checkout. Open to guests;
+ * for them the checkout button leads to login (or signup) and back to checkout, with the cart kept.
+ */
 export function CartSection() {
   const { t } = useTranslation('jobs');
+  const { user } = useAuth();
   const cart = useCart();
   const [removing, setRemoving] = useState<CartItem | null>(null);
   const vendorCount = cart.groups.length;
@@ -39,8 +49,8 @@ export function CartSection() {
           title={t('order.cart.emptyTitle')}
           description={t('order.cart.emptyText')}
           action={
-          <Link to={SEARCH_ROUTE} className={buttonClasses({ variant: 'secondary', size: 'sm' })}>
-                {t('order.cart.browse')}
+          <Link to={PRODUCT_ROUTES.list} className={buttonClasses({ variant: 'secondary', size: 'sm' })}>
+                {t('order.cart.browseProducts')}
               </Link>
           } /> :
 
@@ -56,7 +66,7 @@ export function CartSection() {
 
             )}
             </div>
-            <aside aria-labelledby="cart-summary-heading" className="space-y-4 lg:sticky lg:top-6 lg:self-start">
+            <aside aria-labelledby="cart-summary-heading" className="space-y-4 lg:sticky lg:top-32 lg:self-start">
               <section className="rounded-2xl border border-line bg-white p-4 lg:p-5">
                 <h2 id="cart-summary-heading" className="text-base font-bold text-ink">
                   {t('order.cart.summary')}
@@ -78,9 +88,21 @@ export function CartSection() {
                   </div>
                 </dl>
                 <p className="mt-2 text-xs text-muted">{t('order.cart.feesNote')}</p>
-                <Link to={ORDER_ROUTES.checkout} className={`${buttonClasses({ fullWidth: true })} mt-4`}>
-                  {t('order.cart.checkout')}
-                </Link>
+                {user ?
+              <Link to={ORDER_ROUTES.checkout} className={`${buttonClasses({ fullWidth: true })} mt-4`}>
+                    {t('order.cart.checkout')}
+                  </Link> :
+
+              <>
+                    <Link to={AUTH_ROUTES.login} state={TO_CHECKOUT} className={`${buttonClasses({ fullWidth: true })} mt-4`}>
+                      {t('order.cart.signInToCheckout')}
+                    </Link>
+                    <Link to={AUTH_ROUTES.signupFor(ROLE.Customer)} state={TO_CHECKOUT} className={`${buttonClasses({ variant: 'secondary', fullWidth: true })} mt-2`}>
+                      {t('order.cart.newCustomer')}
+                    </Link>
+                    <p className="mt-3 text-xs text-muted">{t('order.cart.guestNote')}</p>
+                  </>
+              }
               </section>
               <SeparateFulfilmentNote vendorCount={vendorCount} />
             </aside>

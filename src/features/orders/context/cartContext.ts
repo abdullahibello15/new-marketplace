@@ -18,6 +18,8 @@ export interface CartContextValue {
   /** Drops these vendors' lines, e.g. once their orders are placed. */
   removeVendors: (vendorIds: string[]) => void;
   quantityOf: (vendorId: string, productId: string) => number;
+  /** True while a guest cart is being joined with the cart saved to the account they just signed in to. */
+  syncing: boolean;
 }
 
 export const CartContext = createContext<CartContextValue | null>(null);

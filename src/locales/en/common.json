@@ -17,7 +17,8 @@
     "signOut": "Sign out",
     "logInOrSignUp": "Log in or sign up",
     "copy": "Copy",
-    "download": "Download"
+    "download": "Download",
+    "aboutGwani": "About Gwani"
   },
   "state": {
     "loading": "Loading…",
@@ -439,6 +440,40 @@
     "newDevice": {
       "title": "New sign-in to your account",
       "body": "Your account was just signed in on {{device}} near {{location}}. If this wasn’t you, sign that device out and change your password."
+    }
+  },
+  "market": {
+    "skipToContent": "Skip to content",
+    "home": "Gwani home",
+    "searchIn": "Search in",
+    "scopeProducts": "Products",
+    "scopeServices": "Services",
+    "searchLabel": "Search Gwani",
+    "searchPlaceholderProducts": "Search products, e.g. pipes, ankara",
+    "searchPlaceholderServices": "Search services, e.g. plumber, tailor",
+    "searchButton": "Search",
+    "account": "Account",
+    "hi": "Hi, {{name}}",
+    "myAccount": "My account",
+    "signIn": "Sign in",
+    "createAccount": "Create account",
+    "categories": "Categories",
+    "allProducts": "All products",
+    "findServices": "Find services",
+    "menu": "Menu",
+    "openMenu": "Open menu",
+    "footer": {
+      "help": "Help",
+      "howItWorks": "How Gwani works",
+      "faq": "FAQs",
+      "payments": "Payments and receipts",
+      "about": "About",
+      "sell": "Sell or offer services on Gwani",
+      "providerTerms": "Provider terms",
+      "contact": "Contact",
+      "contactSoon": "Contact details coming soon",
+      "rights": "© {{year}} Gwani · Minna, Niger State",
+      "staffLogin": "Staff login"
     }
   }
 }

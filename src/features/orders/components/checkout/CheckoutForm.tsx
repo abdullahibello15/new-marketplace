@@ -35,7 +35,7 @@ export function CheckoutForm({ check, places, onChanged, onPlaced }: CheckoutFor
           {c.anyDelivery && <DeliveryDetailsFields places={places} />}
         </div>
 
-        <aside aria-labelledby="checkout-total-heading" className="space-y-4 lg:sticky lg:top-6 lg:self-start">
+        <aside aria-labelledby="checkout-total-heading" className="space-y-4 lg:sticky lg:top-32 lg:self-start">
           <section className="rounded-2xl border border-line bg-white p-4 lg:p-5">
             <h2 id="checkout-total-heading" className="text-base font-bold text-ink">
               {t('order.checkout.totalToPay')}

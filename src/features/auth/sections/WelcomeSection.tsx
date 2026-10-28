@@ -4,6 +4,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { BadgeCheckIcon, SearchIcon, ShieldCheckIcon } from 'lucide-react';
 import { buttonClasses } from '../../../components/ui/buttonStyles';
 import { useAuth } from '../hooks/useAuth';
+import { safeReturnPath } from '../utils/returnPath';
 
 const TIPS = [
 { icon: SearchIcon, key: 'search' },
@@ -15,7 +16,7 @@ const TIPS = [
 export function WelcomeSection() {
   const { t } = useTranslation('auth');
   const { user } = useAuth();
-  const from = (useLocation().state as {from?: string;} | null)?.from;
+  const from = safeReturnPath((useLocation().state as {from?: string;} | null)?.from);
   return (
     <div className="space-y-5">
       <h1 className="text-2xl font-extrabold">{user ? t('welcome.title', { name: user.name.split(' ')[0] }) : t('welcome.titleNoName')}</h1>

@@ -17,7 +17,8 @@
     "signOut": "Fita",
     "logInOrSignUp": "Shiga ko yi rajista",
     "copy": "Kwafa",
-    "download": "Sauke"
+    "download": "Sauke",
+    "aboutGwani": "Game da Gwani"
   },
   "state": {
     "loading": "Ana lodawa…",
@@ -439,6 +440,40 @@
     "newDevice": {
       "title": "Sabon shiga a asusunka",
       "body": "An shiga asusunka yanzu a kan {{device}} kusa da {{location}}. Idan ba kai ba ne, fitar da wannan na’ura kuma ka canza kalmar sirrinka."
+    }
+  },
+  "market": {
+    "skipToContent": "Tsallaka zuwa abun ciki",
+    "home": "Shafin farko na Gwani",
+    "searchIn": "Nemi a cikin",
+    "scopeProducts": "Kayayyaki",
+    "scopeServices": "Ayyuka",
+    "searchLabel": "Nemi a Gwani",
+    "searchPlaceholderProducts": "Nemi kayayyaki, misali bututu, atamfa",
+    "searchPlaceholderServices": "Nemi ayyuka, misali mai gyaran famfo, tela",
+    "searchButton": "Nema",
+    "account": "Asusu",
+    "hi": "Sannu, {{name}}",
+    "myAccount": "Asusuna",
+    "signIn": "Shiga",
+    "createAccount": "Buɗe asusu",
+    "categories": "Rukunoni",
+    "allProducts": "Duk kayayyaki",
+    "findServices": "Nemi ayyuka",
+    "menu": "Menu",
+    "openMenu": "Buɗe menu",
+    "footer": {
+      "help": "Taimako",
+      "howItWorks": "Yadda Gwani ke aiki",
+      "faq": "Tambayoyi",
+      "payments": "Biya da rasit",
+      "about": "Game da mu",
+      "sell": "Sayar ko ba da ayyuka a Gwani",
+      "providerTerms": "Sharuɗɗan masu sana’a",
+      "contact": "Tuntuɓe mu",
+      "contactSoon": "Bayanan tuntuɓa na zuwa nan ba da daɗewa ba",
+      "rights": "© {{year}} Gwani · Minna, Jihar Neja",
+      "staffLogin": "Shigar ma’aikata"
     }
   }
 }

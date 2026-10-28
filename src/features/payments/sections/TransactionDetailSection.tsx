@@ -138,7 +138,7 @@ export function TransactionDetailSection() {
           <EscrowCard d={d} />
         </div>
 
-        <aside className="space-y-4 lg:sticky lg:top-6 lg:self-start" aria-label={tr('tx.actions')}>
+        <aside className="space-y-4 lg:sticky lg:top-32 lg:self-start" aria-label={tr('tx.actions')}>
           <section className="space-y-2 rounded-2xl border border-line bg-white p-4">
             {tx.hasReceipt ?
             <>

@@ -1,9 +1,15 @@
 {
   "home": {
     "greeting": "Hi, {{name}} 👋",
-    "titleSignedOut": "Find trusted help near you",
     "browseCategories": "Browse categories",
-    "nearYou": "Near you · {{place}}"
+    "nearYou": "Near you · {{place}}",
+    "heroTitle": "Shop local. Hire trusted help.",
+    "heroText": "Products from shops across Niger State, and plumbers, tailors and electricians who come to you. Pay safely: your money is held until the job is done.",
+    "shopProducts": "Shop products",
+    "findService": "Find a service",
+    "rowPopular": "Popular near {{place}}",
+    "rowBudget": "Under {{amount}}",
+    "rowTopShops": "From top-rated shops"
   },
   "sort": {
     "label": "Sort by",
@@ -245,5 +251,57 @@
       "timeBetween": "Choose a time between {{from}} and {{to}}.",
       "timePassed": "That time has already passed. Choose a later time."
     }
+  },
+  "products": {
+    "title": "Shop products",
+    "subtitle": "From local shops near {{place}}",
+    "count_one": "{{count}} product",
+    "count_other": "{{count}} products",
+    "loading": "Loading products…",
+    "showing": "Showing {{shown}} of {{total}} products",
+    "seeAll": "See all",
+    "emptyTitle": "No products found",
+    "emptyText": "Local shops haven’t added products yet. Check back soon.",
+    "emptyFiltered": "Try a different search or fewer filters.",
+    "clearSearch": "Clear search and filters",
+    "shopUnavailable": "This shop isn’t taking orders right now.",
+    "backToShop": "All products",
+    "notFoundTitle": "Product not found",
+    "notFoundText": "It may have been sold out and removed, or the link is wrong.",
+    "browseAll": "Browse all products",
+    "photos": "Product photos",
+    "photoN": "Photo {{n}} of {{total}}",
+    "buy": "Price and stock",
+    "checkoutNote": "No account needed to fill your cart. You’ll sign in or sign up at checkout.",
+    "description": "About this product",
+    "soldBy": "Sold by",
+    "visitShop": "Visit shop",
+    "errors": {
+      "notFound": "We couldn’t find that product."
+    },
+    "filters": {
+      "category": "Product category",
+      "allCategories": "All",
+      "price": "Price range",
+      "minPrice": "Min price",
+      "maxPrice": "Max price",
+      "any": "Any",
+      "apply": "Apply",
+      "inStockOnly": "In stock only",
+      "clear": "Clear filters ({{count}})",
+      "button": "Filters",
+      "buttonCount": "Filters ({{count}})",
+      "done": "Done"
+    },
+    "sort": {
+      "recommended": "Recommended",
+      "price_asc": "Price: low to high",
+      "price_desc": "Price: high to low",
+      "rating": "Top-rated shops"
+    },
+    "breadcrumb": "Breadcrumb",
+    "resultsFor": "Results for “{{query}}”",
+    "noDescription": "The shop hasn’t added a description yet.",
+    "shopReviewsNote": "Reviews of {{name}} from customers who ordered or booked with them."
   }
 }

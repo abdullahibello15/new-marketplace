@@ -26,17 +26,18 @@ export const MOCK_NETWORK_FAILURE_SUFFIX = '9999';
 
 /**
  * Login required for the whole app. true: signed-out visitors only see the public pages below and are
- * sent to the landing page from anywhere else (then back after signing in). false: browse freely,
- * sign in only for booking, ordering, payments and accounts (each page's own guard decides).
+ * sent to the landing page (/about) from anywhere else (then back after signing in). false (the default):
+ * guests browse the marketplace, search, shops, products and the cart freely; checkout, payments,
+ * bookings and accounts need sign-in (each route's own guard decides, and the services check again).
  */
-export const REQUIRE_LOGIN = true;
+export const REQUIRE_LOGIN = false;
 
 /**
  * Open without signing in when REQUIRE_LOGIN is on: the landing page, login (with its OTP step), forgot
  * password, signup (role picker and forms), terms, invitation claims (a signup) and the staff login.
  */
 export const PUBLIC_PATHS: readonly {path: string;prefix?: boolean;}[] = [
-{ path: AUTH_ROUTES.start },
+{ path: AUTH_ROUTES.about },
 { path: AUTH_ROUTES.login },
 { path: `${AUTH_ROUTES.login}/`, prefix: true },
 { path: AUTH_ROUTES.signup },

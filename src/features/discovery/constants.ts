@@ -103,3 +103,35 @@ export const SUGGESTION_GROUP_LABELS: Record<SuggestionGroupId, string> = {
 };
 
 export const placeLabel = (place: Pick<Place, 'name' | 'context'>) => `${place.name}, ${place.context}`;
+
+/* ---------- Product catalogue (public: guests browse it too) ---------- */
+
+export const PRODUCT_ROUTES = {
+  list: '/products',
+  /** Product ids are unique per shop, so the shop is part of the address. */
+  detail: (vendorId: string, productId: string) => `/products/${encodeURIComponent(vendorId)}/${encodeURIComponent(productId)}`
+} as const;
+
+/** URL params for the product list (shared links, Back undoes a change). */
+export const PRODUCT_PARAM = {
+  Query: 'q',
+  Category: 'category',
+  PriceMin: 'min',
+  PriceMax: 'max',
+  InStock: 'inStock',
+  Sort: 'sort'
+} as const;
+
+export const PRODUCT_SORT = {
+  /** In stock first, then shops serving the selected place, then the best-rated shops. */
+  Recommended: 'recommended',
+  PriceLowToHigh: 'price_asc',
+  PriceHighToLow: 'price_desc',
+  TopRatedShop: 'rating'
+} as const;
+
+export const PRODUCT_SORTS = Object.values(PRODUCT_SORT);
+
+export const PRODUCT_PAGE_SIZE = 12;
+/** Products on the home page, with "See all" to the full list. */
+export const FEATURED_PRODUCTS_COUNT = 8;

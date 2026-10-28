@@ -8,6 +8,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useOtpFlow, type OtpApi } from '../hooks/useOtpFlow';
 import { sendEmailCode, verifyEmail } from '../services/accountService';
 import { OtpCodeStep } from '../components/OtpCodeStep';
+import { safeReturnPath } from '../utils/returnPath';
 import type { SignupFlowState } from './SignupSection';
 import type { User } from '../types';
 
@@ -22,7 +23,7 @@ export function VerifyEmailSection() {
   const state = useLocation().state as SignupFlowState | null;
   const navigate = useNavigate();
   const toast = useToast();
-  const next = state?.next ?? homeFor();
+  const next = safeReturnPath(state?.next) ?? homeFor();
   const goNext = () => navigate(next, { replace: true, state: { from: state?.from } });
 
   const api = useMemo<OtpApi<User>>(() => ({

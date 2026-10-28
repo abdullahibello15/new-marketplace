@@ -11,7 +11,7 @@ interface PageSectionProps {
 /** A titled block of the profile page. The id doubles as an in-page anchor (#reviews). */
 export function PageSection({ id, title, action, children }: PageSectionProps) {
   return (
-    <section id={id} aria-labelledby={`${id}-heading`} className="scroll-mt-6">
+    <section id={id} aria-labelledby={`${id}-heading`} className="scroll-mt-36">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 id={`${id}-heading`} className="text-xs font-bold uppercase tracking-wider text-muted">
           {title}

@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { productCategoryLabel } from '../i18n/labels';
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { ImageOffIcon, ImagesIcon } from 'lucide-react';
 import { Lightbox } from './Lightbox';
 import { StockBadge } from './StockBadge';
@@ -9,7 +10,7 @@ import { STOCK_STATUS, categoryLabel, getStockStatus } from '../utils/products';
 import type { Product } from '../types/marketplace';
 
 /** Imported image links can go stale; show a neutral tile instead of the browser's broken-image icon. */
-function ProductImage({ src, dimmed }: {src: string;dimmed: boolean;}) {
+export function ProductImage({ src, dimmed }: {src: string;dimmed: boolean;}) {
   const [failed, setFailed] = useState(false);
   if (failed) {
     return (
@@ -30,9 +31,9 @@ function ProductImage({ src, dimmed }: {src: string;dimmed: boolean;}) {
 
 /**
  * Public shop grid. Hidden products (and any without a photo) never show. `renderAction` adds a control
- * under each product, e.g. Add to cart.
+ * under each product, e.g. Add to cart; `detailHref` links each product's name to its own page.
  */
-export function ProductGrid({ products, renderAction }: {products: Product[];renderAction?: (product: Product) => React.ReactNode;}) {
+export function ProductGrid({ products, renderAction, detailHref }: {products: Product[];renderAction?: (product: Product) => React.ReactNode;detailHref?: (product: Product) => string;}) {
   const { t } = useTranslation();
   const [open, setOpen] = useState<{product: Product;index: number;} | null>(null);
   const visible = products.filter((p) => p.available && p.images.length > 0);
@@ -67,7 +68,11 @@ export function ProductGrid({ products, renderAction }: {products: Product[];ren
               </button>
               <div className="flex flex-1 flex-col p-3">
                 <p className="text-xs font-semibold text-muted">{productCategoryLabel(p.category, categoryLabel(p.category))}</p>
-                <h3 className="mt-0.5 line-clamp-2 text-sm font-bold text-ink">{p.name}</h3>
+                <h3 className="mt-0.5 line-clamp-2 text-sm font-bold text-ink">
+                  {detailHref ?
+                  <Link to={detailHref(p)} className="rounded hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-pine/40">{p.name}</Link> :
+                  p.name}
+                </h3>
                 {p.description && <p className="mt-1 line-clamp-2 text-xs text-muted">{p.description}</p>}
                 <div className="mt-auto flex flex-wrap items-baseline justify-between gap-x-2 pt-2">
                   <p className="font-extrabold text-ink">

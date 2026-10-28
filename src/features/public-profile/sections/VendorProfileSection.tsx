@@ -78,7 +78,7 @@ export function VendorProfileSection() {
       <ProfileHeader vendor={vendor} bookAction={book('onDark')} />
 
       {/* Extra bottom padding on phones so the sticky booking bar never covers the last review. */}
-      <PageContainer className="space-y-10 pb-40 lg:pb-10">
+      <PageContainer className="space-y-10 pb-28 lg:pb-10">
         <AboutSection vendor={vendor} />
         <ServicesSection vendor={vendor} />
         <PortfolioSection vendor={vendor} />

@@ -1,5 +1,5 @@
-import type { GeoPoint, NigerLga, TradeCategory, Vendor, Verification } from '../../types/marketplace';
-import type { AREA_MODE, PLACE_KIND, RESULTS_VIEW, SORT_OPTION, SUGGESTION_GROUP } from './constants';
+import type { GeoPoint, NigerLga, Product, ProductCategory, TradeCategory, Vendor, Verification } from '../../types/marketplace';
+import type { AREA_MODE, PLACE_KIND, PRODUCT_SORT, RESULTS_VIEW, SORT_OPTION, SUGGESTION_GROUP } from './constants';
 
 type ValueOf<T> = T[keyof T];
 
@@ -108,4 +108,26 @@ export interface SuggestionOption {
   label: string;
   detail?: string;
   target: SearchTarget;
+}
+
+/* ---------- Product catalogue ---------- */
+
+export type ProductSort = ValueOf<typeof PRODUCT_SORT>;
+
+/** Product list filters, as kept in the URL (see utils/productSearch). */
+export interface ProductFilters {
+  query: string;
+  category: ProductCategory | null;
+  price: {min: number | null;max: number | null;};
+  inStockOnly: boolean;
+  sort: ProductSort;
+}
+
+/** The shop a product belongs to, as the catalogue shows it. `unavailable` blocks adding to the cart. */
+export type ProductShop = Pick<Vendor, 'id' | 'name' | 'lga' | 'verification' | 'rating' | 'reviews' | 'unavailable' | 'serviceAreas'>;
+
+/** One product in the public catalogue, with its shop. */
+export interface ProductListing {
+  product: Product;
+  shop: ProductShop;
 }

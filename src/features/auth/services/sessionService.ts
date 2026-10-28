@@ -1,6 +1,6 @@
 import i18n from '../../../i18n';
 import { ApiError, configureRequestAuth, createSingleFlight, mockResponse, requestAccessToken } from '../../../services/mockApi';
-import { CART_STORAGE_KEY } from '../../orders/constants';
+import { CART_OWNER_STORAGE_KEY, CART_STORAGE_KEY } from '../../orders/constants';
 import { STORAGE_KEYS } from '../../discovery/constants';
 import { JOB_ACTOR } from '../../jobs/constants';
 import { recordAccountMessage } from '../../jobs/services/notificationService';
@@ -236,7 +236,7 @@ export function endCurrentSession(): Promise<void> {
 /* ---------- Browser side: restore, schedule, expire ---------- */
 
 /** Private data cached in this browser: cleared on sign-out (preferences like language and place stay). */
-const PRIVATE_STORAGE_KEYS = [CART_STORAGE_KEY, STORAGE_KEYS.RecentSearches];
+const PRIVATE_STORAGE_KEYS = [CART_STORAGE_KEY, CART_OWNER_STORAGE_KEY, STORAGE_KEYS.RecentSearches];
 
 export function clearPrivateData() {
   for (const key of PRIVATE_STORAGE_KEYS) {

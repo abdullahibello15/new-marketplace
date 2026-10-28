@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { WrenchIcon } from 'lucide-react';
 import { ProductGrid } from '../../../components/ProductGrid';
+import { PRODUCT_ROUTES } from '../../discovery/constants';
 import { ServicePriceList } from '../../../components/ServicePriceList';
 import { EmptyState } from '../../../components/ui/EmptyState';
 import { AddToCartButton } from '../../orders/components/cart/AddToCartButton';
@@ -17,7 +18,7 @@ export function ServicesSection({ vendor }: {vendor: Vendor;}) {
   return (
     <div id={PROFILE_SECTION_ID.Services} className="scroll-mt-6 space-y-8">
       {hasServices && <ServicePriceList services={vendor.services} />}
-      {hasProducts && <ProductGrid products={vendor.products} renderAction={(p) => <AddToCartButton vendor={vendor} product={p} />} />}
+      {hasProducts && <ProductGrid products={vendor.products} renderAction={(p) => <AddToCartButton vendor={vendor} product={p} />} detailHref={(p) => PRODUCT_ROUTES.detail(vendor.id, p.id)} />}
       {!hasServices && !hasProducts &&
       <section aria-labelledby="services-empty-heading">
           <h2 id="services-empty-heading" className="text-xs font-bold uppercase tracking-wider text-muted">

@@ -26,7 +26,7 @@ export function ReviewsSection({ vendorId, vendorName }: {vendorId: string;vendo
     }
     return (
       <div className="grid gap-5 md:grid-cols-[260px_minmax(0,1fr)]">
-        <div className="md:sticky md:top-6 md:self-start">
+        <div className="md:sticky md:top-24 lg:top-32 md:self-start">
           {/* Same rating breakdown the vendor sees on their dashboard. */}
           <RatingSummary stats={stats} />
         </div>

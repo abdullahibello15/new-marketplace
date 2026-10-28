@@ -47,3 +47,22 @@ export function parseStoredCart(raw: unknown): CartItem[] | null {
   }
   return items;
 }
+
+/** Most lines one cart can hold (a guest cart sent to the server is refused beyond this). */
+export const CART_MAX_LINES = 100;
+
+/**
+ * Joins the cart a guest filled on this device with the cart saved to their account, when they sign in.
+ * The same product in both: the quantities add up, capped at the stock last seen; the guest's line is
+ * newer, so its price, name, photo and stock win, and the earlier "added" time is kept. Saved lines come
+ * first (the order they were added), then new guest lines. Prices and stock are checked again at checkout.
+ */
+export function mergeCarts(saved: CartItem[], guest: CartItem[]): CartItem[] {
+  const merged = saved.map((s) => {
+    const g = guest.find((i) => sameLine(i, s));
+    if (!g) return s;
+    return { ...g, quantity: Math.min(g.maxQuantity, s.quantity + g.quantity), addedAt: s.addedAt < g.addedAt ? s.addedAt : g.addedAt };
+  });
+  const added = guest.filter((g) => !saved.some((s) => sameLine(s, g)));
+  return [...merged, ...added].slice(0, CART_MAX_LINES);
+}

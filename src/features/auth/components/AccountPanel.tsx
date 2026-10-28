@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
-import { LogInIcon, LogOutIcon, MonitorSmartphoneIcon } from 'lucide-react';
+import { InfoIcon, LogInIcon, LogOutIcon, MonitorSmartphoneIcon } from 'lucide-react';
 import { LanguageSelector } from '../../../components/LanguageSelector';
 import { roleLabel } from '../../../i18n/labels';
 import { AUTH_ROUTES } from '../constants';
@@ -9,7 +9,8 @@ import { RoleSwitcher } from './RoleSwitcher';
 
 /**
  * The signed-in person in a shell's navigation: name, the role they're using (and a switcher if they have
- * several), the language, their signed-in devices, and sign out (to the login screen). Signed out: the language and a "Log in or sign up" button. `tone`
+ * several), the language, their signed-in devices, and sign out (to the login screen). Signed out: the language, a "Log in or sign up" button and a link to the
+ * page about Gwani. `tone`
  * matches the sidebar (dark) or the phone "More" menu (light).
  */
 export function AccountPanel({ subtitle, tone = 'dark', onNavigate }: {subtitle?: string;tone?: 'dark' | 'light';onNavigate?: () => void;}) {
@@ -33,6 +34,14 @@ export function AccountPanel({ subtitle, tone = 'dark', onNavigate }: {subtitle?
 
           <LogInIcon className="h-4 w-4 shrink-0" aria-hidden="true" />
           {t('action.logInOrSignUp')}
+        </Link>
+        <Link
+          to={AUTH_ROUTES.about}
+          onClick={onNavigate}
+          className={`flex items-center justify-center gap-2 rounded-xl px-3 py-1.5 text-center text-sm font-semibold underline-offset-2 hover:underline focus:outline-none focus-visible:ring-2 ${dark ? 'text-white/75 focus-visible:ring-white/60' : 'text-muted focus-visible:ring-pine/40'}`}>
+
+          <InfoIcon className="h-4 w-4 shrink-0" aria-hidden="true" />
+          {t('action.aboutGwani')}
         </Link>
       </div>);
 

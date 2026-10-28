@@ -202,6 +202,8 @@ export const ORDER_POLL_INTERVAL_MS = 20_000;
 
 /** localStorage key. Bump the version if the stored shape changes; old carts are then ignored. */
 export const CART_STORAGE_KEY = 'gwani.cart.v1';
+/** The account this device's cart was last merged into; absent for a guest's cart. Cleared on sign-out. */
+export const CART_OWNER_STORAGE_KEY = 'gwani.cart.owner.v1';
 
 /** What can change between adding to cart and checking out. */
 export const CART_CHANGE_KIND = {

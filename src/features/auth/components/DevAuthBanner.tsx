@@ -53,6 +53,6 @@ export function DevAuthBanner() {
 function OffLanding() {
   const { pathname } = useLocation();
   const { user } = useAuth();
-  if (pathname === AUTH_ROUTES.start && !user) return null;
+  if (pathname === AUTH_ROUTES.about && !user) return null;
   return <Banner />;
 }
