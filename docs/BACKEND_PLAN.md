@@ -1,11 +1,11 @@
-# Gwani Backend: Build Plan
+# ZAMANI NG MARKET HUB Backend: Build Plan
 
 > How the real backend replaces the mock services. Written October 2026, before any backend code exists.
 
 
 ## Context
 
-Gwani is a working front-end prototype with **no backend**. About 45 service files in `src/features/*/services/` hold all the data in memory and answer through `mockResponse()` in [src/services/mockApi.ts](../src/services/mockApi.ts). Real users, money and documents need a real backend before launch: a database, real authentication, Paystack payments with escrow, SMS and email, file storage, and server-side enforcement of every rule the browser checks today.
+ZAMANI NG MARKET HUB is a working front-end prototype with **no backend**. About 45 service files in `src/features/*/services/` hold all the data in memory and answer through `mockResponse()` in [src/services/mockApi.ts](../apps/web/src/services/mockApi.ts). Real users, money and documents need a real backend before launch: a database, real authentication, Paystack payments with escrow, SMS and email, file storage, and server-side enforcement of every rule the browser checks today.
 
 The prototype was built with a backend in mind, which makes this easier:
 - **Every service is already async.** Each returns a Promise and throws `ApiError(message, status)`, so a service body can become a `fetch` without changing any page.
@@ -38,7 +38,7 @@ The prototype was built with a backend in mind, which makes this easier:
 | DB access | **Drizzle ORM** + drizzle-kit migrations | TypeScript-first and close to SQL, with explicit transactions (important for money). |
 | Database | PostgreSQL 16, PostGIS (distance search), pg_trgm (text search) | Enough for search at MVP scale, no Elasticsearch needed |
 | Jobs and scheduling | **BullMQ** on Redis | Replaces the `runScheduled…Tasks()` read-time stand-ins |
-| Auth | Own implementation: argon2id, JWT access token (15 min), rotating opaque refresh token in an httpOnly cookie, sessions table | Mirrors `sessionBackend.ts` and [sessionConfig.ts](../src/features/auth/sessionConfig.ts) exactly |
+| Auth | Own implementation: argon2id, JWT access token (15 min), rotating opaque refresh token in an httpOnly cookie, sessions table | Mirrors `sessionBackend.ts` and [sessionConfig.ts](../apps/web/src/features/auth/sessionConfig.ts) exactly |
 | SMS / OTP | **Termii** (Nigerian, DND-route OTP) | |
 | Email / push | AWS SES / Firebase Cloud Messaging | |
 | PDFs | Keep generating on the client (jsPDF already works). The server only provides receipt data. | |
@@ -63,9 +63,9 @@ packages/contracts/  ← zod request/response schemas + DTO types for each endpo
 ### Step 0 refactor: extract `packages/domain`
 
 These files move into `packages/domain`, along with their tests:
-- [jobs/stateMachine.ts](../src/features/jobs/stateMachine.ts) and [jobs/cancellationPolicy.ts](../src/features/jobs/cancellationPolicy.ts)
+- [jobs/stateMachine.ts](../apps/web/src/features/jobs/stateMachine.ts) and [jobs/cancellationPolicy.ts](../apps/web/src/features/jobs/cancellationPolicy.ts)
 - `orders/stateMachine.ts`
-- [payments/escrow/escrowRules.ts](../src/features/payments/escrow/escrowRules.ts) and `escrowConfig.ts`
+- [payments/escrow/escrowRules.ts](../apps/web/src/features/payments/escrow/escrowRules.ts) and `escrowConfig.ts`
 - `vendor-dashboard/utils/{billing,subscription,bundle}.ts`
 - `investor/utils/ledger.ts`
 - `admin/analytics/aggregations.ts`
@@ -79,6 +79,12 @@ The frontend's existing paths re-export them, so no page changes. One coupling h
 ## 3. Core data model (Postgres)
 
 **Money is stored as `bigint` kobo.** The API contracts carry kobo too, and the frontend converts at its service boundary.
+
+**Every timestamp is `timestamptz`** (stored as UTC). The server runs with `TZ=Africa/Lagos` (Nigeria has no daylight
+saving), but that only affects the domain's day-boundary logic (start of day, renewal ranges, "due today"), never how
+times are stored.
+- TODO: make the domain take an explicit timezone parameter (e.g. `@date-fns/tz`), so it stops depending on
+  `process.env.TZ`.
 
 - **Identity:**
   - `users` (phone E.164, unique email, argon2 password hash, language, status)
@@ -103,7 +109,7 @@ The frontend's existing paths re-export them, so no page changes. One coupling h
   - `admin_staff`
   - `verification_applications` + `verification_documents` (S3 keys; ID numbers **encrypted with KMS**, reveal is audited)
   - `disputes`, `dispute_messages`, `evidence_requests`, `moderation_items`, `appeals`
-  - `audit_log` (append-only: a DB trigger rejects UPDATE and DELETE)
+  - `audit_log` (append-only: a DB trigger rejects UPDATE, DELETE and TRUNCATE, and the app role lacks those grants; see §6)
   - `profile_invites`, `vendor_imports`
 - **Investor (later):** `stakes`, `investor_ledger_entries`, `payout_requests`
 
@@ -239,10 +245,35 @@ app.post('/v1/checkout', { ...customerOnly, schema: { body: checkoutSchema } }, 
 ---
 
 ## 6. Open items to confirm before the phase that needs them
+- **ROUNDING DECISION NEEDED BEFORE PHASE 4.** The domain's money maths (5% commission, late-cancellation fee,
+  proration, bundle discounts, dividends) runs in whole naira today; Phase 0 moves it unchanged. Before Phase 4,
+  switch it to kobo and confirm the rounding.
+  - Proposed default: integer kobo arithmetic with round-half-up, and ledger entries that always balance exactly
+    (any remainder goes to a defined side, never lost).
 - Commission (5%) and late-cancellation fee (both marked MOCK) → Phase 3/4.
 - `RECEIPT_ISSUER` business details, a Paystack business account, and Termii sender ID approval → Phase 1/4 (start early; approvals take weeks).
 - Session timing values marked PLACEHOLDER in `sessionConfig.ts` → Phase 1.
 - Plan features and limits, bundle tiers, dividend rules → Phase 7/8.
+- **Web toolchain upgrade, on its own branch (not Phase 0):** the web app's dev and test tools carry the critical and
+  high `npm audit` findings: vitest 2.1 (and its tinypool, vite-node and @vitest/mocker) and vite 5.4 (and its
+  esbuild). None ship in the production bundle. Upgrade vitest and vite to their current majors (the API already
+  uses vitest 5), fix what breaks, then run the full `npm run test:tz` (both timezones), `lint`, `typecheck` and a
+  production `build`. Never `npm audit fix --force`. ESLint 8 (end of life, used by both apps) → 9 with flat config
+  belongs on the same branch.
+  - On that branch or the next, react-router-dom 6 → 7: the only finding in what ships (2 moderate). Not exploitable
+    here today: `safeReturnPath` already rejects backslash paths (the open-redirect advisory), and the other
+    advisory affects SSR hydration only.
+- Audit what ships per workspace: `npm audit --omit=dev --workspace apps/web` (and `apps/api`). From the root,
+  `--omit=dev` audits only the root package and misses every workspace's production dependencies.
+- API image size (553 MB, of which ~190 MB is node_modules): `@sentry/node` 11 depends on `@sentry/bundler-plugins`
+  (Sentry CLI, babel, oxc-parser, ~100 MB), and npm keeps `typescript` (`devOptional`) despite `--omit=dev`. Revisit
+  before Phase 5 (a slimmer Sentry setup or pruning in the Dockerfile); it doesn't affect behaviour.
+- The root `package.json` lists `drizzle-orm` on purpose: npm kept installing it only under `apps/api`, where
+  drizzle-kit (hoisted to the root) can't resolve it. Remove it once npm hoists it on its own.
+- **Before launch: the production app's DB role must not own `audit_log`.** Migrations run as a separate owner
+  role; the app role gets SELECT and INSERT only, with UPDATE, DELETE and TRUNCATE revoked. The trigger alone isn't
+  enough: a superuser or the table owner can disable triggers (`ALTER TABLE … DISABLE TRIGGER`). Same for the later
+  append-only tables (`ledger_entries`, `job_events`). Locally, one `zamani` role owns everything.
 
 ---
 

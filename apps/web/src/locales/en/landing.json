@@ -1,0 +1,180 @@
+{
+  "meta": {
+    "title": "{{appName}} – trusted local services and shops in Minna",
+    "description": "Find verified plumbers, tailors, electricians, riders and shops across Minna and Niger State. Book or order, and pay safely with escrow."
+  },
+  "skip": "Skip to main content",
+  "nav": {
+    "label": "Main",
+    "home": "{{appName}} home",
+    "howItWorks": "How it works",
+    "categories": "Categories",
+    "providers": "For providers",
+    "faq": "FAQ",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "logIn": "Log in",
+    "createAccount": "Create account",
+    "goToConsole": "Go to admin console",
+    "goToApp": "Go to my account"
+  },
+  "hero": {
+    "title": "Everything You Need, <hl>All in One</hl> Marketplace",
+    "subtitle": "Hire trusted local pros and shop from verified sellers across Minna and Niger State, all in one place.",
+    "findService": "Find a service",
+    "becomeProvider": "Become a provider",
+    "startShopping": "Start Shopping",
+    "imageAlt": "A smiling shopper using a phone app, with shopping bags and products around her",
+    "features": {
+      "delivery": "Fast & Reliable Delivery",
+      "payments": "Secure Payments",
+      "verified": "Verified Sellers",
+      "support": "24/7 Support"
+    }
+  },
+  "how": {
+    "title": "How it <hl>works</hl>",
+    "customers": {
+      "heading": "For customers",
+      "step1": {
+        "title": "Search",
+        "text": "Find providers and shops near you by service, area and verification."
+      },
+      "step2": {
+        "title": "Book or order",
+        "text": "Request a quote for a job, or order products for pickup or delivery."
+      },
+      "step3": {
+        "title": "Pay safely",
+        "text": "Your payment is held in escrow and only released when the job is done or your order arrives."
+      }
+    },
+    "providers": {
+      "heading": "For providers",
+      "step1": {
+        "title": "Sign up",
+        "text": "Create your account with your phone number, then set up your business profile."
+      },
+      "step2": {
+        "title": "Get verified",
+        "text": "Upload your documents. Verified providers show a badge customers can trust."
+      },
+      "step3": {
+        "title": "Receive requests",
+        "text": "Customers nearby send you job requests and orders. Reply, quote and get paid."
+      }
+    }
+  },
+  "trust": {
+    "title": "Trust and <hl>safety</hl>",
+    "intro": "Built so customers and providers can rely on each other.",
+    "verification": {
+      "title": "Verification badges",
+      "text": "{{appName}}'s team checks providers' ID and trade documents. Badges show what has been verified."
+    },
+    "escrow": {
+      "title": "Escrow-protected payments",
+      "text": "Card, transfer and USSD payments are held safely until the work is confirmed. Problems can be reported for review."
+    },
+    "reviews": {
+      "title": "Honest reviews",
+      "text": "Only customers who booked or ordered can leave a review, and providers can reply."
+    }
+  },
+  "providers": {
+    "title": "Grow your <hl>business</hl> with {{appName}}",
+    "intro": "Reach more customers in your area and manage your work in one place.",
+    "benefit1": "A public profile with your services, prices, photos and working hours",
+    "benefit2": "Job requests and orders from customers near you",
+    "benefit3": "Payments through the app, with your earnings in one view",
+    "benefit4": "A verification badge once your documents are approved",
+    "plansTitle": "Plans",
+    "perMonth": "per month",
+    "trial": "New providers start with a free trial of {{days}} days.",
+    "join": "Join as a provider",
+    "imageAlt": "A plumber repairing pipes under a kitchen sink"
+  },
+  "faq": {
+    "title": "Questions, <hl>answered</hl>",
+    "q1": {
+      "q": "What is {{appName}}?",
+      "a": "{{appName}} connects people in Minna and across Niger State with local service providers and shops. You can find a provider, request a quote or order products, and pay through the app."
+    },
+    "q2": {
+      "q": "How do payments work?",
+      "a": "When you pay by card, transfer or USSD, the money is held safely (escrow) and only released to the provider after the job is done or the order is received. If something goes wrong, you can report a problem."
+    },
+    "q3": {
+      "q": "Can I pay with cash?",
+      "a": "Many providers accept cash when the job is done. You can see whether a provider takes cash before you book."
+    },
+    "q4": {
+      "q": "How are providers checked?",
+      "a": "Providers can verify their identity and their trade with documents that {{appName}}'s team reviews. Verified providers show a badge on their profile."
+    },
+    "q5": {
+      "q": "Do I need a phone number to sign up?",
+      "a": "Customers sign up with an email and a password, and can add a phone number later. Providers sign up with their phone number and verify it with a code."
+    },
+    "q6": {
+      "q": "How much does it cost to join as a provider?",
+      "a": "Providers choose a monthly plan: Starter, Standard or Premium. The prices are shown in the For providers section. New providers start with a free trial."
+    },
+    "q7": {
+      "q": "Can I use {{appName}} in Hausa?",
+      "a": "Yes. You can use {{appName}} in English or Hausa, and switch at any time."
+    },
+    "q8": {
+      "q": "Where is {{appName}} available?",
+      "a": "Across the 25 LGAs of Niger State, starting with Minna."
+    }
+  },
+  "footer": {
+    "providerTerms": "Provider terms",
+    "staffLogin": "Staff login",
+    "rights": "© {{year}} {{appName}}",
+    "termsShort": "Terms (coming soon)",
+    "privacyShort": "Privacy (coming soon)"
+  },
+  "stats": {
+    "label": "{{appName}} in numbers",
+    "providers_one": "provider listed",
+    "providers_other": "providers listed",
+    "reviews_one": "customer review",
+    "reviews_other": "customer reviews",
+    "lgasValue": "{{count}} LGAs",
+    "lgas": "Minna and all of Niger State"
+  },
+  "market": {
+    "title": "What do you need today?",
+    "intro": "Tradespeople who come to you, and shops you can order from.",
+    "tabsLabel": "Show services or shops",
+    "tabServices": "Services",
+    "tabShops": "Shops",
+    "categoriesTitle": "Categories",
+    "providersCount_one": "{{count}} provider",
+    "providersCount_other": "{{count}} providers",
+    "shopsCount_one": "{{count}} shop",
+    "shopsCount_other": "{{count}} shops",
+    "featuredTitle": "Top rated near you",
+    "featuredIntro": "The highest-rated in Minna and around, from their customers’ reviews.",
+    "reviews_one": "({{count}} review)",
+    "reviews_other": "({{count}} reviews)",
+    "from": "From",
+    "bookNow": "Book now",
+    "viewShop": "View shop"
+  },
+  "testimonials": {
+    "title": "What customers <hl>say</hl>",
+    "intro": "In their own words, from reviews on {{appName}}.",
+    "about": "About {{vendor}}"
+  },
+  "finalCta": {
+    "title": "Ready when you are",
+    "text": "Create a free account to book trusted local providers, or join to reach customers near you.",
+    "button": "Create account"
+  },
+  "panel": {
+    "close": "Close"
+  }
+}

@@ -1,0 +1,912 @@
+{
+  "status": {
+    "requested": {
+      "label": "Requested",
+      "description": "Waiting for the vendor to send a quote."
+    },
+    "quoted": {
+      "label": "Quoted",
+      "description": "The vendor sent a quote. The customer can accept or reject it."
+    },
+    "scheduled": {
+      "label": "Scheduled",
+      "description": "Quote accepted. Date and price are locked in."
+    },
+    "in_progress": {
+      "label": "In progress",
+      "description": "The vendor has arrived and started the job."
+    },
+    "awaiting_confirmation": {
+      "label": "Awaiting confirmation",
+      "description": "The vendor marked the work as done. Waiting for the customer to confirm."
+    },
+    "completed": {
+      "label": "Completed",
+      "description": "The customer confirmed the work is done."
+    },
+    "closed": {
+      "label": "Closed",
+      "description": "Finished. Nothing left to do."
+    },
+    "declined": {
+      "label": "Declined",
+      "description": "The vendor can’t take this job."
+    },
+    "quote_rejected": {
+      "label": "Quote rejected",
+      "description": "The customer turned down the quote."
+    },
+    "cancelled": {
+      "label": "Cancelled",
+      "description": "The job was called off."
+    },
+    "disputed": {
+      "label": "Disputed",
+      "description": "The customer reported a problem. {{appName}}’s team is reviewing it."
+    }
+  },
+  "rescheduleStatus": {
+    "pending": "Waiting for a reply",
+    "accepted": "Accepted",
+    "declined": "Declined"
+  },
+  "disputeReason": {
+    "not_finished": "The work isn’t finished",
+    "poor_quality": "The work is poor quality or doesn’t work",
+    "damage": "Something was damaged",
+    "price_changed": "They asked for more than the agreed price",
+    "other": "Something else"
+  },
+  "disputeOutcome": {
+    "release": "Resolved in the vendor’s favour",
+    "refund": "Resolved in the customer’s favour: full refund",
+    "split": "Resolved with a partial refund",
+    "dismiss": "Dispute dismissed: the job carries on"
+  },
+  "actor": {
+    "customer": "Customer",
+    "vendor": "Vendor",
+    "system": "{{appName}}",
+    "you": "You"
+  },
+  "timeWindow": {
+    "morning": "Morning (8am – 12pm)",
+    "afternoon": "Afternoon (12pm – 4pm)",
+    "evening": "Evening (4pm – 7pm)",
+    "anytime": "Any time they’re open",
+    "fallback": "Any time"
+  },
+  "duration": {
+    "1": "About 1 hour",
+    "2": "About 2 hours",
+    "3": "About 3 hours",
+    "4": "Half a day",
+    "8": "A full day",
+    "16": "Two days",
+    "about": "About {{count}} hours"
+  },
+  "expiry": {
+    "24": "24 hours",
+    "48": "2 days",
+    "72": "3 days",
+    "168": "1 week"
+  },
+  "quoteExpiry": {
+    "expiresIn": "Expires in {{time}}",
+    "expiredAgo": "Expired {{time}} ago"
+  },
+  "cancelReason": {
+    "customer": {
+      "no_longer_needed": "I don’t need it any more",
+      "found_someone_else": "I found someone else",
+      "time_doesnt_work": "The time no longer works for me",
+      "price_too_high": "The price is too high"
+    },
+    "vendor": {
+      "unavailable": "I’m no longer available at that time",
+      "emergency": "Personal or family emergency",
+      "materials": "I can’t get the parts or materials",
+      "out_of_area": "The job is outside my area"
+    }
+  },
+  "policy": {
+    "blockedStarted": "The job has started, so it can’t be cancelled. Use “Report a problem” if something is wrong.",
+    "blockedVendorDecline": "Use Decline to turn down a new request.",
+    "blockedStage": "This job can’t be cancelled at this stage.",
+    "freeBefore": "Free cancellation: no quote has been accepted yet.",
+    "vendorRecorded": "This cancellation will be recorded on your profile.",
+    "freeWindow": "Free cancellation: it’s more than {{hours}} hours before the start.",
+    "lateCustomer": "Late cancellation: it’s less than {{hours}} hours before the start.",
+    "lateCustomerFee": "Late cancellation: it’s less than {{hours}} hours before the start, so a {{fee}} fee applies.",
+    "lateSummary": "Cancelling within {{hours}} hours of the start counts as a late cancellation.",
+    "lateVendor": "Late cancellation: the customer is expecting you within {{hours}} hours. This will be recorded on your profile.",
+    "line1": "Free to cancel until you accept a quote.",
+    "line2": "After that, free to cancel up to {{hours}} hours before the start.",
+    "line3": "Within {{hours}} hours, a late fee of {{percent}}% of the price (at least {{minimum}}) applies.",
+    "line4": "Once the vendor has started, you can’t cancel, but you can report a problem.",
+    "freeUpTo": "Free cancellation up to {{hours}} hours before",
+    "toggle": "Policy",
+    "fee": "Cancellation fee",
+    "feeDemo": "Demo only: no money is charged.",
+    "free": "Free"
+  },
+  "hint": {
+    "reschedule": "Reschedule request: accept or decline",
+    "quoteReady": "Quote ready: accept or reject",
+    "workDone": "Work done: confirm or report a problem",
+    "review": "Rate and review this job",
+    "newRequest": "New request: send a quote or decline",
+    "readyToStart": "Ready to start",
+    "inProgress": "In progress: mark done when finished"
+  },
+  "rescheduleRule": {
+    "onlyScheduled": "Only scheduled jobs can be rescheduled.",
+    "alreadyWaiting": "There’s already a reschedule request waiting for a reply.",
+    "maxReached": "This job has already had {{max}} reschedule requests, the most allowed.",
+    "tooClose": "It’s too close to the start time. Reschedules must be requested at least {{hours}} hours before.",
+    "answered": "This reschedule request has already been answered.",
+    "ownRequest": "You can’t answer your own reschedule request.",
+    "noLonger": "This job can no longer be rescheduled."
+  },
+  "details": {
+    "title": "Job details",
+    "service": "Service: ",
+    "preferred": "Preferred:",
+    "lga": "{{lga}} LGA",
+    "photos": "Photos",
+    "photoLabel": "Photo from job #{{id}}",
+    "noPhotos": "No photos added."
+  },
+  "activity": {
+    "title": "Activity",
+    "history": "Status history"
+  },
+  "messages": {
+    "title": "Messages",
+    "comingSoon": "Chatting with {{name}} about this job is coming soon."
+  },
+  "arrival": "{{name}} arrived at {{time}}",
+  "filter": {
+    "all": "All",
+    "label": "Filter jobs by status"
+  },
+  "timeline": {
+    "label": "Job progress",
+    "stopped": "job ended here"
+  },
+  "review": {
+    "heading": "Review"
+  },
+  "cancelled": {
+    "title": "{{who}} cancelled this job",
+    "titleYou": "You cancelled this job",
+    "fee": "Late-cancellation fee:",
+    "demo": "(demo only, not charged)"
+  },
+  "dispute": {
+    "customerTitle": "You reported a problem",
+    "vendorTitle": "The customer reported a problem",
+    "refunded": "{{amount}} refunded to the customer.",
+    "reason": "{{appName}}’s reason: {{reason}}",
+    "decided": "Decided {{date}}.",
+    "reported": "Reported {{date}}. {{appName}}’s team will contact both of you within 2 working days."
+  },
+  "rescheduleHistory": {
+    "title": "Reschedule history",
+    "to": "to"
+  },
+  "confirm": {
+    "title": "Awaiting your confirmation",
+    "text": "{{name}} says the work is done. Check it, then confirm, or report a problem if something isn’t right.",
+    "auto": "If you don’t reply, it’s confirmed automatically on {{date}} ({{hours}} hours after it was marked done).",
+    "report": "Report a problem",
+    "confirm": "Confirm completion",
+    "dialogTitle": "Confirm the job is complete?",
+    "dialogText": "You’re confirming {{name}} finished job #{{id}}. You can’t report a problem afterwards.",
+    "dialogConfirm": "Yes, it’s done"
+  },
+  "quote": {
+    "quote": "Quote",
+    "agreed": "Agreed price",
+    "lockedIn": "Locked in",
+    "includes": "What’s included",
+    "bookedFor": "Booked for",
+    "proposedTime": "Proposed time",
+    "estimated": "Estimated time"
+  },
+  "quoteResponse": {
+    "expired": "This quote has expired, so it can’t be accepted. Message {{name}} to ask for a new one.",
+    "reject": "Reject",
+    "accept": "Accept",
+    "acceptTitle": "Accept this quote?",
+    "acceptText": "You’re booking {{name}} for {{amount}} on {{date}} at {{time}}. The price and time will be locked in.",
+    "acceptConfirm": "Accept and book",
+    "rejectTitle": "Reject this quote?",
+    "rejectText": "{{name}} will be told you’ve turned it down. You can’t undo this.",
+    "rejectReason": "Reason for the vendor",
+    "rejectPlaceholder": "e.g. Over my budget, found someone closer",
+    "rejectConfirm": "Reject quote"
+  },
+  "myJobs": {
+    "title": "My Jobs",
+    "waiting_one": "{{count}} job needs your attention",
+    "waiting_other": "{{count}} jobs need your attention",
+    "subtitle": "Track your job requests and bookings",
+    "loading": "Loading your jobs",
+    "emptyTitle": "No jobs yet",
+    "emptyText": "Find a vendor and send a job request. It’ll show up here so you can track it.",
+    "findVendor": "Find a vendor",
+    "noneWithStatus": "No jobs with this status",
+    "showAll": "Show all jobs"
+  },
+  "notifications": {
+    "failed": "Couldn’t load updates.",
+    "loading": "Loading updates",
+    "title": "Updates",
+    "unread": "unread",
+    "markAll": "Mark all read",
+    "unreadItem": "(unread)",
+    "showFewer": "Show fewer",
+    "showAll": "Show all {{count}}"
+  },
+  "cancel": {
+    "button": "Cancel job",
+    "title": "Cancel job #{{id}}?",
+    "text": "{{name}} will be told it’s cancelled and why.",
+    "reasonLabel": "Why are you cancelling?",
+    "placeholder": "Add any detail that helps",
+    "continue": "Continue",
+    "confirmTitle": "Cancel this job for good?",
+    "confirmFee": "Job #{{id}} will be cancelled with a {{fee}} late-cancellation fee (demo only, not charged).",
+    "confirmFree": "Job #{{id}} will be cancelled at no cost.",
+    "reasonLine": "Reason: “{{reason}}”.",
+    "noUndo": "You can’t undo this.",
+    "confirm": "Yes, cancel job",
+    "keep": "Keep job"
+  },
+  "reviewPrompt": {
+    "title": "How did {{name}} do?",
+    "text": "Your review appears on their profile and helps other customers in Minna.",
+    "rating": "Your rating",
+    "comment": "Your review (optional)",
+    "placeholder": "Were they on time? Was the price fair? Would you hire them again?",
+    "skip": "Skip review",
+    "post": "Post review"
+  },
+  "page": {
+    "title": "Job #{{id}}",
+    "back": "My Jobs",
+    "notFoundTitle": "Job not found",
+    "notFoundHeading": "We couldn’t find that job",
+    "backToMyJobs": "Back to My Jobs",
+    "loading": "Loading job",
+    "progress": "Progress",
+    "aside": "Quote and activity",
+    "viewVendor": "View {{name}}"
+  },
+  "panel": {
+    "somethingWrong": "Something wrong?",
+    "startedText": "The job has started, so it can’t be cancelled. If there’s a problem, report it and {{appName}} will step in.",
+    "report": "Report a problem",
+    "noQuote": "No quote yet. {{name}} will send one here."
+  },
+  "request": {
+    "pageTitle": "Request a job",
+    "vendor": "Vendor",
+    "notFound": "We couldn’t find that vendor",
+    "browse": "Browse vendors",
+    "loading": "Loading",
+    "sellsProducts": "{{name}} sells products, so there’s no job to book.",
+    "blockedTitle": "You can’t book a job here right now",
+    "backTo": "Back to {{name}}",
+    "formLabel": "Request a job from {{name}}",
+    "what": "What do you need?",
+    "photos": "Photos",
+    "photosHint": "Add 1 to 5 photos of the problem. Clear photos get you a more accurate quote.",
+    "when": "When",
+    "where": "Where",
+    "quoteFirst": "You’ll get a quote first. Nothing is booked or paid until you accept it.",
+    "send": "Send request",
+    "leaveTitle": "Leave without sending?",
+    "leaveText": "Your job request hasn’t been sent. If you leave now, what you’ve entered will be lost.",
+    "leave": "Leave",
+    "keepEditing": "Keep editing",
+    "service": "Service (optional)",
+    "serviceHint": "Not sure? Leave it and describe the problem below.",
+    "notSure": "I’m not sure",
+    "describe": "Describe the job",
+    "describeHint": "What’s wrong, where it is, and anything the vendor should bring.",
+    "minCount": "{{n}}/{{min}} min",
+    "descriptionPlaceholder": "e.g. Kitchen tap drips even when fully closed. It’s a single-lever mixer, about 5 years old.",
+    "date": "Preferred date",
+    "worksThatDay": "They work {{hours}} that day.",
+    "window": "Time window",
+    "landmark": "Street or landmark",
+    "landmarkHint": "For example: “Behind NEPA office, blue gate” or “House 14, Bosso Estate”.",
+    "place": "Town or LGA",
+    "placesFailed": "Couldn’t load the list of areas.",
+    "loadingAreas": "Loading areas…",
+    "chooseArea": "Choose your area",
+    "towns": "Towns & neighbourhoods",
+    "lgas": "Local Government Areas",
+    "lgaOption": "{{name}} LGA",
+    "useLocation": "Use my location",
+    "locationDemo": "“Use my location” is a demo for now and picks a sample spot in Minna.",
+    "photoAlt": "Job photo"
+  },
+  "sent": {
+    "title": "Request sent to {{name}}",
+    "textWithTime": "They’ll send you a quote, usually {{time}}. Nothing is booked until you accept it.",
+    "text": "They’ll send you a quote. Nothing is booked until you accept it.",
+    "job": "Job",
+    "status": "Status",
+    "preferred": "Preferred",
+    "track": "Track this job",
+    "back": "Back to {{name}}"
+  },
+  "report": {
+    "title": "Report a problem",
+    "text": "This puts the job on hold instead of confirming it. {{appName}}’s team will look into it with you and {{name}}.",
+    "what": "What went wrong?",
+    "happened": "What happened?",
+    "placeholder": "e.g. The pipe still leaks when the tap is on.",
+    "submit": "Report problem"
+  },
+  "reschedule": {
+    "title": "Need a different time?",
+    "youAsked": "You asked to move it to {{date}}",
+    "theyAsked": "{{name}} asked to move it to {{date}}",
+    "waiting": "Waiting for {{name}} to reply. The current time stands until then.",
+    "decline": "Decline",
+    "acceptNew": "Accept new time",
+    "ask": "Ask {{name}} to move it. {{left}} of {{max}} reschedules left.",
+    "request": "Request reschedule",
+    "acceptTitle": "Accept the new time?",
+    "acceptText": "Job #{{id}} moves from {{from}} to {{to}}.",
+    "declineTitle": "Decline the new time?",
+    "declineText": "Job #{{id}} stays on {{from}}. {{name}} will be told.",
+    "keepOriginal": "Keep original time",
+    "dialogTitle": "Request a new time",
+    "dialogText": "{{name}} can accept or decline. Until they reply, the current time stands.",
+    "lastOne": "This is the last reschedule allowed for this job.",
+    "left_one": "{{count}} reschedule left for this job.",
+    "left_other": "{{count}} reschedules left for this job.",
+    "current": "Currently booked: {{date}}",
+    "newDate": "New date",
+    "newTime": "New time",
+    "reason": "Reason",
+    "reasonHint": "Up to {{max}} characters.",
+    "placeholder": "e.g. I’ll be at work that afternoon.",
+    "send": "Send request"
+  },
+  "reasonDialog": {
+    "tellMore": "Tell us more",
+    "optional": "(optional)",
+    "other": "Other"
+  },
+  "toast": {
+    "confirmed": "Thanks for confirming. Please rate the job.",
+    "reported": "Problem reported. {{appName}}’s team will be in touch.",
+    "reviewed": "Thanks! Your review is posted.",
+    "closed": "Job closed.",
+    "moved": "Moved to {{date}}.",
+    "originalStands": "The original time stands.",
+    "requestSent": "Request sent to {{name}}.",
+    "fixDetails": "Some details need fixing before you can send the request.",
+    "areaSet": "Area set to {{place}}. Add your street or a landmark too.",
+    "locateFailed": "We couldn’t find your location. Choose your area from the list.",
+    "booked": "Booked for {{date}}.",
+    "bookedAgreed": "Booked for the agreed time.",
+    "turnedDown": "You turned down {{name}}’s quote.",
+    "rescheduleSent": "Reschedule request sent to {{name}}.",
+    "cancelled": "Job #{{id}} cancelled. {{name}} has been told."
+  },
+  "form": {
+    "chooseDate": "Choose a date.",
+    "dateFuture": "Choose today or a later date.",
+    "dateWindow": "Choose a date in the next {{days}} days.",
+    "descriptionMin": "Describe the job in at least {{min}} characters so {{name}} can quote accurately.",
+    "descriptionMax": "Keep the description to {{max}} characters.",
+    "photoMin": "Add at least one photo of the job.",
+    "photoMax": "Use {{max}} photos or fewer.",
+    "chooseWindow": "Choose a time window.",
+    "landmarkMin": "Add a street, house number or landmark so the vendor can find you.",
+    "keepTo": "Keep it to {{max}} characters.",
+    "choosePlace": "Choose your town or LGA.",
+    "priceNaira": "Enter your price in Naira, like 15,000.",
+    "quoteMin": "A quote must be at least {{amount}}.",
+    "priceHigh": "That price looks too high. Check for extra zeros.",
+    "includesMin": "Say what the price covers, e.g. parts, labour, clean-up.",
+    "chooseDuration": "Choose an estimated duration.",
+    "chooseStart": "Choose a start time.",
+    "chooseExpiry": "Choose when the quote expires.",
+    "vendorClosedOn": "You’re closed on {{day}}. Pick a working day, or update your hours on Edit Profile.",
+    "startWithin": "Pick a start time within your hours that day ({{from}} – {{to}}).",
+    "timePassed": "That time has already passed.",
+    "expiryAfterStart": "The quote would still be open after the job starts. Choose a shorter expiry.",
+    "chooseReason": "Choose a reason.",
+    "chooseReasonList": "Choose a reason from the list.",
+    "tellReason": "Tell us the reason.",
+    "giveReason": "Please give a reason.",
+    "chooseTime": "Choose a time.",
+    "moveWhy": "Say why you need to move it.",
+    "vendorNotWorking": "The vendor doesn’t work on {{day}}. Pick another day.",
+    "timeBetween": "Choose a time between {{from}} and {{to}}.",
+    "newTimeCutoff": "The new time must be at least {{hours}} hours from now.",
+    "sameTime": "That’s the time it’s already booked for.",
+    "chooseWhatWrong": "Choose what went wrong.",
+    "problemMin": "Describe the problem (at least {{min}} characters) so our team can help.",
+    "chooseStars": "Choose a star rating.",
+    "reviewMax": "Keep your review to {{max}} characters.",
+    "requestClosedOn": "{{name}} doesn’t work on {{day}}. Please pick another day.",
+    "windowOutside": "{{name}} works {{from}} – {{to}} that day. Choose a window inside those hours."
+  },
+  "order": {
+    "status": {
+      "placed": {
+        "label": "Placed",
+        "description": "Waiting for the vendor to confirm the order."
+      },
+      "confirmed": {
+        "label": "Confirmed",
+        "description": "The vendor accepted the order and set the items aside."
+      },
+      "preparing": {
+        "label": "Preparing",
+        "description": "The vendor is packing the order."
+      },
+      "dispatched": {
+        "label": "Dispatched",
+        "description": "On its way to the delivery address."
+      },
+      "delivered": {
+        "label": "Delivered",
+        "description": "The vendor says it was delivered. Waiting for the customer to confirm receipt."
+      },
+      "ready_for_pickup": {
+        "label": "Ready for pickup",
+        "description": "Packed and waiting at the vendor’s pickup point."
+      },
+      "collected": {
+        "label": "Collected",
+        "description": "The vendor says it was collected. Waiting for the customer to confirm receipt."
+      },
+      "completed": {
+        "label": "Completed",
+        "description": "The customer has the order. All done."
+      },
+      "declined": {
+        "label": "Declined",
+        "description": "The vendor can’t take this order."
+      },
+      "cancelled": {
+        "label": "Cancelled",
+        "description": "The customer cancelled the order."
+      },
+      "out_of_stock": {
+        "label": "Out of stock",
+        "description": "None of the items were in stock, so the vendor couldn’t fill the order."
+      },
+      "disputed": {
+        "label": "Disputed",
+        "description": "The customer reported a problem. {{appName}}’s team is reviewing it, and the payment stays held."
+      }
+    },
+    "method": {
+      "pickup": "Pickup",
+      "delivery": "Delivery"
+    },
+    "cancelReason": {
+      "changed_mind": "I changed my mind",
+      "ordered_by_mistake": "I ordered the wrong items",
+      "too_slow": "It’s taking too long",
+      "found_elsewhere": "I found it elsewhere"
+    },
+    "hint": {
+      "collect": "Ready: go and collect it",
+      "confirmReceipt": "Got it? Confirm receipt",
+      "review": "Rate and review this order",
+      "newOrder": "New order: confirm or decline",
+      "startPreparing": "Confirmed: start preparing",
+      "markDispatched": "Packed? Mark as dispatched",
+      "markReady": "Packed? Mark as ready for pickup",
+      "markDelivered": "On the way: mark as delivered",
+      "waitingCollect": "Waiting for the customer to collect"
+    },
+    "items_one": "{{count}} item",
+    "items_other": "{{count}} items",
+    "itemsList": "{{items}}: {{names}}",
+    "placedAt": "Placed {{day}}, {{time}}",
+    "fulfilment": {
+      "address": "Address",
+      "phone": "Phone",
+      "lga": "{{lga}} LGA"
+    },
+    "list": {
+      "items": "Items",
+      "outOfStock": "Out of stock · not charged",
+      "delivery": "Delivery",
+      "free": "Free",
+      "total": "Total"
+    },
+    "outcome": {
+      "backOnSale": "Items set aside for this order went back on sale."
+    },
+    "activity": "Activity",
+    "filterLabel": "Filter orders by status",
+    "timeline": {
+      "label": "Order progress",
+      "stopped": "order ended here"
+    },
+    "separate": "Your cart has items from {{count}} vendors. Each vendor confirms, packs and delivers (or hands over) their part separately, so you’ll get {{count}} orders, one per vendor.",
+    "cart": {
+      "outOfStock": "Out of stock",
+      "addLabel": "Add {{name}} to cart",
+      "addAnother": "Add another",
+      "add": "Add to cart",
+      "inCart": "{{count}} in your cart · View cart",
+      "each": "{{price}} each",
+      "remove": "Remove",
+      "onlyInStock": "Only {{count}} in stock.",
+      "subtotalFrom": "Subtotal from {{name}}",
+      "quantityOf": "Quantity of {{name}}",
+      "decrease": "Decrease {{name}}",
+      "increase": "Increase {{name}}",
+      "increaseMax": "Increase {{name}} (only {{max}} in stock)",
+      "vendorUnavailable": "{{name}} isn’t taking orders right now.",
+      "productOutOfStock": "{{name}} is out of stock.",
+      "haveAll": "You already have all {{stock}} {{name}} in your cart. The vendor has no more in stock.",
+      "onlyCanAdd": "Only {{stock}} in stock. You can add {{more}} more.",
+      "allInCart": "All {{stock}} in stock are in your cart.",
+      "added": "Added {{name}} to your cart ({{count}}).",
+      "title": "Cart",
+      "subtitle": "{{items}} from {{vendors}}",
+      "vendors_one": "{{count}} vendor",
+      "vendors_other": "{{count}} vendors",
+      "subtitleEmpty": "Products you add from vendor shops",
+      "emptyTitle": "Your cart is empty",
+      "emptyText": "Browse products from local shops and tap Add to cart. No account needed until checkout.",
+      "browse": "Browse vendors",
+      "summary": "Summary",
+      "itemsTotal": "Items total",
+      "feesNote": "Delivery fees, if any, are added at checkout when you choose pickup or delivery.",
+      "checkout": "Go to checkout",
+      "removeTitle": "Remove from cart?",
+      "removeText": "{{name}} from {{vendor}} will be removed from your cart.",
+      "keep": "Keep it",
+      "browseProducts": "Browse products",
+      "signInToCheckout": "Log in to check out",
+      "newCustomer": "New to {{appName}}? Create an account",
+      "guestNote": "Your cart is saved on this device. After you log in or create an account, you’ll come straight back to checkout.",
+      "merged": "We added the items saved to your account to your cart.",
+      "syncing": "Getting your cart ready…",
+      "invalid": "Your cart couldn’t be saved. Please try again."
+    },
+    "changes": {
+      "priceUp": "Price went up from {{before}} to {{after}}.",
+      "priceDown": "Price went down from {{before}} to {{after}}.",
+      "quantity": "Only {{after}} left, so your quantity goes from {{before}} to {{after}}.",
+      "outOfStock": "Now out of stock. It will be removed from your cart.",
+      "unavailable": "No longer sold. It will be removed from your cart.",
+      "vendorUnavailable": "{{name}} isn’t taking orders right now. It will be removed from your cart.",
+      "title": "Some things changed since you added them",
+      "text": "Please check these before you place your order.",
+      "back": "Back to cart",
+      "accept": "Update my cart and continue"
+    },
+    "checkout": {
+      "title": "Checkout",
+      "subtitle": "Choose pickup or delivery for each vendor",
+      "thanks": "Thank you",
+      "back": "Cart",
+      "label": "Checkout",
+      "totalToPay": "Total to pay",
+      "total": "Total",
+      "demo": "Demo only: no payment is taken. You pay each vendor for their own order.",
+      "place_one": "Place order",
+      "place_other": "Place {{count}} orders",
+      "nothingTitle": "Nothing to check out",
+      "nothingText": "Your cart is empty. Add products from a vendor’s shop first.",
+      "checkFailed": "Couldn’t check your cart",
+      "areasFailed": "Couldn’t load delivery areas",
+      "checking": "Checking prices and stock",
+      "nothingLeftTitle": "Nothing left to order",
+      "nothingLeftText": "Everything in your cart sold out or is no longer available.",
+      "orderN": "Order {{n}}",
+      "how": "How do you want to get it?",
+      "methodFor": "Pickup or delivery for {{name}}",
+      "onlyMethod": "{{method}} only",
+      "noPickup": " · {{name}} doesn’t offer pickup.",
+      "noDelivery": " · {{name}} doesn’t offer delivery.",
+      "collectFrom": "Collect from {{address}}",
+      "readyTold": "You’ll be told when it’s ready for pickup.",
+      "deliveryFee": "Delivery fee:",
+      "deliversTo_one": "Delivers to {{areas}} LGA. Uses the delivery details below.",
+      "deliversTo_other": "Delivers to {{areas}} LGAs. Uses the delivery details below.",
+      "items": "Items",
+      "delivery": "Delivery",
+      "orderTotal": "Order total",
+      "free": "Free",
+      "detailsTitle": "Delivery details",
+      "detailsText": "Used for every order you’ve set to delivery. Riders call this number when they’re close.",
+      "phone": "Phone number",
+      "phoneHint": "A Nigerian mobile number, like 0803 555 0142.",
+      "placedOne": "Order placed.",
+      "placedMany": "{{count}} orders placed, one per vendor.",
+      "fixDetails": "Some details need fixing before you can place your order."
+    },
+    "success": {
+      "titleOne": "Order placed",
+      "titleMany": "{{count}} orders placed",
+      "reference": "Checkout reference <strong>{{ref}}</strong>.",
+      "many": "Each vendor confirms their own order, and you can follow each one separately.",
+      "one": "The vendor will confirm your order soon.",
+      "line": "Order #{{id}} · {{method}} · ",
+      "nextMany": "Next: pay each vendor",
+      "nextOne": "Next: pay for your order",
+      "payText": "Each order is paid separately, by card, transfer or USSD (or cash at pickup, where the vendor allows it).",
+      "pay": "Pay {{name}}",
+      "myOrders": "Go to My Orders"
+    },
+    "form": {
+      "methodNotOffered": "{{name}} doesn’t offer {{method}}. Choose another option.",
+      "landmarkMin": "Add a street, house number or landmark so the rider can find you.",
+      "phone": "Enter a Nigerian mobile number, like 0803 555 0142.",
+      "noDelivery": "{{name}} doesn’t deliver. Choose pickup.",
+      "notToLga": "{{name}} doesn’t deliver to {{lga}} LGA. They deliver to {{areas}}. Choose pickup or change the address.",
+      "noAreas": "no areas yet",
+      "and": "{{list}} and {{last}}",
+      "pickupInstructions": "Message the vendor for the exact pickup spot."
+    },
+    "panel": {
+      "readyTitle": "Ready for you to collect",
+      "readyText": "Go to <strong>{{address}}</strong> and show order #{{id}}.",
+      "gotIt": "Got your order?",
+      "markedDelivered": "{{name}} marked it as delivered. Confirm once you have everything.",
+      "markedCollected": "{{name}} marked it as collected. Confirm once you have everything.",
+      "autoComplete": " If you don’t, it completes automatically on {{date}}.",
+      "report": "Report a problem",
+      "confirmReceipt": "Confirm receipt",
+      "yourReview": "Your review",
+      "canCancel": "You can cancel until {{name}} starts preparing your order.",
+      "cancel": "Cancel order",
+      "receiptTitle": "Confirm you received this order?",
+      "receiptText": "This completes order #{{id}} from {{name}}. Only confirm once you have every item.",
+      "receiptConfirm": "Yes, I have it",
+      "notYet": "Not yet",
+      "cancelTitle": "Cancel order #{{id}}?",
+      "cancelText": "{{name}} will be told, and anything they set aside goes back on sale. This can’t be undone.",
+      "cancelReason": "Why are you cancelling?"
+    },
+    "toast": {
+      "cancelled": "Order #{{id}} cancelled. {{name}} has been told.",
+      "received": "Thanks for confirming. The order is complete.",
+      "reported": "Problem reported. {{appName}}’s team will be in touch, and your payment stays held until it’s resolved.",
+      "reviewed": "Thanks! Your review is on their profile.",
+      "skipped": "Okay, no review."
+    },
+    "mine": {
+      "title": "My Orders",
+      "waiting_one": "{{count}} order needs your attention",
+      "waiting_other": "{{count}} orders need your attention",
+      "subtitle": "Track the products you’ve ordered",
+      "loading": "Loading your orders",
+      "emptyTitle": "No orders yet",
+      "emptyText": "Add products to your cart from a vendor’s shop. Your orders show up here so you can track them.",
+      "browse": "Browse vendors",
+      "noneWithStatus": "No orders with this status",
+      "showAll": "Show all orders"
+    },
+    "page": {
+      "title": "Order #{{id}}",
+      "back": "My Orders",
+      "notFoundTitle": "Order not found",
+      "notFoundHeading": "We couldn’t find that order",
+      "backToMine": "Back to My Orders",
+      "loading": "Loading order",
+      "subtitle": "{{name}} · checkout {{ref}}",
+      "progress": "Progress",
+      "aside": "Actions and activity",
+      "viewVendor": "View {{name}}"
+    },
+    "error": {
+      "notFound": "We couldn’t find that order.",
+      "emptyCart": "Your cart is empty.",
+      "shopClosed": "One of the shops in your cart closed. Please remove its items.",
+      "methodGone": "{{name}} no longer offers {{method}}. Please choose again.",
+      "addDelivery": "Add a delivery address and phone number.",
+      "notYours": "You can only manage your own orders.",
+      "notEnoughStock": "You have {{stock}} × {{name}} in stock but the order needs {{needed}}. Mark it out of stock, or update your stock first.",
+      "reviewWhen": "You can review an order once you’ve received it.",
+      "reviewed": "You’ve already reviewed this order.",
+      "notDisputed": "This order isn’t in dispute.",
+      "beforeDispute": "We couldn’t tell where this order was before the dispute.",
+      "pickupNotDispatched": "This is a pickup order, so it isn’t dispatched.",
+      "deliveryNotCollected": "This is a delivery order, so it isn’t collected from you.",
+      "stillTime": "The customer still has time to confirm receipt.",
+      "wasntDelivered": "This order wasn’t delivered when the problem was reported.",
+      "wasntCollected": "This order wasn’t collected when the problem was reported.",
+      "ended": "This order is already {{status}} and can’t change.",
+      "preparing": "The vendor has started preparing your order, so it can’t be cancelled now. Contact them if there’s a problem.",
+      "cantMove": "An order can’t go from {{from}} to {{to}}.",
+      "cantMoveBy": "An order can’t go from {{from}} to {{to}} by the {{by}}."
+    }
+  },
+  "arrivalYou": "You arrived at {{time}}",
+  "notify": {
+    "ref": "job #{{id}}",
+    "rescheduleRequested": {
+      "title": "Reschedule requested",
+      "body": "{{name}} asked to move {{ref}} to {{date}}. Please accept or decline."
+    },
+    "rescheduleAccepted": {
+      "title": "Reschedule accepted",
+      "body": "{{name}} agreed. {{ref}} is now on {{date}}."
+    },
+    "rescheduleDeclined": {
+      "title": "Reschedule declined",
+      "body": "{{name}} declined. {{ref}} stays on {{date}}."
+    },
+    "requested": {
+      "title": "New job request",
+      "body": "{{name}} needs {{service}} in {{place}}."
+    },
+    "requestedNoService": {
+      "title": "New job request",
+      "body": "{{name}} needs a job done in {{place}}."
+    },
+    "quoted": {
+      "title": "Quote received",
+      "body": "{{name}} quoted {{amount}} for {{ref}}."
+    },
+    "scheduled": {
+      "title": "Quote accepted",
+      "body": "{{name}} accepted your quote. {{ref}} is booked for {{date}}."
+    },
+    "scheduledNoTime": {
+      "title": "Quote accepted",
+      "body": "{{name}} accepted your quote. {{ref}} is booked for the agreed time."
+    },
+    "quoteRejected": {
+      "title": "Quote rejected",
+      "body": "{{name}} turned down your quote for {{ref}}."
+    },
+    "declined": {
+      "title": "Request declined",
+      "body": "{{name}} can’t take {{ref}}."
+    },
+    "inProgress": {
+      "title": "Vendor has arrived",
+      "body": "{{name}} arrived at {{time}} and started {{ref}}."
+    },
+    "awaitingConfirmation": {
+      "title": "Please confirm the work",
+      "body": "{{name}} marked {{ref}} as done. Confirm it or report a problem by {{date}}."
+    },
+    "awaitingConfirmationNoDeadline": {
+      "title": "Please confirm the work",
+      "body": "{{name}} marked {{ref}} as done. Confirm it or report a problem."
+    },
+    "disputeResolved": {
+      "title": "Dispute resolved",
+      "body": "{{appName}}’s team resolved the problem with {{ref}}. See the job for the outcome."
+    },
+    "autoConfirmedCustomer": {
+      "title": "Job confirmed automatically",
+      "body": "We confirmed {{ref}} because there was no reply within {{hours}} hours."
+    },
+    "autoConfirmedVendor": {
+      "title": "Job confirmed automatically",
+      "body": "{{ref}} was confirmed after {{hours}} hours with no reply from {{name}}."
+    },
+    "confirmed": {
+      "title": "Job confirmed",
+      "body": "{{name}} confirmed {{ref}} is complete."
+    },
+    "disputedVendor": {
+      "title": "Problem reported",
+      "body": "{{name}} reported a problem with {{ref}}. Gwani’s team will review it."
+    },
+    "disputedCustomer": {
+      "title": "We’ve got your report",
+      "body": "{{appName}}’s team will review {{ref}} and contact you within 2 working days."
+    },
+    "reviewed": {
+      "title": "New review",
+      "body": "{{name}} left a {{rating}}★ review on {{ref}}."
+    },
+    "closed": {
+      "title": "Job closed",
+      "body": "{{ref}} is closed."
+    },
+    "cancelledSystem": {
+      "title": "Job cancelled",
+      "body": "{{ref}} was cancelled."
+    },
+    "cancelled": {
+      "title": "Job cancelled",
+      "body": "{{name}} cancelled {{ref}}."
+    },
+    "cancelledSlot": {
+      "title": "Job cancelled",
+      "body": "{{name}} cancelled {{ref}}. The booked slot is now free."
+    },
+    "cancelledReason": {
+      "title": "Job cancelled",
+      "body": "{{name}} cancelled {{ref}}: “{{reason}}”."
+    },
+    "cancelledReasonSlot": {
+      "title": "Job cancelled",
+      "body": "{{name}} cancelled {{ref}}: “{{reason}}”. The booked slot is now free."
+    }
+  },
+  "reminder": {
+    "lead_one": "{{count}} hour",
+    "lead_other": "{{count}} hours",
+    "leadBefore": "{{lead}} before",
+    "booking": "booking",
+    "scheduled": "Reminders scheduled",
+    "off": "Reminders are off",
+    "failed": "Couldn’t load reminders.",
+    "loading": "Loading reminders",
+    "optedOut": "You’ve opted out of booking reminders.",
+    "tooClose": "It’s too close to the start for reminders.",
+    "sent": "(sent)",
+    "turnOn": "Turn reminders on",
+    "change": "Change how you’re reminded",
+    "channelsBoth": "By push and SMS, and in Updates",
+    "channelsPush": "By push, and in Updates",
+    "channelsSms": "By SMS, and in Updates",
+    "channelsApp": "In Updates in the app only"
+  },
+  "prefs": {
+    "title": "Notifications",
+    "subtitleCustomer": "How we remind you about upcoming bookings",
+    "subtitleVendor": "How we remind you about jobs you’ve booked in",
+    "loading": "Loading your preferences",
+    "label": "Notification preferences",
+    "booking": "Booking reminders",
+    "bookingText": "We remind you {{leads}} before each booked job. You always see them in Updates in the app.",
+    "and": " and ",
+    "push": "Push notifications",
+    "pushText": "On your phone, from the {{appName}} app.",
+    "sms": "SMS",
+    "smsText": "A text message, even without data.",
+    "phone": "Phone number for SMS",
+    "phoneOptional": "Phone number for SMS (optional)",
+    "phoneHint": "Nigerian mobile: 0803 555 0142 or +234 803 555 0142.",
+    "optOutHeading": "Opt out",
+    "optOut": "Opt out of all booking reminders",
+    "optOutText": "No reminders by push, SMS or in the app. Other job updates still appear in the app.",
+    "save": "Save preferences",
+    "savedOff": "Saved. You won’t get booking reminders.",
+    "saved": "Saved. Your reminders will use these settings.",
+    "checkPhone": "Check the phone number before saving.",
+    "phoneInvalid": "Enter a Nigerian mobile number, like 0803 555 0142 or +234 803 555 0142.",
+    "phoneNeeded": "Add a phone number to get SMS reminders, or turn SMS off."
+  },
+  "error": {
+    "notFound": "We couldn’t find that job.",
+    "retailVendor": "This vendor takes product requests, not job bookings.",
+    "notTaking": "{{name}} isn’t taking new bookings right now.",
+    "notTakingRequests": "{{name}} isn’t taking new requests right now.",
+    "startPassed": "The proposed start time has already passed.",
+    "expiryAfterStart": "The quote must expire before the proposed start time.",
+    "noReschedule": "That reschedule request doesn’t exist.",
+    "notDisputed": "This job isn’t in dispute.",
+    "beforeDispute": "We couldn’t tell where this job was before the dispute.",
+    "noTime": "This job has no booked time.",
+    "startFrom": "You can start this job from {{date}}.",
+    "stillTime": "The customer still has time to confirm.",
+    "wasntInProgress": "This job wasn’t in progress when the problem was reported.",
+    "wasntAwaiting": "This job wasn’t awaiting confirmation when the problem was reported.",
+    "reviewOpen": "The review window is still open.",
+    "noQuote": "There’s no quote to respond to yet.",
+    "quoteExpired": "This quote has expired. Ask the vendor for a new one.",
+    "ended": "This job is already {{status}} and can’t change.",
+    "cancelReason": "Please give a reason for cancelling.",
+    "cantMove": "A job can’t go from {{from}} to {{to}}.",
+    "cantMoveBy": "A job can’t go from {{from}} to {{to}} by the {{by}}.",
+    "remindersScheduledOnly": "Only scheduled jobs get reminders."
+  }
+}

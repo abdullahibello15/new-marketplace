@@ -1,0 +1,7 @@
+# The API's build output and local env files
+dist
+
+# Copy .env.example to .env; never commit real env files
+.env
+.env.*
+!.env.example
