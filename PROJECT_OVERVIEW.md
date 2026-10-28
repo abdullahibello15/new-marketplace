@@ -1,6 +1,8 @@
 # ZAMANI NG MARKET HUB — Project Overview
 
 > What the `new-marketplace` project is, how it's built, how each part works, and what's still needed before it could be a real product. Last updated: October 2026.
+>
+> The web app now lives in `apps/web` (npm workspaces monorepo); the `src/…` paths below are relative to it.
 
 ---
 

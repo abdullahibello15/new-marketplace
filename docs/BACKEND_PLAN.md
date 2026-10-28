@@ -5,7 +5,7 @@
 
 ## Context
 
-ZAMANI NG MARKET HUB is a working front-end prototype with **no backend**. About 45 service files in `src/features/*/services/` hold all the data in memory and answer through `mockResponse()` in [src/services/mockApi.ts](../src/services/mockApi.ts). Real users, money and documents need a real backend before launch: a database, real authentication, Paystack payments with escrow, SMS and email, file storage, and server-side enforcement of every rule the browser checks today.
+ZAMANI NG MARKET HUB is a working front-end prototype with **no backend**. About 45 service files in `src/features/*/services/` hold all the data in memory and answer through `mockResponse()` in [src/services/mockApi.ts](../apps/web/src/services/mockApi.ts). Real users, money and documents need a real backend before launch: a database, real authentication, Paystack payments with escrow, SMS and email, file storage, and server-side enforcement of every rule the browser checks today.
 
 The prototype was built with a backend in mind, which makes this easier:
 - **Every service is already async.** Each returns a Promise and throws `ApiError(message, status)`, so a service body can become a `fetch` without changing any page.
@@ -38,7 +38,7 @@ The prototype was built with a backend in mind, which makes this easier:
 | DB access | **Drizzle ORM** + drizzle-kit migrations | TypeScript-first and close to SQL, with explicit transactions (important for money). |
 | Database | PostgreSQL 16, PostGIS (distance search), pg_trgm (text search) | Enough for search at MVP scale, no Elasticsearch needed |
 | Jobs and scheduling | **BullMQ** on Redis | Replaces the `runScheduled…Tasks()` read-time stand-ins |
-| Auth | Own implementation: argon2id, JWT access token (15 min), rotating opaque refresh token in an httpOnly cookie, sessions table | Mirrors `sessionBackend.ts` and [sessionConfig.ts](../src/features/auth/sessionConfig.ts) exactly |
+| Auth | Own implementation: argon2id, JWT access token (15 min), rotating opaque refresh token in an httpOnly cookie, sessions table | Mirrors `sessionBackend.ts` and [sessionConfig.ts](../apps/web/src/features/auth/sessionConfig.ts) exactly |
 | SMS / OTP | **Termii** (Nigerian, DND-route OTP) | |
 | Email / push | AWS SES / Firebase Cloud Messaging | |
 | PDFs | Keep generating on the client (jsPDF already works). The server only provides receipt data. | |
@@ -63,9 +63,9 @@ packages/contracts/  ← zod request/response schemas + DTO types for each endpo
 ### Step 0 refactor: extract `packages/domain`
 
 These files move into `packages/domain`, along with their tests:
-- [jobs/stateMachine.ts](../src/features/jobs/stateMachine.ts) and [jobs/cancellationPolicy.ts](../src/features/jobs/cancellationPolicy.ts)
+- [jobs/stateMachine.ts](../apps/web/src/features/jobs/stateMachine.ts) and [jobs/cancellationPolicy.ts](../apps/web/src/features/jobs/cancellationPolicy.ts)
 - `orders/stateMachine.ts`
-- [payments/escrow/escrowRules.ts](../src/features/payments/escrow/escrowRules.ts) and `escrowConfig.ts`
+- [payments/escrow/escrowRules.ts](../apps/web/src/features/payments/escrow/escrowRules.ts) and `escrowConfig.ts`
 - `vendor-dashboard/utils/{billing,subscription,bundle}.ts`
 - `investor/utils/ledger.ts`
 - `admin/analytics/aggregations.ts`

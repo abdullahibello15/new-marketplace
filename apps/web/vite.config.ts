@@ -46,7 +46,7 @@ export default defineConfig(({ command, mode }) => {
   // The dev server needs .env.development, which isn't in git (see README): say so plainly instead of
   // starting with test mode silently off.
   if (command === 'serve' && mode === 'development' && !existsSync(resolve(process.cwd(), '.env.development'))) {
-    throw new Error('Missing .env.development. Create it from the example first:  cp .env.example .env.development')
+    throw new Error('Missing apps/web/.env.development. Create it from the example first (from the repo root):  cp apps/web/.env.example apps/web/.env.development')
   }
   const env = loadEnv(mode, process.cwd(), '')
   if (command === 'build' && env.VITE_MOCK_AUTH === 'true') {
