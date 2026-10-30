@@ -1,4 +1,5 @@
 import i18n from '../../../i18n';
+import { apiRequest, establishApiSession, type ApiSession } from '../../../services/apiClient';
 import { ApiError, configureRequestAuth, createSingleFlight, mockResponse, requestAccessToken } from '../../../services/mockApi';
 import { CART_OWNER_STORAGE_KEY, CART_STORAGE_KEY } from '../../orders/constants';
 import { STORAGE_KEYS } from '../../discovery/constants';
@@ -15,7 +16,6 @@ import { broadcastSession, onSessionMessage } from '../sessionSync';
 import { deviceDisplayName, type DeviceInfo } from '../utils/device';
 import { findUser, isSuspended, toUser } from './authBackend';
 import { clearRefreshCookie, readRefreshCookie, writeRefreshCookie } from './mockCookieJar';
-import { restoreProviderProfile } from './roleSetup';
 import {
   authenticateNow,
   createSessionNow,
@@ -23,9 +23,6 @@ import {
   endUserSessionsNow,
   expireAccessNow,
   liveSessionsOf,
-  refreshNow,
-  sessionForRefreshToken,
-  toSessionInfo,
   type SessionRecord } from
 './sessionBackend';
 import type { StoredUser } from '../mock/users';
@@ -140,33 +137,17 @@ export async function createSession(user: User, device: DeviceInfo, { remember }
   return tokens;
 }
 
+export function adoptLiveSession(user: User, tokens: SessionTokens) {
+  adoptSession(user, tokens);
+  broadcastSession({ type: 'signed_in', userId: user.id });
+}
+
 async function refreshOnce(): Promise<User | null> {
   try {
-    const result = await mockResponse(() => {
-      const cookie = readRefreshCookie();
-      if (!cookie) return null;
-      const now = new Date();
-      let refreshed: ReturnType<typeof refreshNow>;
-      try {
-        refreshed = refreshNow(cookie, now);
-      } catch (e) {
-        clearRefreshCookie();
-        throw e;
-      }
-      const user = findUser(refreshed.session.userId);
-      if (!user || isSuspended(user)) {
-        endSessionNow(refreshed.session.id, 'account_suspended', now);
-        clearRefreshCookie();
-        return null;
-      }
-      writeRefreshCookie({ value: refreshed.tokens.refreshToken, persistent: refreshed.tokens.persistent });
-      restoreProviderProfile(user, now);
-      const { accessToken, accessExpiresAt, sessionId } = refreshed.tokens;
-      return { user: toUser(user), tokens: { accessToken, accessExpiresAt, sessionId } };
-    }, 150, { auth: false });
-    if (!result) return null;
-    adoptSession(result.user, result.tokens);
-    return result.user;
+    const result = await apiRequest<ApiSession>('/v1/auth/refresh', { method: 'POST' }, false);
+    const user = result.user as User;
+    adoptLiveSession(user, establishApiSession(result));
+    return user;
   } catch {
     return null;
   }
@@ -186,51 +167,29 @@ export const refreshSession: () => Promise<User | null> = createSingleFlight(() 
 
 /** POST /auth/sessions/:id/revoke — signs out one of your sessions (this one too, if you pick it). */
 export async function revokeSession(sessionId: string): Promise<void> {
-  await mockResponse(() => {
-    const { user } = requestSession();
-    if (!liveSessionsOf(user.id, new Date()).some((s) => s.id === sessionId)) throw new ApiError(i18n.t('auth:sessions.notFound'), 404);
-    endSessionNow(sessionId, 'revoked', new Date());
-  }, 300);
+  await apiRequest(`/v1/auth/sessions/${encodeURIComponent(sessionId)}`, { method: 'DELETE' }, false);
   if (sessionId === getAuthSnapshot().sessionId) endLocally('logout');
 }
 
 /** POST /auth/sessions/revoke-others — every session but this one. Resolves with how many ended. */
 export function revokeAllOtherSessions(): Promise<number> {
-  return mockResponse(() => {
-    const { user, session } = requestSession();
-    return endUserSessionsNow(user.id, 'revoked_all', new Date(), session.id);
-  }, 400);
+  return apiRequest<{ revoked: number }>('/v1/auth/sessions/revoke-others', { method: 'POST' }, false).then((result) => result.revoked);
 }
 
 /** GET /auth/sessions — your signed-in devices, most recently active first. */
 export function getSessions(): Promise<SessionInfo[]> {
-  return mockResponse(() => {
-    const { user, session } = requestSession();
-    return liveSessionsOf(user.id, new Date()).map((s) => toSessionInfo(s, session.id));
-  }, 300);
+  return apiRequest('/v1/auth/sessions', {}, false);
 }
 
 /** GET /auth/me — who the current session belongs to (null when signed out). */
 export function getCurrentUser(): Promise<User | null> {
-  return mockResponse(() => {
-    const token = requestAccessToken();
-    return token ? toUser(authenticateRequest(token).user) : null;
-  }, 200);
+  if (!currentAccessToken()) return Promise.resolve(null);
+  return apiRequest<{ user: User }>('/v1/auth/session', {}, false).then((result) => result.user);
 }
 
 /** POST /auth/logout — ends this browser's session on the server (found by its cookie) and clears the cookie. */
 export function endCurrentSession(): Promise<void> {
-  return mockResponse(() => {
-    const cookie = readRefreshCookie();
-    const now = new Date();
-    const session = cookie ? sessionForRefreshToken(cookie, now) : null;
-    if (session) {
-      endSessionNow(session.id, 'logout', now);
-      const user = findUser(session.userId);
-      if (user && isStaff(user)) auditStaff(user, AUDIT_ACTION.AdminLogout, session.userAgent);
-    }
-    clearRefreshCookie();
-  }, 200, { auth: false });
+  return apiRequest('/v1/auth/logout', { method: 'POST' }, false).then(() => undefined);
 }
 
 /* ---------- Browser side: restore, schedule, expire ---------- */

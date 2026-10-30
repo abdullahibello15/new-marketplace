@@ -12,11 +12,14 @@ const schema = z.object({
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
   DATABASE_URL: z.url(),
   REDIS_URL: z.url(),
+  WEB_ORIGIN: z.url().refine((value) => new URL(value).origin === value, 'must be an origin without a path'),
   // Error reporting is off unless a DSN is set.
   SENTRY_DSN: optional(z.url()),
   SENTRY_ENVIRONMENT: optional(z.string()),
   // Accepts the fixed test code for one-time codes (Phase 1). Never in production: see loadEnv.
   OTP_TEST_MODE: optional(z.enum(['true', 'false'])),
+  OTP_DELIVERY_URL: optional(z.url()),
+  OTP_DELIVERY_TOKEN: optional(z.string().min(1)),
 })
 
 export type Env = z.infer<typeof schema>
@@ -30,6 +33,9 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
   // Refused when present at all, even empty or "false": production config should not mention test mode.
   if (parsed.data.NODE_ENV === 'production' && source.OTP_TEST_MODE !== undefined) {
     throw new Error('Invalid API environment: OTP_TEST_MODE must not be set when NODE_ENV=production')
+  }
+  if (parsed.data.NODE_ENV === 'production' && (!parsed.data.OTP_DELIVERY_URL || !parsed.data.OTP_DELIVERY_TOKEN)) {
+    throw new Error('Invalid API environment: OTP_DELIVERY_URL and OTP_DELIVERY_TOKEN are required in production')
   }
   return parsed.data
 }

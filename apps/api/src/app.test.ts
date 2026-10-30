@@ -13,6 +13,7 @@ function build(overrides: Partial<AppOptions> = {}) {
   const logs = captureLogs()
   const app = createApp({
     logger: createLogger({ level: 'info', destination: logs.destination }),
+    webOrigin: 'http://localhost:5173',
     healthChecks: { postgres: ok, redis: ok },
     healthTimeoutMs: 50,
     ...overrides,

@@ -11,12 +11,14 @@ import { VendorShell } from './components/VendorShell';
 import { InvestorShell } from './components/InvestorShell';
 import { RiderShell } from './components/RiderShell';
 import { AuthProvider } from './features/auth/context/AuthContext';
+import { useAuth } from './features/auth/hooks/useAuth';
 import { SessionGuard } from './features/auth/components/SessionGuard';
 import { AuthLayout } from './features/auth/components/AuthLayout';
 import { DevAuthBanner } from './features/auth/components/DevAuthBanner';
 import { LoginGate, RequireAuth, RequireRole, RequireVendorProfile } from './features/auth/components/guards';
 import { AUTH_ROUTES, ROLE } from './features/auth/constants';
 import { AboutPage, LandingGate } from './features/landing/components/LandingGate';
+import { VendorLandingPage } from './features/landing/sections/VendorLandingPage';
 import { LanguageSync } from './i18n/LanguageSync';
 import { PlaceProvider } from './features/discovery/context/PlaceProvider';
 import { CartProvider } from './features/orders/context/CartProvider';
@@ -170,6 +172,7 @@ const router = createBrowserRouter(
       </Route>
       {/* The public landing page about Gwani, with its own header and footer. */}
       <Route path={AUTH_ROUTES.about} element={<AboutPage />} />
+      <Route path="/vendor" element={<VendorLandingPage />} />
       {/*
         Customer shell. "/" is the marketplace home for guests and customers (the LandingGate sends other
         roles to their own home). Guests can browse, search, view shops and products, and fill the cart;
@@ -263,15 +266,13 @@ const router = createBrowserRouter(
           </Suspense>
         } />
 
-      {/* Gwani's admin console: its own layout. Signed-out visitors go to the staff login; signed-in non-staff see "Not authorised"; each admin role sees only its sections. */}
+      {/* Gwani's admin console: signed-out visitors see staff sign-in; admins enter the console as before. */}
       <Route
         path="/admin"
         element={
         <EnglishOnly>
             <Suspense fallback={<div className="min-h-screen bg-cream" aria-busy="true" />}>
-              <RequireRole role={ROLE.Admin} fallback={<NotAuthorised />} loginTo={AUTH_ROUTES.staffLogin}>
-                <AdminLayout />
-              </RequireRole>
+              <AdminEntry />
             </Suspense>
           </EnglishOnly>
         }>
@@ -313,6 +314,13 @@ const router = createBrowserRouter(
     </Route>
   )
 );
+
+function AdminEntry() {
+  const { user, hasRole } = useAuth();
+  if (!user) return <AdminLoginSection />;
+  if (!hasRole(ROLE.Admin)) return <NotAuthorised />;
+  return <AdminLayout />;
+}
 
 export function App() {
   return (

@@ -1,5 +1,6 @@
 // Starts the API: `node dist/server.js` (production) or `npm run dev --workspace apps/api`.
 import { createApp } from './app.js'
+import { RedisRateLimiter } from './auth/service.js'
 import { loadEnv, type Env } from './config/env.js'
 import { createDb } from './db/client.js'
 import { createLogger } from './observability/logger.js'
@@ -16,11 +17,31 @@ try {
 
 const sentry = initSentry(env)
 const logger = createLogger({ level: env.LOG_LEVEL })
-const { sql } = createDb(env.DATABASE_URL)
+const { db, sql } = createDb(env.DATABASE_URL)
 const redis = createRedis(env.REDIS_URL, logger)
+
+const delivery = {
+  async send(input: { channel: 'sms' | 'email'; destination: string; code: string; purpose: string }) {
+    const response = await fetch(env.OTP_DELIVERY_URL as string, {
+      method: 'POST',
+      headers: { authorization: `Bearer ${env.OTP_DELIVERY_TOKEN}`, 'content-type': 'application/json' },
+      body: JSON.stringify({ ...input, message: `Your ZAMANI NG MARKET HUB verification code is ${input.code}.` }),
+    })
+    if (!response.ok) throw new Error(`OTP delivery adapter returned ${response.status}`)
+  },
+}
 
 const app = createApp({
   logger,
+  webOrigin: env.WEB_ORIGIN,
+  auth: {
+    db,
+    rateLimiter: new RedisRateLimiter(redis),
+    delivery,
+    origin: env.WEB_ORIGIN,
+    production: env.NODE_ENV === 'production',
+    testOtp: env.NODE_ENV !== 'production' && env.OTP_TEST_MODE === 'true',
+  },
   healthChecks: {
     postgres: () => sql`select 1`,
     redis: () => redis.ping(),

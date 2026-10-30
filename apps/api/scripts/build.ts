@@ -9,7 +9,11 @@ const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url),
 }
 
 await build({
-  entryPoints: ['src/server.ts', 'src/worker.ts'],
+  entryPoints: {
+    server: 'src/server.ts',
+    worker: 'src/worker.ts',
+    migrate: 'scripts/migrate.ts',
+  },
   outdir: 'dist',
   bundle: true,
   platform: 'node',
@@ -19,3 +23,7 @@ await build({
   external: Object.keys(pkg.dependencies).filter((name) => !name.startsWith('@zamani/')),
   logLevel: 'info',
 })
+
+import { cpSync, mkdirSync } from 'node:fs'
+mkdirSync('dist/db', { recursive: true })
+cpSync('src/db/migrations', 'dist/db/migrations', { recursive: true })

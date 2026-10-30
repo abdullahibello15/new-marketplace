@@ -29,6 +29,7 @@
     "db:check": "npm run db:check --workspace apps/api",
     "db:generate": "npm run db:generate --workspace apps/api",
     "db:migrate": "npm run db:migrate --workspace apps/api",
+    "db:migrate:dev": "npm run db:migrate:dev --workspace apps/api",
     "db:studio": "npm run db:studio --workspace apps/api",
     "test:integration": "npm run test:integration --workspace apps/api"
   },
