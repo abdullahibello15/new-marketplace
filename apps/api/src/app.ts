@@ -4,6 +4,7 @@ import { registerErrorHandling } from './http/errors.js'
 import { registerHealth, type HealthCheck } from './http/health.js'
 import { registerAuthRoutes, type OtpDelivery, type RateLimiter } from './auth/service.js'
 import type { Db } from './db/client.js'
+import { registerVendorRoutes } from './vendors/service.js'
 
 export interface AuthOptions {
   db: Db
@@ -41,6 +42,9 @@ export function createApp({ logger, healthChecks, healthTimeoutMs = 1000, webOri
     }
     if (request.method === 'OPTIONS') return reply.code(requestOrigin === webOrigin ? 204 : 403).send()
   })
-  if (auth) void registerAuthRoutes(app, auth)
+  if (auth) {
+    void registerAuthRoutes(app, auth)
+    registerVendorRoutes(app, auth)
+  }
   return app
 }

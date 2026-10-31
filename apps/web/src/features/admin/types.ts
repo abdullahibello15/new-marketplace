@@ -75,6 +75,8 @@ export interface VerificationDocument {
   type: DocumentType;
   /** Placeholder image (MOCK: specimen artwork, not a real document). */
   fileUrl: string;
+  /** MOCK only: file contents are not stored; this is the selected local filename. */
+  fileName?: string;
   /** The name printed on the document, as read by the reviewer. */
   nameOnDocument: string;
   /** Sensitive: shown masked everywhere except a deliberate, logged reveal. Null for documents without one. */
@@ -107,6 +109,8 @@ export interface VerificationApplication {
   vendorName: string;
   /** The person applying for the business, as given on the profile (what document names are checked against). */
   applicantName: string;
+  /** Optional note supplied by the applicant (separate from private reviewer notes). */
+  applicantNote?: string;
   /** The tier the vendor had when applying. */
   currentTier: Verification;
   requestedTier: Verification;

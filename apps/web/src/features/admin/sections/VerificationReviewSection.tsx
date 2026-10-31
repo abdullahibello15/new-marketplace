@@ -76,6 +76,7 @@ export function VerificationReviewSection() {
         <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
           <div className="min-w-0 space-y-4">
             <DocumentViewer documents={a.documents} index={docIndex} onIndexChange={setDocIndex} />
+            {doc?.fileName && <p className="text-sm text-muted">Mock upload file name: <span className="font-semibold text-ink">{doc.fileName}</span></p>}
             {doc &&
             <DocumentChecklist
               doc={doc}
@@ -121,6 +122,12 @@ export function VerificationReviewSection() {
                   <dt className="text-muted">Submitted</dt>
                   <dd>{format(new Date(a.submittedAt), 'd MMM yyyy, h:mm a')}</dd>
                 </div>
+                {a.applicantNote &&
+                <div>
+                  <dt className="text-muted">Applicant note</dt>
+                  <dd className="mt-1 whitespace-pre-wrap">{a.applicantNote}</dd>
+                </div>
+                }
                 {a.resubmittedAt &&
                 <div className="flex justify-between gap-2">
                     <dt className="text-muted">Resubmitted</dt>

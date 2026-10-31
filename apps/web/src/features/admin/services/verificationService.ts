@@ -1,5 +1,5 @@
 import { addMinutes } from 'date-fns';
-import { findVerificationTier } from '../../../data/verificationTiers';
+import { findVerificationTier, VERIFICATION } from '../../../data/verificationTiers';
 import { ApiError, mockResponse } from '../../../services/mockApi';
 import { getAllVendors, setVendorVerification } from '../../../services/vendorStore';
 import { JOB_ACTOR } from '../../jobs/constants';
@@ -7,11 +7,12 @@ import { recordAccountMessage } from '../../jobs/services/notificationService';
 import type { TFunction } from 'i18next';
 import { ADMIN_PERMISSION, roleCan } from '../config/roles';
 import { ADMIN_POLICIES } from '../config/policies';
-import { AUDIT_ACTION, DOCUMENT_PLACEHOLDERS, DOCUMENT_TYPE_LABELS, VENDOR_STANDING_ROUTE, VERIFICATION_STATUS } from '../constants';
+import { AUDIT_ACTION, DOCUMENT_PLACEHOLDERS, DOCUMENT_TYPE, DOCUMENT_TYPE_LABELS, VENDOR_STANDING_ROUTE, VERIFICATION_STATUS } from '../constants';
 import { mockApplications } from '../mock/verification';
 import { activeClaim, maskIdNumber } from '../utils/format';
 import { requirePermission } from './adminSession';
 import { recordAudit } from './auditService';
+import { findUserByVendorId } from '../../auth/services/authBackend';
 import type { Verification } from '../../../types/marketplace';
 import type { AdminUser, DocumentChecks, DocumentType, VerificationApplication } from '../types';
 
@@ -206,6 +207,54 @@ export function getMyVerification(vendorId: string): Promise<{tier: Verification
     const latest = applications.filter((a) => a.vendorId === vendorId).sort((a, b) => b.submittedAt.localeCompare(a.submittedAt))[0] ?? null;
     return { tier: vendor.verification, application: latest ? toClient(latest) : null };
   }, 300);
+}
+
+/** POST /vendor/verification/apply — MOCK: stores the application and filename in this browser session only. */
+export function applyForVerification(vendorId: string, input: {businessName: string;documentType: DocumentType;fileName: string;note: string;}): Promise<VerificationApplication> {
+  return mockResponse(() => {
+    const vendor = getAllVendors().find((v) => v.id === vendorId);
+    if (!vendor) throw new ApiError('We couldn’t find your profile.', 404);
+    if (typeof input.businessName !== 'string' || !input.businessName.trim()) throw new ApiError('Enter your business name.', 400);
+    if (!Object.values(DOCUMENT_TYPE).includes(input.documentType)) throw new ApiError('Choose a supported document type.', 400);
+    if (typeof input.fileName !== 'string' || !input.fileName.trim()) throw new ApiError('Choose a document file.', 400);
+    if (typeof input.note !== 'string' || input.note.length > 500) throw new ApiError('Keep your note to 500 characters or fewer.', 400);
+    if (applications.some((application) => application.vendorId === vendorId && (application.status === VERIFICATION_STATUS.Pending || application.status === VERIFICATION_STATUS.InReview))) {
+      throw new ApiError('You already have an application awaiting review.', 409);
+    }
+    if (applications.some((application) => application.vendorId === vendorId)) throw new ApiError('An application already exists for this vendor.', 409);
+
+    const tier = vendor.verification === VERIFICATION.Id ? VERIFICATION.Trade : VERIFICATION.Id;
+    if (vendor.verification === VERIFICATION.Trade) throw new ApiError('Your profile has the highest verification tier.', 409);
+    const now = new Date().toISOString();
+    const application: VerificationApplication = {
+      id: `ver-${nextId++}`,
+      vendorId,
+      vendorName: input.businessName.trim(),
+      applicantName: findUserByVendorId(vendorId)?.name ?? vendor.name,
+      applicantNote: input.note.trim() || undefined,
+      currentTier: vendor.verification,
+      requestedTier: tier,
+      submittedAt: now,
+      status: VERIFICATION_STATUS.Pending,
+      documents: [{
+        id: `doc-up-${nextDoc++}`,
+        type: input.documentType,
+        fileUrl: DOCUMENT_PLACEHOLDERS[input.documentType],
+        fileName: input.fileName.trim(),
+        nameOnDocument: vendor.name,
+        idNumber: null,
+        expiresOn: null,
+        uploadedAt: now
+      }],
+      checks: {},
+      notes: '',
+      claim: null,
+      decision: null,
+      resubmittedAt: null
+    };
+    applications = [application, ...applications];
+    return toClient(application);
+  }, 600);
 }
 
 /**

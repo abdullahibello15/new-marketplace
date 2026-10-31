@@ -1,6 +1,8 @@
-import { apiRequest, establishApiSession, type ApiSession } from '../../../services/apiClient';
-import { updateSessionUser } from '../session';
-import { saveUser, toUser } from './authBackend';
+import { apiRequest, establishApiSession, getApiAccessToken, type ApiSession } from '../../../services/apiClient';
+import { ApiError, requestAccessToken } from '../../../services/mockApi';
+import { getAuthSnapshot, updateSessionUser } from '../session';
+import { ROLE } from '../constants';
+import { findUser, saveUser, toUser } from './authBackend';
 import { adoptLiveSession, requestSession as importRequestSession, signOutHere } from './sessionService';
 import type { StoredUser } from '../mock/users';
 import type {
@@ -83,6 +85,20 @@ export function logout(): Promise<void> {
 }
 
 export function sessionRecord(): StoredUser {
+  const requestToken = requestAccessToken();
+  if (requestToken && requestToken === getApiAccessToken()) {
+    const user = getAuthSnapshot().user;
+    if (!user?.roles.includes(ROLE.Provider)) throw new ApiError('This account is not a vendor', 403);
+    const stored = findUser(user.id);
+    const saved = stored?.roles.includes(ROLE.Provider) ? stored : null;
+    return saveUser({
+      ...user,
+      vendorId: saved?.vendorId ?? user.vendorId,
+      providerSignup: saved?.providerSignup ?? user.providerSignup,
+      passwordHash: saved?.passwordHash ?? null,
+      vendorDraft: saved?.vendorDraft ?? null
+    });
+  }
   return importRequestSession().user;
 }
 

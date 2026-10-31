@@ -2,9 +2,12 @@ import { PostgreSqlContainer, type StartedPostgreSqlContainer } from '@testconta
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { createApp } from '../app.js'
 import { MemoryRateLimiter } from './service.js'
+import { and, eq } from 'drizzle-orm'
 import { createDb, type Db } from '../db/client.js'
 import { runMigrations } from '../db/migrate.js'
+import { otpChallenges } from '../db/schema/auth.js'
 import { createLogger } from '../observability/logger.js'
+import { captureLogs } from '../testing/logs.js'
 
 const ORIGIN = 'https://web.example.test'
 let container: StartedPostgreSqlContainer
@@ -87,6 +90,123 @@ describe('auth API endpoints', () => {
     expect(reset.json()).toEqual({ status: 'go_to_login' })
     const loginAfterReset = await app.inject({ method: 'POST', url: '/v1/auth/login', payload: { identifier: 'aisha@example.test', password: 'DifferentPassword!24' } })
     expect(loginAfterReset.statusCode).toBe(200)
+  })
+
+  it('requests and verifies email codes with the authenticated user session', async () => {
+    const signup = await app.inject({
+      method: 'POST', url: '/v1/auth/signup',
+      payload: { role: 'customer', name: 'Email Verify User', email: 'email-verify@example.test', password: 'SafePassword!23' },
+    })
+    const authorization = `Bearer ${signup.json().accessToken}`
+    const sent = await app.inject({ method: 'POST', url: '/v1/auth/email/code', headers: { authorization } })
+    expect(sent.statusCode).toBe(200)
+    expect(sent.json()).toMatchObject({ target: 'email-verify@example.test', devCode: null, user: { emailVerified: false } })
+    expect(new Date(sent.json().expiresAt).getTime() - Date.now()).toBeGreaterThan(9 * 60_000)
+    expect(new Date(sent.json().expiresAt).getTime() - Date.now()).toBeLessThanOrEqual(10 * 60_000)
+    const [challenge] = await db.select().from(otpChallenges).where(and(
+      eq(otpChallenges.destination, 'email-verify@example.test'),
+      eq(otpChallenges.purpose, `verify-email:${signup.json().user.id}`),
+    ))
+    expect(challenge.codeHash).not.toBe(sentCode)
+    const verified = await app.inject({
+      method: 'POST', url: '/v1/auth/email/verify', headers: { authorization }, payload: { code: sentCode },
+    })
+    expect(verified.statusCode).toBe(200)
+    expect(verified.json().user).toMatchObject({ email: 'email-verify@example.test', emailVerified: true })
+  })
+
+  it('requests and verifies phone codes with the authenticated user session', async () => {
+    const signup = await app.inject({
+      method: 'POST', url: '/v1/auth/signup',
+      payload: { role: 'customer', name: 'Phone Verify User', email: 'phone-verify@example.test', password: 'SafePassword!23' },
+    })
+    const authorization = `Bearer ${signup.json().accessToken}`
+    const sent = await app.inject({
+      method: 'POST', url: '/v1/auth/phone/code', headers: { authorization }, payload: { phone: '08030000031' },
+    })
+    expect(sent.statusCode).toBe(200)
+    expect(sent.json()).toMatchObject({ target: '+2348030000031', devCode: null, user: { phone: '+2348030000031', phoneVerified: false } })
+    expect(new Date(sent.json().expiresAt).getTime() - Date.now()).toBeGreaterThan(9 * 60_000)
+    expect(new Date(sent.json().expiresAt).getTime() - Date.now()).toBeLessThanOrEqual(10 * 60_000)
+    const [challenge] = await db.select().from(otpChallenges).where(and(
+      eq(otpChallenges.destination, '+2348030000031'),
+      eq(otpChallenges.purpose, `verify-phone:${signup.json().user.id}`),
+    ))
+    expect(challenge.codeHash).not.toBe(sentCode)
+    const verified = await app.inject({
+      method: 'POST', url: '/v1/auth/phone/verify', headers: { authorization }, payload: { code: sentCode },
+    })
+    expect(verified.statusCode).toBe(200)
+    expect(verified.json().user).toMatchObject({ phone: '+2348030000031', phoneVerified: true })
+  })
+
+  it('requires a bearer session for every contact-verification endpoint', async () => {
+    const requests = [
+      app.inject({ method: 'POST', url: '/v1/auth/email/code' }),
+      app.inject({ method: 'POST', url: '/v1/auth/email/verify', payload: { code: '123456' } }),
+      app.inject({ method: 'POST', url: '/v1/auth/phone/code', payload: { phone: '08030000041' } }),
+      app.inject({ method: 'POST', url: '/v1/auth/phone/verify', payload: { code: '123456' } }),
+    ]
+    expect((await Promise.all(requests)).map((response) => response.statusCode)).toEqual([401, 401, 401, 401])
+  })
+
+  it('never logs OTP codes in production', async () => {
+    const logs = captureLogs()
+    let deliveredCode = ''
+    const productionApp = createApp({
+      logger: createLogger({ level: 'info', destination: logs.destination }),
+      webOrigin: ORIGIN,
+      healthChecks: { postgres: () => Promise.resolve(), redis: () => Promise.resolve() },
+      auth: {
+        db,
+        rateLimiter: new MemoryRateLimiter(),
+        origin: ORIGIN,
+        production: true,
+        testOtp: false,
+        delivery: { send: async ({ code }) => { deliveredCode = code } },
+      },
+    })
+    try {
+      const response = await productionApp.inject({ method: 'POST', url: '/v1/auth/otp/request', payload: { phone: '08039999991' } })
+      expect(response.statusCode).toBe(200)
+      expect(deliveredCode).toMatch(/^\d{6}$/)
+      expect(logs.text()).not.toContain(deliveredCode)
+    } finally {
+      await productionApp.close()
+    }
+  })
+
+  it('stops email verification after five incorrect code attempts', async () => {
+    const signup = await app.inject({
+      method: 'POST', url: '/v1/auth/signup',
+      payload: { role: 'customer', name: 'Wrong Code User', email: 'wrong-code@example.test', password: 'SafePassword!23' },
+    })
+    const authorization = `Bearer ${signup.json().accessToken}`
+    await app.inject({ method: 'POST', url: '/v1/auth/email/code', headers: { authorization } })
+    for (let attempt = 0; attempt < 5; attempt++) {
+      const wrong = await app.inject({ method: 'POST', url: '/v1/auth/email/verify', headers: { authorization }, payload: { code: '000000' } })
+      expect(wrong.statusCode).toBe(400)
+    }
+    const locked = await app.inject({ method: 'POST', url: '/v1/auth/email/verify', headers: { authorization }, payload: { code: '000000' } })
+    expect(locked.statusCode).toBe(429)
+  })
+
+  it('rate limits phone code sends per signed-in user', async () => {
+    const signup = await app.inject({
+      method: 'POST', url: '/v1/auth/signup',
+      payload: { role: 'customer', name: 'Rate Limit User', email: 'contact-limit@example.test', password: 'SafePassword!23' },
+    })
+    const authorization = `Bearer ${signup.json().accessToken}`
+    const statuses: number[] = []
+    for (let index = 0; index < 6; index++) {
+      const response = await app.inject({
+        method: 'POST', url: '/v1/auth/phone/code', headers: { authorization },
+        payload: { phone: `0803100000${index}` },
+      })
+      statuses.push(response.statusCode)
+    }
+    expect(statuses.filter((status) => status === 200)).toHaveLength(5)
+    expect(statuses.filter((status) => status === 429)).toHaveLength(1)
   })
 
   it('limits OTP, login and password reset by both IP and normalized contact', async () => {

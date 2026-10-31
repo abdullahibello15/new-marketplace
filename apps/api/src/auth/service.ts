@@ -5,7 +5,7 @@ import type { FastifyRequest } from 'fastify'
 import type { Redis } from 'ioredis'
 import { AppError } from '../http/errors.js'
 import type { Db } from '../db/client.js'
-import { otpChallenges, passwordResets, sessions, userRoles, users } from '../db/schema/index.js'
+import { otpChallenges, passwordResets, sessions, userRoles, users, vendors } from '../db/schema/index.js'
 
 const scrypt = promisify(scryptCallback)
 const hash = (value: string) => createHash('sha256').update(value).digest('hex')
@@ -78,19 +78,21 @@ const verifyPassword = async (password: string, encoded: string) => {
   return actual.length === expected.length && timingSafeEqual(actual, expected)
 }
 
-function publicUser(row: typeof users.$inferSelect, roles: string[]) {
+export async function publicUser(db: Db, row: typeof users.$inferSelect, roles: string[]) {
+  const [vendor] = await db.select({ id: vendors.id }).from(vendors).where(eq(vendors.ownerUserId, row.id)).limit(1)
   return {
     id: row.id, roles, activeRole: row.activeRole, phone: row.phone ?? '', phoneVerified: !!row.phoneVerified,
     email: row.email, emailVerified: !!row.emailVerified, name: row.name, language: row.language,
     createdAt: row.createdAt.toISOString(), hasPassword: !!row.passwordHash, adminRole: row.adminRole,
     adminSuspendedAt: row.adminSuspendedAt?.toISOString() ?? null,
     adminAddedBy: row.adminAddedBy, lastLoginAt: row.lastLoginAt?.toISOString() ?? null,
-    vendorId: row.vendorId, providerSignup: row.providerSignup, rider: row.rider, address: row.address, area: row.area,
+    vendorId: vendor?.id ?? null, providerSignup: row.providerSignup, rider: row.rider, address: row.address, area: row.area,
   }
 }
 
 export async function registerAuthRoutes(app: import('fastify').FastifyInstance, options: AuthOptions) {
   const { db, rateLimiter, delivery, origin, production, testOtp } = options
+  const testCodeEnabled = testOtp && !production
   const cookieName = 'zamani_refresh'
   const cookieOptions = `Path=/v1/auth; HttpOnly; SameSite=${production ? 'None' : 'Lax'}${production ? '; Secure' : ''}`
   const setRefresh = (reply: import('fastify').FastifyReply, value: string, maxAge?: number) => {
@@ -102,16 +104,50 @@ export async function registerAuthRoutes(app: import('fastify').FastifyInstance,
     const identityOk = await rateLimiter.consume(`${action}:contact:${hash(contact)}`, perContact, 900)
     if (!ipOk || !identityOk) throw rateLimitError()
   }
-  const sendCode = async (destination: string, purpose: string) => {
+  const sendCode = async (destination: string, purpose: string, expiresMinutes = 5, request?: FastifyRequest) => {
     const [latest] = await db.select().from(otpChallenges).where(and(eq(otpChallenges.destination, destination), eq(otpChallenges.purpose, purpose))).orderBy(desc(otpChallenges.createdAt)).limit(1)
     if (latest && latest.resendAvailableAt > new Date()) throw new AppError(429, 'rate_limited', 'Wait before requesting another code.', 'auth:error.resendTooSoon')
-    const code = testOtp ? '123456' : randomInt(0, 1_000_000).toString().padStart(6, '0')
+    const code = testCodeEnabled ? '123456' : randomInt(0, 1_000_000).toString().padStart(6, '0')
     const now = new Date()
-    const expiresAt = new Date(now.getTime() + 5 * 60_000)
+    const expiresAt = new Date(now.getTime() + expiresMinutes * 60_000)
     const resendAvailableAt = new Date(now.getTime() + 60_000)
-    await db.insert(otpChallenges).values({ destination, purpose, codeHash: hash(code), expiresAt, resendAvailableAt })
-    if (!testOtp) await delivery.send({ channel: emailPattern.test(destination) ? 'email' : 'sms', destination, code, purpose })
-    return { expiresAt: expiresAt.toISOString(), resendAvailableAt: resendAvailableAt.toISOString(), devCode: testOtp ? code : null }
+    const [challenge] = await db.insert(otpChallenges).values({ destination, purpose, codeHash: hash(code), expiresAt, resendAvailableAt }).returning({ id: otpChallenges.id })
+    if (testCodeEnabled) request?.log.info({ destination, purpose, testCode: code }, 'OTP test code')
+    else {
+      try {
+        await delivery.send({ channel: emailPattern.test(destination) ? 'email' : 'sms', destination, code, purpose })
+      } catch (error) {
+        await db.delete(otpChallenges).where(eq(otpChallenges.id, challenge.id))
+        throw error
+      }
+    }
+    return { expiresAt: expiresAt.toISOString(), resendAvailableAt: resendAvailableAt.toISOString(), devCode: testCodeEnabled ? code : null }
+  }
+  const limitContactVerificationSend = async (request: FastifyRequest, userId: string, destination: string, channel: 'email' | 'sms') => {
+    const prefix = `contact-verify:${channel}`
+    const ipOk = await rateLimiter.consume(`${prefix}:ip:${request.ip}`, 20, 900)
+    const userOk = await rateLimiter.consume(`${prefix}:user:${userId}`, 5, 900)
+    const destinationOk = await rateLimiter.consume(`${prefix}:destination:${hash(destination)}`, 5, 900)
+    if (!ipOk || !userOk || !destinationOk) throw rateLimitError()
+  }
+  const verifyContactCode = async (request: FastifyRequest, userId: string, destination: string, purpose: string) => {
+    const [challenge] = await db.select().from(otpChallenges).where(and(
+      eq(otpChallenges.destination, destination), eq(otpChallenges.purpose, purpose),
+      isNull(otpChallenges.verifiedAt), gt(otpChallenges.expiresAt, new Date()),
+    )).orderBy(desc(otpChallenges.createdAt)).limit(1)
+    if (!challenge) throw new AppError(400, 'bad_request', 'Request a new code.', 'auth:error.noCode')
+    if (challenge.attempts >= 5) throw new AppError(429, 'rate_limited', 'Too many incorrect codes.', 'auth:error.locked')
+    const body = request.body as { code?: string }
+    await db.update(otpChallenges).set({ attempts: challenge.attempts + 1 }).where(eq(otpChallenges.id, challenge.id))
+    if (hash(String(body?.code ?? '')) !== challenge.codeHash) throw new AppError(400, 'bad_request', 'The code is incorrect.', 'auth:error.wrongCode')
+    const verifiedAt = new Date()
+    await db.update(otpChallenges).set({ verifiedAt }).where(eq(otpChallenges.id, challenge.id))
+    const [updated] = await db.update(users).set({
+      ...(purpose === `verify-email:${userId}` ? { emailVerified: verifiedAt } : { phoneVerified: verifiedAt }),
+      updatedAt: verifiedAt,
+    }).where(eq(users.id, userId)).returning()
+    const roles = (await db.select({ role: userRoles.role }).from(userRoles).where(eq(userRoles.userId, userId))).map((x) => x.role)
+    return publicUser(db, updated, roles)
   }
   const issueSession = async (request: FastifyRequest, reply: import('fastify').FastifyReply, userId: string, remember: boolean) => {
     const [row] = await db.select().from(users).where(eq(users.id, userId)).limit(1)
@@ -131,7 +167,7 @@ export async function registerAuthRoutes(app: import('fastify').FastifyInstance,
     })
     await db.update(users).set({ lastLoginAt: now, updatedAt: now }).where(eq(users.id, userId))
     setRefresh(reply, refreshToken, remember && !staff ? 30 * 24 * 3600 : undefined)
-    return { user: publicUser(row, roles), accessToken, accessExpiresAt: accessExpiresAt.toISOString(), sessionId }
+    return { user: await publicUser(db, row, roles), accessToken, accessExpiresAt: accessExpiresAt.toISOString(), sessionId }
   }
   const currentSession = async (request: FastifyRequest) => {
     const value = request.headers.authorization?.replace(/^Bearer\s+/i, '')
@@ -153,6 +189,9 @@ export async function registerAuthRoutes(app: import('fastify').FastifyInstance,
     validatePassword(String(body.password ?? ''))
     let phone: string | null = null
     if (role === 'provider') phone = normalizePhone(String(body.phone ?? ''))
+    if (role === 'provider' && typeof body.town === 'string' && emailPattern.test(body.town.trim())) {
+      throw new AppError(400, 'bad_request', 'Enter a town or landmark, not an email address.', 'auth:error.enterTown')
+    }
     if (role === 'provider' && (!body.acceptedTerms || typeof body.town !== 'string' || body.town.trim().length < 2 || typeof body.lga !== 'string')) throw new AppError(400, 'validation_failed')
     if ((await db.select({ id: users.id }).from(users).where(or(eq(users.email, email), phone ? eq(users.phone, phone) : eq(users.id, '00000000-0000-0000-0000-000000000000'))).limit(1)).length) throw conflict('An account already uses that email or phone.')
     const now = new Date()
@@ -172,7 +211,7 @@ export async function registerAuthRoutes(app: import('fastify').FastifyInstance,
     const body = request.body as { phone?: string }
     const phone = normalizePhone(String(body?.phone ?? ''))
     await limit(request, phone, 'otp', 5)
-    const result = await sendCode(phone, 'login')
+    const result = await sendCode(phone, 'login', 5, request)
     return reply.send({ phone, ...result })
   })
 
@@ -256,7 +295,7 @@ export async function registerAuthRoutes(app: import('fastify').FastifyInstance,
     const [user] = await db.select().from(users).where(eq(users.id, session.userId)).limit(1)
     if (!user || user.adminSuspendedAt) throw unauthorized()
     setRefresh(reply, refreshToken, session.remember ? 30 * 24 * 3600 : undefined)
-    return { user: publicUser(user, roles), accessToken, accessExpiresAt: accessExpiresAt.toISOString(), sessionId: session.id }
+    return { user: await publicUser(db, user, roles), accessToken, accessExpiresAt: accessExpiresAt.toISOString(), sessionId: session.id }
   })
 
   app.post('/v1/auth/logout', async (request, reply) => {
@@ -268,7 +307,41 @@ export async function registerAuthRoutes(app: import('fastify').FastifyInstance,
 
   app.get('/v1/auth/session', async (request) => {
     const { session, user, roles } = await currentSession(request)
-    return { user: publicUser(user, roles), sessionId: session.id, accessExpiresAt: session.accessExpiresAt.toISOString() }
+    return { user: await publicUser(db, user, roles), sessionId: session.id, accessExpiresAt: session.accessExpiresAt.toISOString() }
+  })
+
+  app.post('/v1/auth/email/code', async (request) => {
+    const { user, roles } = await currentSession(request)
+    if (!user.email || !emailPattern.test(user.email)) throw new AppError(400, 'bad_request', 'Add a valid email address first.', 'auth:error.invalidEmail')
+    await limitContactVerificationSend(request, user.id, user.email, 'email')
+    const sent = await sendCode(user.email, `verify-email:${user.id}`, 10, request)
+    return { target: user.email, ...sent, devCode: null, user: await publicUser(db, user, roles) }
+  })
+
+  app.post('/v1/auth/email/verify', async (request) => {
+    const { user } = await currentSession(request)
+    if (!user.email) throw new AppError(400, 'bad_request', 'Add an email address first.', 'auth:error.invalidEmail')
+    await limit(request, user.email, 'email-verify', 10)
+    return { user: await verifyContactCode(request, user.id, user.email, `verify-email:${user.id}`) }
+  })
+
+  app.post('/v1/auth/phone/code', async (request) => {
+    const { user, roles } = await currentSession(request)
+    const body = request.body as { phone?: string }
+    const phone = normalizePhone(String(body?.phone ?? user.phone ?? ''))
+    const [owner] = await db.select({ id: users.id }).from(users).where(eq(users.phone, phone)).limit(1)
+    if (owner && owner.id !== user.id) throw conflict('An account already uses that phone number.')
+    await limitContactVerificationSend(request, user.id, phone, 'sms')
+    const sent = await sendCode(phone, `verify-phone:${user.id}`, 10, request)
+    const [updated] = await db.update(users).set({ phone, phoneVerified: null, updatedAt: new Date() }).where(eq(users.id, user.id)).returning()
+    return { target: phone, ...sent, devCode: null, user: await publicUser(db, updated, roles) }
+  })
+
+  app.post('/v1/auth/phone/verify', async (request) => {
+    const { user } = await currentSession(request)
+    if (!user.phone) throw new AppError(400, 'bad_request', 'Add a phone number first.', 'auth:error.invalidPhone')
+    await limit(request, user.phone, 'phone-verify', 10)
+    return { user: await verifyContactCode(request, user.id, user.phone, `verify-phone:${user.id}`) }
   })
 
   app.get('/v1/auth/sessions', async (request) => {
@@ -309,7 +382,7 @@ export async function registerAuthRoutes(app: import('fastify').FastifyInstance,
     await limit(request, identifier, 'password-reset', 4)
     const [user] = await db.select().from(users).where(identifier.includes('@') ? eq(users.email, identifier) : eq(users.phone, identifier)).limit(1)
     const now = Date.now()
-    if (user?.passwordHash) await sendCode(identifier, `password-reset:${user.id}`)
+    if (user?.passwordHash) await sendCode(identifier, `password-reset:${user.id}`, 5, request)
     return {
       identifier,
       channel: emailPattern.test(identifier) ? 'email' as const : 'sms' as const,

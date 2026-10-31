@@ -16,6 +16,20 @@ export interface LoginRedirectState {
   reason?: ClientEndReason;
 }
 
+/** Portal login destinations used after an ended session. */
+export function isVendorPortalPath(pathname: string): boolean {
+  return pathname === '/pro' || pathname.startsWith('/pro/');
+}
+
+export function endedSessionLoginPath(pathname: string): string {
+  if (isVendorPortalPath(pathname)) return '/vendor/login';
+  return pathname.startsWith('/admin') ? AUTH_ROUTES.staffLogin : AUTH_ROUTES.login;
+}
+
+export function shouldRedirectForEndedSession(pathname: string): boolean {
+  return !pathname.startsWith(AUTH_ROUTES.login) && pathname !== AUTH_ROUTES.staffLogin && pathname !== '/vendor/login';
+}
+
 function Checking() {
   const { t } = useTranslation();
   return (
@@ -79,6 +93,11 @@ export function RequireRole({ role, fallback, loginTo, children }: {role: Role;f
   return <>{children ?? <Outlet />}</>;
 }
 
+/** The vendor portal has its own sign-in entry; other role guards retain their existing destination. */
+export function RequireVendorRole({ children }: {children?: ReactNode;}) {
+  return <RequireRole role={ROLE.Provider} loginTo="/vendor/login">{children}</RequireRole>;
+}
+
 /**
  * The whole-app login requirement (REQUIRE_LOGIN in config.ts). Signed out on anything but a public page
  * → the landing page (/about), remembering where they were going. With REQUIRE_LOGIN off it lets everything
@@ -102,6 +121,12 @@ export function LoginGate({ children }: {children?: ReactNode;}) {
  */
 export function RequireVendorProfile({ children }: {children?: ReactNode;}) {
   const { user } = useAuth();
-  if (user && user.roles.includes(ROLE.Provider) && !user.vendorId) return <Navigate to={AUTH_ROUTES.vendorSetup} replace />;
+  const redirect = vendorSetupRedirect(user);
+  if (redirect) return <Navigate to={redirect} replace />;
   return <>{children ?? <Outlet />}</>;
+}
+
+/** Providers who have not made their vendor profile finish setup before entering the portal. */
+export function vendorSetupRedirect(user: {roles: Role[];vendorId: string | null;} | null): string | null {
+  return user?.roles.includes(ROLE.Provider) && !user.vendorId ? AUTH_ROUTES.vendorSetup : null;
 }

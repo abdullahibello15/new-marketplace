@@ -8,6 +8,7 @@ import { VendorsProvider } from './contexts/VendorsContext';
 import { VendorPortalProvider } from './contexts/VendorPortalContext';
 import { CustomerShell } from './components/CustomerShell';
 import { VendorShell } from './components/VendorShell';
+import { VendorSetupShell } from './components/VendorSetupShell';
 import { InvestorShell } from './components/InvestorShell';
 import { RiderShell } from './components/RiderShell';
 import { AuthProvider } from './features/auth/context/AuthContext';
@@ -15,7 +16,7 @@ import { useAuth } from './features/auth/hooks/useAuth';
 import { SessionGuard } from './features/auth/components/SessionGuard';
 import { AuthLayout } from './features/auth/components/AuthLayout';
 import { DevAuthBanner } from './features/auth/components/DevAuthBanner';
-import { LoginGate, RequireAuth, RequireRole, RequireVendorProfile } from './features/auth/components/guards';
+import { LoginGate, RequireAuth, RequireRole, RequireVendorProfile, RequireVendorRole } from './features/auth/components/guards';
 import { AUTH_ROUTES, ROLE } from './features/auth/constants';
 import { AboutPage, LandingGate } from './features/landing/components/LandingGate';
 import { VendorLandingPage } from './features/landing/sections/VendorLandingPage';
@@ -121,6 +122,7 @@ import('./features/admin/sections/VendorImportDetailSection').then((m) => ({ def
 const ClaimProfileSection = lazy(() => import('./features/profile-claim/sections/ClaimProfileSection').then((m) => ({ default: m.ClaimProfileSection })));
 const NotAuthorised = lazy(() => import('./features/admin/components/NotAuthorised').then((m) => ({ default: m.NotAuthorised })));
 const LoginSection = lazy(() => import('./features/auth/sections/LoginSection').then((m) => ({ default: m.LoginSection })));
+const VendorLoginSection = lazy(() => import('./features/vendor-dashboard/sections/VendorLoginSection').then((m) => ({ default: m.VendorLoginSection })));
 const SignupSection = lazy(() => import('./features/auth/sections/SignupSection').then((m) => ({ default: m.SignupSection })));
 const WelcomeSection = lazy(() => import('./features/auth/sections/WelcomeSection').then((m) => ({ default: m.WelcomeSection })));
 const PasswordResetSection = lazy(() => import('./features/auth/sections/PasswordResetSection').then((m) => ({ default: m.PasswordResetSection })));
@@ -157,6 +159,7 @@ const router = createBrowserRouter(
         {/* The old Welcome screen: the landing page at "/" replaced it. */}
         <Route path="/start" element={<Navigate to={AUTH_ROUTES.start} replace />} />
         <Route path="/login" element={<LoginSection />} />
+        <Route path="/vendor/login" element={<VendorLoginSection />} />
         <Route path="/login/forgot" element={<PasswordResetSection />} />
         {/* One signup path per role: the role picker, then /signup/customer, /signup/provider or /signup/rider. */}
         <Route path="/signup" element={<SignupSection />} />
@@ -167,7 +170,11 @@ const router = createBrowserRouter(
           <Route path="/account/sessions" element={<ActiveSessionsSection />} />
           <Route path="/account/verify-email" element={<VerifyEmailSection />} />
           <Route path="/account/verify-phone" element={<VerifyPhoneSection />} />
-          <Route path="/account/vendor-setup" element={<VendorSetupSection />} />
+        </Route>
+      </Route>
+      <Route element={<RequireAuth />}>
+        <Route path={AUTH_ROUTES.vendorSetup} element={<VendorSetupShell />}>
+          <Route index element={<VendorSetupSection />} />
         </Route>
       </Route>
       {/* The public landing page about Gwani, with its own header and footer. */}
@@ -222,7 +229,7 @@ const router = createBrowserRouter(
       <Route
         path="/pro"
         element={
-        <RequireRole role={ROLE.Provider}>
+        <RequireVendorRole>
             <RequireVendorProfile>
               <RequestsProvider>
                 <VendorOrdersProvider>
@@ -230,7 +237,7 @@ const router = createBrowserRouter(
                 </VendorOrdersProvider>
               </RequestsProvider>
             </RequireVendorProfile>
-          </RequireRole>
+          </RequireVendorRole>
         }>
 
         <Route index element={<RequestsSection />} />

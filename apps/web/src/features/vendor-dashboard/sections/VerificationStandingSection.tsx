@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { documentTypeLabel, moderationKindLabel, tierExplanation, tierLabel, verificationStatusLabel } from '../../../i18n/labels';
 import { formatDate as format } from '../../../utils/format';
@@ -7,6 +7,8 @@ import { PageHeader } from '../../../components/PageHeader';
 import { VerificationBadge } from '../../../components/VerificationBadge';
 import { Badge } from '../../../components/ui/Badge';
 import { Button } from '../../../components/ui/Button';
+import { FormField } from '../../../components/ui/FormField';
+import { field, ok } from '../../../components/vendor/formStyles';
 import { ErrorState } from '../../../components/ui/ErrorState';
 import { LoadingState } from '../../../components/ui/LoadingState';
 import { PageContainer } from '../../../components/ui/PageContainer';
@@ -17,7 +19,7 @@ import { errorMessage } from '../../../lib/errors';
 import { ReasonDialog } from '../../jobs/components/ReasonDialog';
 import { DOCUMENT_TYPE, DOCUMENT_TYPE_LABELS, MODERATION_KIND_LABELS, VERIFICATION_STATUS, VERIFICATION_STATUS_META } from '../../admin/constants';
 import { appealRemoval, getMyModerationNotices } from '../../admin/services/moderationService';
-import { getMyVerification, resubmitDocuments } from '../../admin/services/verificationService';
+import { applyForVerification, getMyVerification, resubmitDocuments } from '../../admin/services/verificationService';
 import type { DocumentType } from '../../admin/types';
 import { useCurrentVendor } from '../../auth/hooks/useCurrentVendor';
 
@@ -36,6 +38,12 @@ export function VerificationStandingSection() {
   const notices = useAsyncData(loadNotices);
   const [files, setFiles] = useState<Partial<Record<DocumentType, string>>>({});
   const [uploading, setUploading] = useState(false);
+  const [businessName, setBusinessName] = useState('');
+  const [applicationDocumentType, setApplicationDocumentType] = useState<DocumentType | ''>('');
+  const [applicationFileName, setApplicationFileName] = useState('');
+  const [applicantNote, setApplicantNote] = useState('');
+  const [applying, setApplying] = useState(false);
+  const [applicationError, setApplicationError] = useState<string | null>(null);
   const [appealing, setAppealing] = useState<string | null>(null);
 
   const app = verification.data?.application ?? null;
@@ -43,6 +51,38 @@ export function VerificationStandingSection() {
   // After "more info", the documents Gwani asked for; after a rejection, any document.
   const uploadTypes: DocumentType[] = app?.status === VERIFICATION_STATUS.MoreInfo && app.decision?.documentsNeeded.length ? app.decision.documentsNeeded : Object.values(DOCUMENT_TYPE);
   const chosen = Object.entries(files).filter(([, name]) => name) as [DocumentType, string][];
+
+  async function submitApplication(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!businessName.trim() || !applicationDocumentType || !applicationFileName) {
+      setApplicationError(t('verification.applyRequired'));
+      return;
+    }
+    if (applicantNote.length > 500) {
+      setApplicationError(t('verification.noteTooLong'));
+      return;
+    }
+    setApplicationError(null);
+    setApplying(true);
+    try {
+      await applyForVerification(VENDOR_ID, {
+        businessName,
+        documentType: applicationDocumentType,
+        fileName: applicationFileName,
+        note: applicantNote
+      });
+      toast.success(t('verification.applyToast'));
+      setBusinessName('');
+      setApplicationDocumentType('');
+      setApplicationFileName('');
+      setApplicantNote('');
+      verification.reload();
+    } catch (e) {
+      toast.error(errorMessage(e));
+    } finally {
+      setApplying(false);
+    }
+  }
 
   async function submit() {
     setUploading(true);
@@ -85,6 +125,39 @@ export function VerificationStandingSection() {
           </div> :
 
         <p className="text-sm text-muted">{t('verification.notApplied')}</p>
+        }
+
+        {!app &&
+        <form
+          className="space-y-3 rounded-xl border border-mustard bg-[#FBF3DC] p-3"
+          noValidate
+          onSubmit={(e) => void submitApplication(e)}>
+            <h3 className="flex items-center gap-2 font-bold">
+              <FileCheck2Icon className="h-4 w-4" aria-hidden="true" /> {t('verification.applyTitle')}
+            </h3>
+            <p className="text-xs text-muted">{t('verification.mockUploadNotice')}</p>
+            <FormField id="verification-business-name" label={t('verification.businessName')}>
+              {(describedBy) => <input id="verification-business-name" required value={businessName} onChange={(e) => setBusinessName(e.target.value)} aria-describedby={describedBy} className={`${field} ${ok}`} />}
+            </FormField>
+            <FormField id="verification-document-type" label={t('verification.documentType')}>
+              {(describedBy) =>
+              <select id="verification-document-type" required value={applicationDocumentType} onChange={(e) => setApplicationDocumentType(e.target.value as DocumentType | '')} aria-describedby={describedBy} className={`${field} ${ok}`}>
+                  <option value="">{t('verification.chooseDocumentType')}</option>
+                  {Object.values(DOCUMENT_TYPE).map((type) => <option key={type} value={type}>{documentTypeLabel(type, DOCUMENT_TYPE_LABELS[type])}</option>)}
+                </select>
+              }
+            </FormField>
+            <FormField id="verification-document-file" label={t('verification.selectFile')}>
+              {(describedBy) =>
+              <input id="verification-document-file" type="file" required accept="image/*,application/pdf" onChange={(e) => setApplicationFileName(e.target.files?.[0]?.name ?? '')} aria-describedby={describedBy} className="mt-1 block w-full text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-white file:px-3 file:py-1.5 file:font-semibold" />
+              }
+            </FormField>
+            <FormField id="verification-applicant-note" label={t('verification.applicantNote')} hint={t('verification.noteHint')} aside={`${applicantNote.length}/500`}>
+              {(describedBy) => <textarea id="verification-applicant-note" rows={3} maxLength={500} value={applicantNote} onChange={(e) => setApplicantNote(e.target.value)} aria-describedby={describedBy} className={`${field} ${ok}`} />}
+            </FormField>
+            {applicationError && <p role="alert" className="text-sm font-medium text-clay-dark">{applicationError}</p>}
+            <Button type="submit" loading={applying}>{t('verification.applyButton')}</Button>
+          </form>
         }
 
         {canResubmit &&

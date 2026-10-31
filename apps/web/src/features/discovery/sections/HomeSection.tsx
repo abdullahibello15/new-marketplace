@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ShoppingBagIcon, WrenchIcon } from 'lucide-react';
 import { buttonClasses } from '../../../components/ui/buttonStyles';
 import { PageContainer } from '../../../components/ui/PageContainer';
+import { HeaderSearch } from '../../../components/marketplace/HeaderSearch';
 import { formatNaira } from '../../../utils/format';
 import { useAuth } from '../../auth/hooks/useAuth';
 import { CategoryGrid } from '../components/categories/CategoryGrid';
@@ -62,6 +63,9 @@ export function HomeSection() {
       </section>
 
       <CategoryGrid />
+      <div className="mx-auto w-full max-w-[720px]">
+        <HeaderSearch />
+      </div>
       <ProductRow title={t('home.rowPopular', { place: place.name })} filters={POPULAR} />
       <ProductRow title={t('home.rowBudget', { amount: formatNaira(BUDGET_MAX) })} filters={BUDGET} />
       <ProductRow title={t('home.rowTopShops')} filters={TOP_SHOPS} />

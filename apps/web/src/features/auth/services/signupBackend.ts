@@ -89,6 +89,7 @@ export function registerProviderNow(input: ProviderSignupInput, now: Date): Stor
   if (!nigerLgas.includes(input.lga)) throw invalid(i18n.t('auth:error.chooseLga'));
   const town = input.town.trim();
   if (town.length < 2) throw invalid(i18n.t('auth:error.enterTown'));
+  if (isEmail(town)) throw invalid('Enter a town or landmark, not an email address.');
   if (!input.acceptedTerms) throw invalid(i18n.t('auth:error.acceptTerms'));
   checkPassword(input.password);
   assertPhoneFree(phone);

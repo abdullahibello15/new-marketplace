@@ -1,5 +1,6 @@
 import i18n from '../../i18n';
 import { ApiError, requestAccessToken } from '../../services/mockApi';
+import { getApiAccessToken } from '../../services/apiClient';
 import { ROLE } from './constants';
 import { AuthError } from './errors';
 import type { ClientEndReason, User } from './types';
@@ -152,8 +153,11 @@ export function currentCustomerId(): string {
 
 /** The signed-in provider's vendor profile id. Every vendor-portal service filters by this. */
 export function currentVendorId(): string {
-  const user = requireUser();
-  if (!user.roles.includes(ROLE.Provider) || !user.vendorId) throw new ApiError(i18n.t('auth:error.needProvider'), 403);
+  const requestToken = requestAccessToken();
+  const user = requestToken !== undefined && requestToken && requestToken === getApiAccessToken()
+    ? snapshot.user
+    : requireUser();
+  if (!user || !user.roles.includes(ROLE.Provider) || !user.vendorId) throw new ApiError(i18n.t('auth:error.needProvider'), 403);
   return user.vendorId;
 }
 

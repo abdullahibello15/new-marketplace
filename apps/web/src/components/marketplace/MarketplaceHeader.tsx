@@ -5,26 +5,34 @@ import { MenuIcon, ShoppingCartIcon } from 'lucide-react';
 import { ORDER_ROUTES } from '../../features/orders/constants';
 import { useCart } from '../../features/orders/hooks/useCart';
 import { AccountMenu } from './AccountMenu';
-import { CategoryNav } from './CategoryNav';
-import { HeaderSearch } from './HeaderSearch';
 import { MobileMenu } from './MobileMenu';
 import { APP_INITIAL, APP_NAME } from '../../config/brand';
+import { customerNav } from '../../data/navigation';
+import { PlaceChip } from '../../features/discovery/components/location/PlaceChip';
+import { categoryLinks } from './categoryLinks';
 
 /**
- * The marketplace header, sticky on every buyer page: logo, the big search, account and cart; category
- * links in a second row on wide screens. Below `lg` the account and categories move into the hamburger
- * menu, and the search drops to its own row.
+ * The marketplace header, sticky on every buyer page: brand and primary links on the left, location,
+ * cart and account on the right. Search and category links stay in their own rows below the main bar.
  */
 export function MarketplaceHeader() {
   const { t } = useTranslation();
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
   const { count } = useCart();
   const [menuOpen, setMenuOpen] = useState(false);
+  const params = new URLSearchParams(search);
+  const home = customerNav.find((item) => item.to === '/')!;
+  const orders = customerNav.find((item) => item.to === ORDER_ROUTES.myOrders)!;
+  const services = categoryLinks().find((item) => item.key === 'services')!;
+  const primaryLinks = [
+    { key: 'home', to: home.to, label: home.labelKey ? t(home.labelKey) : home.label, active: home.match(pathname) },
+    { key: 'services', to: services.to, label: services.label, active: services.isActive(pathname, params) },
+    { key: 'orders', to: orders.to, label: orders.shortLabelKey ? t(orders.shortLabelKey) : orders.shortLabel ?? orders.label, active: orders.match(pathname) }];
   useEffect(() => setMenuOpen(false), [pathname]);
 
   return (
     <header className="sticky top-0 z-30 bg-pine-deep text-white print:hidden">
-      <div className="mx-auto flex max-w-6xl items-center gap-2 px-4 py-3 sm:gap-4 lg:gap-6 lg:px-10">
+      <div className="mx-auto flex max-w-6xl items-center gap-2 px-5 py-3 sm:gap-4 lg:gap-6 lg:px-10">
         <button
           type="button"
           onClick={() => setMenuOpen(true)}
@@ -40,12 +48,23 @@ export function MarketplaceHeader() {
           {/* The name is long: two short lines on narrow phones, one line from sm up. */}
           <span className="max-w-[7.5rem] text-sm font-extrabold leading-tight tracking-tight sm:max-w-none sm:text-lg lg:text-xl">{APP_NAME}</span>
         </Link>
-        <div className="hidden min-w-0 flex-1 md:block">
-          <HeaderSearch />
-        </div>
+        <nav aria-label={t('market.categories')} className="hidden lg:block">
+          <ul className="flex gap-1">
+            {primaryLinks.map((item) =>
+            <li key={item.key} className="shrink-0">
+              <Link
+                to={item.to}
+                aria-current={item.active ? 'page' : undefined}
+                className={`block whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-semibold transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60 ${
+                item.active ? 'bg-white/15 text-white' : 'text-white/80 hover:bg-white/10 hover:text-white'}`}>
+                {item.label}
+              </Link>
+            </li>)}
+          </ul>
+        </nav>
         <div className="ml-auto flex shrink-0 items-center gap-1">
           <div className="hidden lg:block">
-            <AccountMenu />
+            <PlaceChip />
           </div>
           <Link
             to={ORDER_ROUTES.cart}
@@ -60,12 +79,14 @@ export function MarketplaceHeader() {
               </span>
             }
           </Link>
+          <div className="hidden lg:block">
+            <AccountMenu />
+          </div>
         </div>
       </div>
-      <div className="px-4 pb-3 md:hidden">
-        <HeaderSearch />
+      <div className="mx-auto flex max-w-6xl justify-end px-5 pb-3 lg:hidden">
+        <AccountMenu />
       </div>
-      <CategoryNav />
       <MobileMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
     </header>);
 

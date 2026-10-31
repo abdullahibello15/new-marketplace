@@ -1,8 +1,9 @@
 import i18n from '../../../i18n';
 import { ApiError } from '../../../services/mockApi';
 import { ROLE } from '../../auth/constants';
-import { findUser } from '../../auth/services/authBackend';
-import { currentUser } from '../../auth/session';
+import { getApiAccessToken } from '../../../services/apiClient';
+import { currentUser, getAuthSnapshot } from '../../auth/session';
+import { requestAccessToken } from '../../../services/mockApi';
 import { isAdminRole, roleCan, type AdminPermission } from '../config/roles';
 import type { User } from '../../auth/types';
 import type { AdminUser } from '../types';
@@ -22,10 +23,13 @@ export function toAdminUser(user: Pick<User, 'id' | 'name' | 'roles' | 'adminRol
 
 /** The signed-in staff member, or null. */
 export function currentAdmin(): AdminUser | null {
-  const user = currentUser();
-  if (!user) return null;
-  const stored = findUser(user.id);
-  return stored ? toAdminUser(stored) : null;
+  const requestToken = requestAccessToken();
+  const user = requestToken === undefined
+    ? getAuthSnapshot().user
+    : requestToken && requestToken === getApiAccessToken()
+      ? getAuthSnapshot().user
+      : currentUser();
+  return user ? toAdminUser(user) : null;
 }
 
 /** The "backend" check every admin service makes before acting. */

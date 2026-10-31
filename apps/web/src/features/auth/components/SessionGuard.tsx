@@ -3,13 +3,12 @@ import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '../../../components/ui/Button';
 import { Dialog } from '../../../components/ui/Dialog';
-import { AUTH_ROUTES } from '../constants';
 import { useAuth } from '../hooks/useAuth';
 import { signOutIdle } from '../services/sessionService';
 import { sessionTiming } from '../sessionConfig';
 import { broadcastSession, onSessionMessage } from '../sessionSync';
 import { idlePhase, idleSecondsLeft, idleTimeoutSeconds } from '../utils/idle';
-import type { LoginRedirectState } from './guards';
+import { endedSessionLoginPath, shouldRedirectForEndedSession, type LoginRedirectState } from './guards';
 
 const ACTIVITY_EVENTS = ['pointerdown', 'keydown', 'wheel', 'touchstart', 'scroll'] as const;
 /** Tell other tabs about activity at most this often. */
@@ -41,10 +40,10 @@ export function SessionGuard() {
     if (status !== 'signed_out' || !ended || ended.id <= handledEndId) return;
     handledEndId = ended.id;
     if (ended.reason === 'logout') return; // They chose to; the sign-out button decides where to go.
-    if (location.pathname.startsWith(AUTH_ROUTES.login) || location.pathname === AUTH_ROUTES.staffLogin) return;
+    if (!shouldRedirectForEndedSession(location.pathname)) return;
     const from = `${location.pathname}${location.search}${location.hash}`;
     // Staff go back to the staff sign-in, everyone else to the usual login.
-    const loginPath = location.pathname.startsWith('/admin') ? AUTH_ROUTES.staffLogin : AUTH_ROUTES.login;
+    const loginPath = endedSessionLoginPath(location.pathname);
     navigate(loginPath, { replace: true, state: { from, reason: ended.reason } satisfies LoginRedirectState });
   }, [status, ended, location, navigate]);
 

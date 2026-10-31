@@ -15,6 +15,7 @@ import { sessionTiming } from '../sessionConfig';
 import { broadcastSession, onSessionMessage } from '../sessionSync';
 import { deviceDisplayName, type DeviceInfo } from '../utils/device';
 import { findUser, isSuspended, toUser } from './authBackend';
+import { restoreProviderProfile } from './roleSetup';
 import { clearRefreshCookie, readRefreshCookie, writeRefreshCookie } from './mockCookieJar';
 import {
   authenticateNow,
@@ -137,9 +138,26 @@ export async function createSession(user: User, device: DeviceInfo, { remember }
   return tokens;
 }
 
+function restoreLiveProvider(user: User): User {
+  if (!user.roles.includes(ROLE.Provider)) return user;
+  const saved = findUser(user.id);
+  if (!saved?.roles.includes(ROLE.Provider)) return user;
+  const restored: StoredUser = {
+    ...saved,
+    ...user,
+    vendorId: saved.vendorId ?? user.vendorId,
+    providerSignup: saved.providerSignup ?? user.providerSignup,
+    passwordHash: saved.passwordHash ?? null,
+    vendorDraft: saved.vendorDraft ?? null
+  };
+  if (restored.vendorId && restored.vendorDraft) restoreProviderProfile(restored, new Date());
+  return toUser(restored);
+}
+
 export function adoptLiveSession(user: User, tokens: SessionTokens) {
-  adoptSession(user, tokens);
-  broadcastSession({ type: 'signed_in', userId: user.id });
+  const sessionUser = restoreLiveProvider(user);
+  adoptSession(sessionUser, tokens);
+  broadcastSession({ type: 'signed_in', userId: sessionUser.id });
 }
 
 async function refreshOnce(): Promise<User | null> {
@@ -147,7 +165,7 @@ async function refreshOnce(): Promise<User | null> {
     const result = await apiRequest<ApiSession>('/v1/auth/refresh', { method: 'POST' }, false);
     const user = result.user as User;
     adoptLiveSession(user, establishApiSession(result));
-    return user;
+    return getAuthSnapshot().user;
   } catch {
     return null;
   }

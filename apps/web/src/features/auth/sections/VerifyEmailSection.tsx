@@ -9,8 +9,16 @@ import { useOtpFlow, type OtpApi } from '../hooks/useOtpFlow';
 import { sendEmailCode, verifyEmail } from '../services/accountService';
 import { OtpCodeStep } from '../components/OtpCodeStep';
 import { safeReturnPath } from '../utils/returnPath';
+import { AUTH_ROUTES, ROLE, ROLE_META } from '../constants';
 import type { SignupFlowState } from './SignupSection';
 import type { User } from '../types';
+
+export function verificationNextPath(user: Pick<User, 'roles' | 'vendorId'> | null, requestedNext: unknown, homeFor: () => string): string {
+  const requested = safeReturnPath(requestedNext);
+  if (requested) return requested;
+  if (user?.roles.includes(ROLE.Provider)) return user.vendorId ? ROLE_META[ROLE.Provider].home : AUTH_ROUTES.vendorSetup;
+  return homeFor();
+}
 
 /**
  * /account/verify-email — a 6-digit code sent to the account's email (the same boxes, timers and limits
@@ -23,7 +31,7 @@ export function VerifyEmailSection() {
   const state = useLocation().state as SignupFlowState | null;
   const navigate = useNavigate();
   const toast = useToast();
-  const next = safeReturnPath(state?.next) ?? homeFor();
+  const next = verificationNextPath(user, state?.next, homeFor);
   const goNext = () => navigate(next, { replace: true, state: { from: state?.from } });
 
   const api = useMemo<OtpApi<User>>(() => ({

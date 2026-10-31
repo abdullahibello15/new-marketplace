@@ -25,5 +25,5 @@ await build({
 })
 
 import { cpSync, mkdirSync } from 'node:fs'
-mkdirSync('dist/db', { recursive: true })
-cpSync('src/db/migrations', 'dist/db/migrations', { recursive: true })
+mkdirSync('dist', { recursive: true })
+cpSync('src/db/migrations', 'dist/migrations', { recursive: true })

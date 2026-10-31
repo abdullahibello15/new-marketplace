@@ -17,6 +17,7 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "node --enable-source-maps dist/migrate.js",
     "db:migrate:dev": "drizzle-kit migrate",
+    "admin:create": "tsx --env-file-if-exists=.env scripts/create-admin.ts",
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {

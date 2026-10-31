@@ -1,10 +1,11 @@
 import i18n from '../../../i18n';
-import { mockResponse } from '../../../services/mockApi';
+import { ApiError, mockResponse } from '../../../services/mockApi';
+import { apiRequest } from '../../../services/apiClient';
 import { LANGUAGES, ROLE, type LanguageId, type Role } from '../constants';
 import { AuthError } from '../errors';
-import { finishEmailVerification, finishPhoneVerification, mockHash, passwordProblem, sendEmailCodeNow, sendPhoneCodeNow, startEmailVerification, type CodeSent } from './authBackend';
-import { completeVendorSetupNow } from './signupBackend';
+import { mockHash, passwordProblem, startEmailVerification, type CodeSent } from './authBackend';
 import { commitUser, sessionRecord } from './authService';
+import { getAuthSnapshot, updateSessionUser } from '../session';
 import { endOtherSessionsForPasswordChange } from './sessionService';
 import { applyClaim, applyProviderSetup, applyRiderSetup, withRole } from './roleSetup';
 import type { ClaimSetupInput, RiderSetupInput, User, VendorBusinessInput, VendorSetupInput } from '../types';
@@ -37,12 +38,14 @@ export function addEmail(email: string): Promise<User> {
 
 /** POST /me/email/verify { code } */
 export function verifyEmail(code: string): Promise<User> {
-  return mockResponse(() => commitUser(finishEmailVerification(sessionRecord(), code, new Date())), 500);
+  return apiRequest<{ user: User }>('/v1/auth/email/verify', { method: 'POST', body: JSON.stringify({ code }) })
+    .then(({ user }) => { updateSessionUser(user); return user; });
 }
 
 /** POST /me/email/code — (re)sends a code to the account's email (after signup, or "verify later"). */
 export function sendEmailCode(): Promise<CodeSent> {
-  return mockResponse(() => sendEmailCodeNow(sessionRecord(), new Date()), 600);
+  return apiRequest<CodeSent & { user: User }>('/v1/auth/email/code', { method: 'POST' })
+    .then(({ user, ...sent }) => { updateSessionUser(user); return sent; });
 }
 
 /**
@@ -50,21 +53,23 @@ export function sendEmailCode(): Promise<CodeSent> {
  * add one when it's needed, e.g. for SMS reminders or a delivery order). A new number must be free.
  */
 export function sendPhoneCode(phone: string): Promise<CodeSent> {
-  return mockResponse(() => {
-    const { user, sent } = sendPhoneCodeNow(sessionRecord(), phone, new Date());
-    commitUser(user);
-    return sent;
-  }, 600);
+  return apiRequest<CodeSent & { user: User }>('/v1/auth/phone/code', { method: 'POST', body: JSON.stringify({ phone }) })
+    .then(({ user, ...sent }) => { updateSessionUser(user); return sent; });
 }
 
 /** POST /me/phone/verify { code } — providers become visible to customers once this is done. */
 export function verifyPhone(code: string): Promise<User> {
-  return mockResponse(() => commitUser(finishPhoneVerification(sessionRecord(), code, new Date())), 500);
+  return apiRequest<{ user: User }>('/v1/auth/phone/verify', { method: 'POST', body: JSON.stringify({ code }) })
+    .then(({ user }) => { updateSessionUser(user); return user; });
 }
 
 /** POST /vendor/setup — after provider signup: business name, trade and type (one vendor profile per account). */
 export function completeVendorSetup(input: VendorBusinessInput): Promise<User> {
-  return mockResponse(() => commitUser(completeVendorSetupNow(sessionRecord(), input, new Date())), 700);
+  if (!getAuthSnapshot().user?.roles.includes(ROLE.Provider)) {
+    return Promise.reject(new ApiError('This account is not a vendor', 403));
+  }
+  return apiRequest<User>('/v1/vendors/setup', { method: 'POST', body: JSON.stringify(input) })
+    .then((user) => { updateSessionUser(user); return user; });
 }
 
 /**

@@ -11,6 +11,7 @@ import type { NigerLga } from '../../types/marketplace';
  */
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+const TOWN_EMAIL_ERROR = 'Enter a town or landmark, not an email address.';
 const t = (key: string, values?: Record<string, unknown>) => () => i18n.t(key, values);
 
 const fullName = z.
@@ -53,7 +54,7 @@ export const providerSignupSchema = z.object({
   phone: nigerianPhone,
   email,
   lga: z.string().pipe(z.custom<NigerLga>(isLga, { error: t('auth:error.chooseLga') })),
-  town: z.string().trim().min(2, { error: t('auth:error.enterTown') }).max(80, { error: t('auth:form.townMax', { max: 80 }) }),
+  town: z.string().trim().min(2, { error: t('auth:error.enterTown') }).max(80, { error: t('auth:form.townMax', { max: 80 }) }).refine((value) => !EMAIL.test(value), { error: TOWN_EMAIL_ERROR }),
   password: newPassword,
   acceptedTerms: z.boolean().refine((v) => v, { error: t('auth:error.acceptTerms') })
 });
