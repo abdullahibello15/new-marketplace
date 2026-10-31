@@ -7,9 +7,16 @@ import { PLAN_LIMIT_LABELS } from '../../vendor-dashboard/plans';
 import { currentPlanFor } from '../../vendor-dashboard/services/subscriptionService';
 import type { VendorProfilePatch } from '../../../types/marketplace';
 import type { ProfileFormData } from '../types';
+import { apiVendorToVendor } from '../utils/apiVendor';
+import type { Vendor } from '../../../types/marketplace';
 import { currentVendorId } from '../../auth/session';
 
 let nextServiceId = 1;
+
+export async function getCurrentVendor(): Promise<Vendor> {
+  const record = await apiRequest<Record<string, unknown>>('/v1/vendors/me');
+  return apiVendorToVendor(record);
+}
 
 /**
  * PUT /vendor/profile

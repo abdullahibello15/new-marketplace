@@ -1,6 +1,17 @@
-import { describe, expect, it } from 'vitest';
-import { AUTH_ROUTES, ROLE } from '../constants';
-import { endedSessionLoginPath, isVendorPortalPath, shouldRedirectForEndedSession, vendorSetupRedirect } from './guards';
+import { createElement } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
+import { describe, expect, it, vi } from 'vitest';
+import { AUTH_ROUTES } from '../constants';
+import { endedSessionLoginPath, isVendorPortalPath, shouldRedirectForEndedSession } from './guards';
+
+const mock = vi.hoisted(() => ({ vendorStatus: 'ready', signOut: vi.fn(async () => undefined), clear: vi.fn() }));
+vi.mock('../../vendor-profile/context/CurrentVendorContext', () => ({ useCurrentVendorData: () => ({ status: mock.vendorStatus, clear: mock.clear }) }));
+vi.mock('../hooks/useAuth', () => ({ useAuth: () => ({ signOut: mock.signOut }) }));
+vi.mock('react-i18next', async (importOriginal) => ({
+  ...await importOriginal<typeof import('react-i18next')>(),
+  useTranslation: () => ({ t: (key: string) => key }),
+}));
+import { RequireVendorProfile } from './guards';
 
 describe('vendor auth redirects', () => {
   it('uses vendor login only for vendor portal paths', () => {
@@ -25,10 +36,11 @@ describe('vendor auth redirects', () => {
     expect(shouldRedirectForEndedSession('/pro')).toBe(true);
   });
 
-  it('sends a provider without a vendor profile to setup', () => {
-    expect(vendorSetupRedirect({ roles: [ROLE.Provider], vendorId: null })).toBe(AUTH_ROUTES.vendorSetup);
-    expect(vendorSetupRedirect({ roles: [ROLE.Provider], vendorId: 'vendor-1' })).toBeNull();
-    expect(vendorSetupRedirect({ roles: [ROLE.Customer], vendorId: null })).toBeNull();
-    expect(vendorSetupRedirect(null)).toBeNull();
+  it('shows a clear missing-profile state before vendor dashboard providers mount', () => {
+    mock.vendorStatus = 'missing';
+    const markup = renderToStaticMarkup(createElement(RequireVendorProfile, { children: createElement('div', null, 'dashboard') }));
+    expect(markup).toContain('guard.vendorProfileMissing');
+    expect(markup).toContain('common:action.signOut');
+    expect(markup).not.toContain('dashboard');
   });
 });

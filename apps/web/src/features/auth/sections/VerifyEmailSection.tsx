@@ -9,14 +9,14 @@ import { useOtpFlow, type OtpApi } from '../hooks/useOtpFlow';
 import { sendEmailCode, verifyEmail } from '../services/accountService';
 import { OtpCodeStep } from '../components/OtpCodeStep';
 import { safeReturnPath } from '../utils/returnPath';
-import { AUTH_ROUTES, ROLE, ROLE_META } from '../constants';
+import { ROLE, ROLE_META } from '../constants';
 import type { SignupFlowState } from './SignupSection';
 import type { User } from '../types';
 
 export function verificationNextPath(user: Pick<User, 'roles' | 'vendorId'> | null, requestedNext: unknown, homeFor: () => string): string {
+  if (user?.roles.includes(ROLE.Provider)) return ROLE_META[ROLE.Provider].home;
   const requested = safeReturnPath(requestedNext);
   if (requested) return requested;
-  if (user?.roles.includes(ROLE.Provider)) return user.vendorId ? ROLE_META[ROLE.Provider].home : AUTH_ROUTES.vendorSetup;
   return homeFor();
 }
 

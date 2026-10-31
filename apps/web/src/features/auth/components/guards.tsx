@@ -8,6 +8,7 @@ import { AUTH_ROUTES, ROLE, ROLE_META, type Role } from '../constants';
 import { REQUIRE_LOGIN, isPublicPath } from '../config';
 import { useAuth } from '../hooks/useAuth';
 import type { ClientEndReason } from '../types';
+import { useCurrentVendorData } from '../../vendor-profile/context/CurrentVendorContext';
 
 /** Where the login page sends people back to afterwards. */
 export interface LoginRedirectState {
@@ -98,6 +99,26 @@ export function RequireVendorRole({ children }: {children?: ReactNode;}) {
   return <RequireRole role={ROLE.Provider} loginTo="/vendor/login">{children}</RequireRole>;
 }
 
+/** Checks the live vendor resource before any dashboard providers request vendor-scoped data. */
+export function RequireVendorProfile({ children }: {children?: ReactNode;}) {
+  const { status: vendorStatus, clear } = useCurrentVendorData();
+  const { signOut } = useAuth();
+  const { t } = useTranslation('auth');
+  if (vendorStatus === 'loading') return <Checking />;
+  if (vendorStatus === 'missing') return (
+    <main className="flex min-h-[60vh] items-center justify-center px-4 py-10">
+      <section className="w-full max-w-md rounded-2xl border border-line bg-white p-6 text-center">
+        <p role="alert" className="text-sm text-muted">{t('guard.vendorProfileMissing')}</p>
+        <button className={buttonClasses({ variant: 'primary' })} onClick={async () => { await signOut(); clear(); }}>
+          {t('common:action.signOut')}
+        </button>
+      </section>
+    </main>
+  );
+  if (vendorStatus === 'error') return <main role="alert" className="p-6 text-center">{t('common:error.generic')}</main>;
+  return <>{children ?? <Outlet />}</>;
+}
+
 /**
  * The whole-app login requirement (REQUIRE_LOGIN in config.ts). Signed out on anything but a public page
  * → the landing page (/about), remembering where they were going. With REQUIRE_LOGIN off it lets everything
@@ -113,20 +134,4 @@ export function LoginGate({ children }: {children?: ReactNode;}) {
     return <Navigate to={AUTH_ROUTES.about} replace state={{ from } satisfies LoginRedirectState} />;
   }
   return <>{children ?? <Outlet />}</>;
-}
-
-/**
- * Inside the vendor portal: a provider who signed up but hasn't set up their business yet goes to vendor
- * setup first (the portal's pages all need a vendor profile).
- */
-export function RequireVendorProfile({ children }: {children?: ReactNode;}) {
-  const { user } = useAuth();
-  const redirect = vendorSetupRedirect(user);
-  if (redirect) return <Navigate to={redirect} replace />;
-  return <>{children ?? <Outlet />}</>;
-}
-
-/** Providers who have not made their vendor profile finish setup before entering the portal. */
-export function vendorSetupRedirect(user: {roles: Role[];vendorId: string | null;} | null): string | null {
-  return user?.roles.includes(ROLE.Provider) && !user.vendorId ? AUTH_ROUTES.vendorSetup : null;
 }

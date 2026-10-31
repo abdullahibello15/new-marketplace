@@ -11,7 +11,7 @@ import type {
   PasswordResetOtpResult,
   PasswordResetOutcome,
   PasswordResetVerifyResult,
-  ProviderSignupInput,
+  ProviderAccountSignupInput,
   RegisterInput,
   User,
   VerifyOtpResult
@@ -51,7 +51,7 @@ export async function registerCustomer(input: CustomerSignupInput, { remember = 
   return acceptSession(session);
 }
 
-export async function registerProvider(input: ProviderSignupInput, { remember = true }: {remember?: boolean;} = {}): Promise<User> {
+export async function registerProvider(input: ProviderAccountSignupInput, { remember = true }: {remember?: boolean;} = {}): Promise<User> {
   const session = await apiRequest<LiveSession>('/v1/auth/signup', {
     method: 'POST', body: JSON.stringify({ ...input, role: 'provider', remember }),
   }, false);

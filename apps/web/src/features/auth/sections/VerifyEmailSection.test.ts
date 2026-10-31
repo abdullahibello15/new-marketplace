@@ -8,7 +8,7 @@ const person = (roles: User['roles'], vendorId: string | null = null) => ({ role
 
 describe('email verification destination', () => {
   it('prefers a valid state.next', () => {
-    expect(verificationNextPath(person([ROLE.Provider]), '/orders', homeFor)).toBe('/orders');
+    expect(verificationNextPath(person([ROLE.Customer]), '/orders', homeFor)).toBe('/orders');
     expect(homeFor).not.toHaveBeenCalled();
   });
 
@@ -16,8 +16,9 @@ describe('email verification destination', () => {
     expect(verificationNextPath(person([ROLE.Provider], 'vendor-1'), undefined, homeFor)).toBe('/pro');
   });
 
-  it('sends a provider without a vendor profile to setup', () => {
-    expect(verificationNextPath(person([ROLE.Provider]), undefined, homeFor)).toBe('/account/vendor-setup');
+  it('sends providers without a vendor profile to the dashboard instead of setup', () => {
+    expect(verificationNextPath(person([ROLE.Provider]), undefined, homeFor)).toBe('/pro');
+    expect(verificationNextPath(person([ROLE.Provider]), '/account/vendor-setup', homeFor)).toBe('/pro');
   });
 
   it('keeps the existing customer and admin fallback destinations', () => {

@@ -4,6 +4,9 @@ import { nigerLgas } from '../../data/nigerLgas';
 import { normalizeNigerianPhone, phoneError } from '../../utils/phone';
 import { PASSWORD } from './constants';
 import type { NigerLga } from '../../types/marketplace';
+import type { TradeCategory } from '../../types/marketplace';
+import { tradeCategories } from '../../data/tradeCategories';
+import { tradeLabel } from '../../i18n/labels';
 
 /*
  * The signup and login forms' rules, one schema per form. The mock server checks the same rules again
@@ -11,7 +14,6 @@ import type { NigerLga } from '../../types/marketplace';
  */
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-const TOWN_EMAIL_ERROR = 'Enter a town or landmark, not an email address.';
 const t = (key: string, values?: Record<string, unknown>) => () => i18n.t(key, values);
 
 const fullName = z.
@@ -54,9 +56,17 @@ export const providerSignupSchema = z.object({
   phone: nigerianPhone,
   email,
   lga: z.string().pipe(z.custom<NigerLga>(isLga, { error: t('auth:error.chooseLga') })),
-  town: z.string().trim().min(2, { error: t('auth:error.enterTown') }).max(80, { error: t('auth:form.townMax', { max: 80 }) }).refine((value) => !EMAIL.test(value), { error: TOWN_EMAIL_ERROR }),
+  town: z.string().trim().min(2, { error: t('auth:error.enterTown') }).max(80, { error: t('auth:form.townMax', { max: 80 }) }).refine((value) => !EMAIL.test(value), { error: t('auth:error.townEmail') }),
+  kind: z.enum(['service', 'retail']),
+  businessName: z.string().trim().min(2, { error: t('auth:error.businessNameRange') }).max(80, { error: t('auth:error.businessNameRange') }).refine((value) => !EMAIL.test(value), { error: t('auth:error.businessNameEmail') }),
+  tradeCategory: z.string().pipe(z.custom<TradeCategory>((value) => tradeCategories.some((trade) => trade.id === value), { error: t('auth:error.chooseTrade') })),
   password: newPassword,
   acceptedTerms: z.boolean().refine((v) => v, { error: t('auth:error.acceptTerms') })
+}).superRefine((value, context) => {
+  const trade = tradeCategories.find((item) => item.id === value.tradeCategory);
+  if (trade && trade.kind !== value.kind) {
+    context.addIssue({ code: 'custom', path: ['tradeCategory'], message: i18n.t('auth:error.tradeKindMismatch', { trade: tradeLabel(trade.id), kind: i18n.t(`auth:setup.kind.${value.kind}`) }) });
+  }
 });
 
 /** One field for an email or a phone number. Only the shape is checked here; the server checks the rest. */

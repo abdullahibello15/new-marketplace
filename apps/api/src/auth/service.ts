@@ -6,6 +6,7 @@ import type { Redis } from 'ioredis'
 import { AppError } from '../http/errors.js'
 import type { Db } from '../db/client.js'
 import { otpChallenges, passwordResets, sessions, userRoles, users, vendors } from '../db/schema/index.js'
+import { createVendorForProvider, vendorSetupSchema } from '../vendors/service.js'
 
 const scrypt = promisify(scryptCallback)
 const hash = (value: string) => createHash('sha256').update(value).digest('hex')
@@ -153,6 +154,14 @@ export async function registerAuthRoutes(app: import('fastify').FastifyInstance,
     const [row] = await db.select().from(users).where(eq(users.id, userId)).limit(1)
     if (!row || row.adminSuspendedAt) throw unauthorized()
     const roles = (await db.select({ role: userRoles.role }).from(userRoles).where(eq(userRoles.userId, userId))).map((x) => x.role)
+    if (roles.includes('provider')) {
+      const [vendor] = await db.select({ id: vendors.id }).from(vendors).where(eq(vendors.ownerUserId, userId)).limit(1)
+      if (!vendor) {
+        await db.update(sessions).set({ revokedAt: new Date() }).where(and(eq(sessions.userId, userId), isNull(sessions.revokedAt)))
+        clearRefresh(reply)
+        throw new AppError(409, 'conflict', 'This provider account is missing its vendor profile. Contact support before trying again.')
+      }
+    }
     const sessionId = crypto.randomUUID()
     const accessToken = token()
     const refreshToken = token()
@@ -190,18 +199,32 @@ export async function registerAuthRoutes(app: import('fastify').FastifyInstance,
     let phone: string | null = null
     if (role === 'provider') phone = normalizePhone(String(body.phone ?? ''))
     if (role === 'provider' && typeof body.town === 'string' && emailPattern.test(body.town.trim())) {
-      throw new AppError(400, 'bad_request', 'Enter a town or landmark, not an email address.', 'auth:error.enterTown')
+      throw new AppError(400, 'bad_request', 'Enter a town or landmark, not an email address.', 'auth:error.townEmail')
     }
-    if (role === 'provider' && (!body.acceptedTerms || typeof body.town !== 'string' || body.town.trim().length < 2 || typeof body.lga !== 'string')) throw new AppError(400, 'validation_failed')
+    if (role === 'provider' && (!body.acceptedTerms || typeof body.town !== 'string' || typeof body.lga !== 'string')) throw new AppError(400, 'validation_failed')
+    const providerBusiness = role === 'provider' ? vendorSetupSchema.parse({
+      kind: body.kind,
+      businessName: body.businessName,
+      tradeCategory: body.tradeCategory,
+    }) : null
     if ((await db.select({ id: users.id }).from(users).where(or(eq(users.email, email), phone ? eq(users.phone, phone) : eq(users.id, '00000000-0000-0000-0000-000000000000'))).limit(1)).length) throw conflict('An account already uses that email or phone.')
     const now = new Date()
     const created = await db.transaction(async (tx) => {
       const result = await tx.insert(users).values({
         name, email, phone, passwordHash: await scryptHash(String(body.password)), language: body.language === 'ha' ? 'ha' : 'en',
-        activeRole: role, providerSignup: role === 'provider' ? { lga: body.lga, town: body.town.trim(), termsAcceptedAt: now.toISOString() } : null,
+        activeRole: role, providerSignup: null,
       }).returning()
-      const account = result[0]
+      let account = result[0]
       await tx.insert(userRoles).values({ userId: account.id, role })
+      if (role === 'provider' && providerBusiness) {
+        const vendor = await createVendorForProvider(tx, {
+          userId: account.id,
+          town: String(body.town),
+          lga: String(body.lga),
+          business: providerBusiness,
+        })
+        ;[account] = await tx.update(users).set({ vendorId: vendor.id, updatedAt: now }).where(eq(users.id, account.id)).returning()
+      }
       return account
     })
     return issueSession(request, reply, created.id, body.remember !== false)

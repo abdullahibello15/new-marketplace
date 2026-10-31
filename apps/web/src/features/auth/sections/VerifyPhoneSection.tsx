@@ -5,7 +5,7 @@ import { Button } from '../../../components/ui/Button';
 import { buttonClasses } from '../../../components/ui/buttonStyles';
 import { useToast } from '../../../hooks/useToast';
 import { formatLocalPhone, normalizeNigerianPhone, phoneError } from '../../../utils/phone';
-import { AUTH_ROUTES, ROLE } from '../constants';
+import { ROLE, ROLE_META } from '../constants';
 import { useAuth } from '../hooks/useAuth';
 import { useOtpFlow, type OtpApi } from '../hooks/useOtpFlow';
 import { sendPhoneCode, verifyPhone } from '../services/accountService';
@@ -26,8 +26,7 @@ export function VerifyPhoneSection() {
   const state = useLocation().state as SignupFlowState | null;
   const navigate = useNavigate();
   const toast = useToast();
-  // A provider without a vendor profile goes on to vendor setup.
-  const next = safeReturnPath(state?.next) ?? (user?.roles.includes(ROLE.Provider) && !user.vendorId ? AUTH_ROUTES.vendorSetup : homeFor());
+  const next = user?.roles.includes(ROLE.Provider) ? ROLE_META[ROLE.Provider].home : safeReturnPath(state?.next) ?? homeFor();
   const goNext = () => navigate(next, { replace: true });
 
   const api = useMemo<OtpApi<User>>(() => ({

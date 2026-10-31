@@ -5,7 +5,7 @@ import { MemoryRateLimiter } from './service.js'
 import { and, eq } from 'drizzle-orm'
 import { createDb, type Db } from '../db/client.js'
 import { runMigrations } from '../db/migrate.js'
-import { otpChallenges } from '../db/schema/auth.js'
+import { otpChallenges, sessions, userRoles, users, vendors } from '../db/schema/index.js'
 import { createLogger } from '../observability/logger.js'
 import { captureLogs } from '../testing/logs.js'
 
@@ -42,6 +42,108 @@ afterAll(async () => {
 })
 
 describe('auth API endpoints', () => {
+  it('creates a provider and vendor together, then verifies email without ending the session', async () => {
+    const response = await app.inject({
+      method: 'POST', url: '/v1/auth/signup',
+      payload: {
+        role: 'provider', name: 'Musa Workshop Owner', email: 'musa-workshop@example.test', phone: '08030000121',
+        lga: 'Bosso', town: 'Maitumbi', acceptedTerms: true, password: 'SafePassword!23',
+        kind: 'service', businessName: 'Musa Workshop', tradeCategory: 'carpenter',
+      },
+    })
+    expect(response.statusCode).toBe(201)
+    const signedUp = response.json()
+    expect(signedUp.user).toMatchObject({ roles: ['provider'], vendorId: expect.any(String), providerSignup: null })
+    const [vendor] = await db.select().from(vendors).where(eq(vendors.ownerUserId, signedUp.user.id))
+    expect(vendor).toMatchObject({
+      id: signedUp.user.vendorId, businessName: 'Musa Workshop', kind: 'service', tradeCategory: 'carpenter',
+      town: 'Maitumbi', lga: 'Bosso', status: 'pending', verificationStatus: 'unverified',
+    })
+    expect((await db.select().from(userRoles).where(eq(userRoles.userId, signedUp.user.id))).map((item) => item.role)).toEqual(['provider'])
+    expect((await db.select().from(sessions).where(eq(sessions.userId, signedUp.user.id))).length).toBe(1)
+
+    const authorization = `Bearer ${signedUp.accessToken}`
+    const codeSent = await app.inject({ method: 'POST', url: '/v1/auth/email/code', headers: { authorization } })
+    expect(codeSent.statusCode).toBe(200)
+    const verified = await app.inject({ method: 'POST', url: '/v1/auth/email/verify', headers: { authorization }, payload: { code: sentCode } })
+    expect(verified.statusCode).toBe(200)
+    expect(verified.json().user).toMatchObject({ id: signedUp.user.id, vendorId: signedUp.user.vendorId, emailVerified: true })
+    const stillSignedIn = await app.inject({ method: 'GET', url: '/v1/auth/session', headers: { authorization } })
+    expect(stillSignedIn.statusCode).toBe(200)
+    expect(stillSignedIn.json().user).toMatchObject({ vendorId: signedUp.user.vendorId, emailVerified: true })
+  })
+
+  it('does not issue a session to a provider who has no vendor profile', async () => {
+    const phone = '+2348030000123'
+    const [orphan] = await db.insert(users).values({
+      name: 'Old Provider', email: 'old-provider@example.test', phone, activeRole: 'provider',
+    }).returning()
+    await db.insert(userRoles).values({ userId: orphan.id, role: 'provider' })
+    const requested = await app.inject({ method: 'POST', url: '/v1/auth/otp/request', payload: { phone } })
+    expect(requested.statusCode).toBe(200)
+
+    const login = await app.inject({ method: 'POST', url: '/v1/auth/otp/verify', payload: { phone, code: sentCode } })
+    expect(login.statusCode).toBe(409)
+    expect(login.json().error.message).toContain('missing its vendor profile')
+    expect(login.headers['set-cookie']).toContain('Max-Age=0')
+    expect(await db.select().from(sessions).where(eq(sessions.userId, orphan.id))).toHaveLength(0)
+  })
+
+  it('documents null vendorId from refresh and email verification for a provider without a vendor row', async () => {
+    const signup = await app.inject({
+      method: 'POST', url: '/v1/auth/signup',
+      payload: {
+        role: 'provider', name: 'Vendorless Provider', email: 'vendorless-refresh@example.test', phone: '08030000129',
+        lga: 'Bosso', town: 'Maitumbi', acceptedTerms: true, password: 'SafePassword!23',
+        kind: 'service', businessName: 'Vendorless Workshop', tradeCategory: 'carpenter',
+      },
+    })
+    expect(signup.statusCode).toBe(201)
+    const signedUp = signup.json()
+    await db.delete(vendors).where(eq(vendors.ownerUserId, signedUp.user.id))
+    const cookie = signup.headers['set-cookie']
+    const refresh = await app.inject({ method: 'POST', url: '/v1/auth/refresh', headers: { cookie } })
+    expect(refresh.statusCode).toBe(200)
+    expect(refresh.json().user).toMatchObject({ id: signedUp.user.id, vendorId: null })
+
+    const authorization = `Bearer ${refresh.json().accessToken}`
+    const requestCode = await app.inject({ method: 'POST', url: '/v1/auth/email/code', headers: { authorization } })
+    expect(requestCode.statusCode).toBe(200)
+    const verify = await app.inject({ method: 'POST', url: '/v1/auth/email/verify', headers: { authorization }, payload: { code: sentCode } })
+    expect(verify.statusCode).toBe(200)
+    expect(verify.json().user).toMatchObject({ id: signedUp.user.id, vendorId: null, emailVerified: true })
+  })
+
+  it('rolls back provider, role and session when vendor insertion fails', async () => {
+    await sql.unsafe(`CREATE OR REPLACE FUNCTION fail_vendor_signup_insert() RETURNS trigger AS $$
+      BEGIN
+        IF NEW.business_name = 'Rollback Test Workshop' THEN RAISE EXCEPTION 'forced vendor insert failure'; END IF;
+        RETURN NEW;
+      END;
+      $$ LANGUAGE plpgsql`)
+    await sql.unsafe('CREATE TRIGGER fail_vendor_signup_insert_trigger BEFORE INSERT ON vendors FOR EACH ROW EXECUTE FUNCTION fail_vendor_signup_insert()')
+    try {
+      const response = await app.inject({
+        method: 'POST', url: '/v1/auth/signup',
+        payload: {
+          role: 'provider', name: 'Rollback Test Owner', email: 'rollback-provider@example.test', phone: '08030000122',
+          lga: 'Bosso', town: 'Maitumbi', acceptedTerms: true, password: 'SafePassword!23',
+          kind: 'service', businessName: 'Rollback Test Workshop', tradeCategory: 'carpenter',
+        },
+      })
+      expect(response.statusCode).toBeGreaterThanOrEqual(500)
+      const [account] = await db.select({ id: users.id }).from(users).where(eq(users.email, 'rollback-provider@example.test'))
+      expect(account).toBeUndefined()
+      const [role] = await db.select({ role: userRoles.role }).from(userRoles).innerJoin(users, eq(userRoles.userId, users.id)).where(eq(users.email, 'rollback-provider@example.test'))
+      expect(role).toBeUndefined()
+      const [session] = await db.select({ id: sessions.id }).from(sessions).innerJoin(users, eq(sessions.userId, users.id)).where(eq(users.email, 'rollback-provider@example.test'))
+      expect(session).toBeUndefined()
+    } finally {
+      await sql.unsafe('DROP TRIGGER IF EXISTS fail_vendor_signup_insert_trigger ON vendors')
+      await sql.unsafe('DROP FUNCTION IF EXISTS fail_vendor_signup_insert()')
+    }
+  })
+
   it('supports OTP, signup, password login, session refresh/logout and password reset', async () => {
     const otpRequest = await app.inject({ method: 'POST', url: '/v1/auth/otp/request', payload: { phone: '08030000001' } })
     expect(otpRequest.statusCode).toBe(200)

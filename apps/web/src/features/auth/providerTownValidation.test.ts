@@ -10,6 +10,9 @@ const signup = {
   email: 'musa@example.com',
   lga: 'Bosso' as const,
   town: 'Maitumbi, near the market',
+  kind: 'service' as const,
+  businessName: 'Musa Workshop',
+  tradeCategory: 'carpenter' as const,
   password: 'Strong-Pass-1',
   acceptedTerms: true
 };

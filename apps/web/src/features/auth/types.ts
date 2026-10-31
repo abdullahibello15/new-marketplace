@@ -73,6 +73,9 @@ export interface ProviderSignupInput {
   language?: LanguageId;
 }
 
+/** Live account signup includes the business profile so the API can create both records atomically. */
+export type ProviderAccountSignupInput = ProviderSignupInput & VendorBusinessInput;
+
 /** Vendor setup after provider signup: the rest of the draft vendor profile (location came at signup). */
 export type VendorBusinessInput = Pick<VendorSetupInput, 'kind' | 'businessName' | 'tradeCategory'>;
 

@@ -1,8 +1,8 @@
 import i18n from '../../../i18n';
 import { profileSectionLabel } from '../../../i18n/labels';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useVendors } from '../../../contexts/VendorsContext';
 import { useToast } from '../../../hooks/useToast';
 import { errorMessage } from '../../../lib/errors';
 import { FIELD_SECTION, PROFILE_SECTIONS } from '../constants';
@@ -18,9 +18,7 @@ function sectionsOf(fieldNames: string[]): Set<ProfileSectionId> {
 
 /** One form for the whole profile: a single Save, dirty tracking for the unsaved-changes warning, and feedback. */
 export function useProfileEditor() {
-  const { getVendor, updateVendorProfile } = useVendors();
-  const { vendorId } = useCurrentVendor();
-  const vendor = getVendor(vendorId);
+  const { vendor, update } = useCurrentVendor();
   const toast = useToast();
 
   const form = useForm<ProfileFormValues, unknown, ProfileFormData>({
@@ -34,7 +32,7 @@ export function useProfileEditor() {
       if (!vendor) return;
       try {
         const stored = await saveVendorProfile(vendor.id, data);
-        updateVendorProfile(vendor.id, stored);
+        update(stored);
         // The saved values become the new baseline, so the form is clean again.
         form.reset(toFormValues({ ...vendor, ...stored }));
         toast.success(i18n.t('vendor:profile.toastSaved'));
@@ -48,6 +46,11 @@ export function useProfileEditor() {
       toast.error(first ? i18n.t('vendor:profile.fixIn', { section: profileSectionLabel(first.id, first.label) }) : i18n.t('vendor:profile.fix'));
     }
   );
+
+  // API data arrives after the first render for live sessions.
+  useEffect(() => {
+    if (vendor) form.reset(toFormValues(vendor));
+  }, [vendor, form]);
 
   return {
     vendor,

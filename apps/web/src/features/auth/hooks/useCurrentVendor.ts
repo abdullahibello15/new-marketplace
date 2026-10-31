@@ -1,11 +1,11 @@
-import { useVendors } from '../../../contexts/VendorsContext';
-import { useAuth } from './useAuth';
+import { useCurrentVendorData } from '../../vendor-profile/context/CurrentVendorContext';
+import { useAuth as useContextAuth } from './useAuth';
 
 /** The signed-in provider's vendor id and live profile (the vendor portal reads this, not a mock account). */
 export function useCurrentVendor() {
-  const { user } = useAuth();
-  const { getVendor } = useVendors();
-  const vendorId = user?.vendorId ?? '';
-  const vendor = vendorId ? getVendor(vendorId) : undefined;
-  return { vendorId, vendor, businessName: vendor?.name ?? 'Your business' };
+  const { user, status } = useContextAuth();
+  const data = useCurrentVendorData();
+  const vendor = data.vendor;
+  const vendorId = vendor?.id ?? user?.vendorId ?? '';
+  return { ...data, vendorId, vendor, businessName: vendor?.name ?? 'Your business', authStatus: status };
 }

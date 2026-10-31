@@ -7,8 +7,9 @@ import { Button } from '../../../../components/ui/Button';
 import { FormField } from '../../../../components/ui/FormField';
 import { bad, errorText, field, ok } from '../../../../components/vendor/formStyles';
 import { nigerLgas } from '../../../../data/nigerLgas';
+import { tradeCategories } from '../../../../data/tradeCategories';
 import { currentLanguage } from '../../../../i18n';
-import { lgaLabel } from '../../../../i18n/labels';
+import { lgaLabel, tradeLabel } from '../../../../i18n/labels';
 import { AUTH_ROUTES } from '../../constants';
 import { errorMessage, isAuthError } from '../../errors';
 import { providerSignupSchema, type ProviderSignupData, type ProviderSignupValues } from '../../schemas';
@@ -18,9 +19,7 @@ import { PhoneInput } from '../PhoneInput';
 import { AlreadyRegistered } from './AlreadyRegistered';
 
 /**
- * Provider signup: full name, phone, email, base location (LGA + town or landmark), password and the
- * provider terms. Signs them in, then `onDone` moves on to verifying the phone and the vendor setup
- * (business name, trade, service or retail). The location becomes the vendor profile's base location.
+ * Provider signup includes account and business details so the API creates the user and vendor together.
  */
 export function ProviderSignupForm({ onDone, onBack }: {onDone: () => void;onBack: () => void;}) {
   const { t } = useTranslation('auth');
@@ -29,9 +28,11 @@ export function ProviderSignupForm({ onDone, onBack }: {onDone: () => void;onBac
   const [formError, setFormError] = useState<string | null>(null);
   const form = useForm<ProviderSignupValues, unknown, ProviderSignupData>({
     resolver: zodResolver(providerSignupSchema),
-    defaultValues: { name: '', phone: '', email: '', lga: '', town: '', password: '', acceptedTerms: false }
+    defaultValues: { name: '', phone: '', email: '', lga: '', town: '', kind: 'service', businessName: '', tradeCategory: '', password: '', acceptedTerms: false }
   });
-  const { register, control, handleSubmit, setError, formState: { errors, isSubmitting } } = form;
+  const { register, control, handleSubmit, setError, watch, setValue, formState: { errors, isSubmitting } } = form;
+  const kind = watch('kind');
+  const availableTrades = tradeCategories.filter((trade) => trade.kind === kind);
 
   const submit = handleSubmit(async (data) => {
     setFormError(null);
@@ -78,6 +79,30 @@ export function ProviderSignupForm({ onDone, onBack }: {onDone: () => void;onBac
           <Link to={claimPath} className="font-bold text-pine underline">{t('signup.claimNow')}</Link>
         </p>
       }
+
+      <FormField id="sp-business-name" label={t('setup.businessName')} error={errors.businessName?.message}>
+        {(describedBy) =>
+        <input id="sp-business-name" autoComplete="organization" {...register('businessName')} aria-invalid={!!errors.businessName || undefined} aria-describedby={describedBy} className={`${field} ${errors.businessName ? bad : ok}`} />
+        }
+      </FormField>
+
+      <FormField id="sp-kind" label={t('setup.kindLegend')} error={errors.kind?.message}>
+        {(describedBy) =>
+        <select id="sp-kind" {...register('kind', { onChange: () => setValue('tradeCategory', '', { shouldValidate: true }) })} aria-invalid={!!errors.kind || undefined} aria-describedby={describedBy} className={`${field} ${errors.kind ? bad : ok}`}>
+            <option value="service">{t('setup.kind.service')}</option>
+            <option value="retail">{t('setup.kind.retail')}</option>
+          </select>
+        }
+      </FormField>
+
+      <FormField id="sp-trade" label={t('setup.trade')} error={errors.tradeCategory?.message}>
+        {(describedBy) =>
+        <select id="sp-trade" {...register('tradeCategory')} aria-invalid={!!errors.tradeCategory || undefined} aria-describedby={describedBy} className={`${field} ${errors.tradeCategory ? bad : ok}`}>
+            <option value="">{t('setup.chooseTrade')}</option>
+            {availableTrades.map((trade) => <option key={trade.id} value={trade.id}>{tradeLabel(trade.id)}</option>)}
+          </select>
+        }
+      </FormField>
 
       <fieldset className="space-y-3">
         <legend className="text-sm font-bold text-ink">{t('signup.provider.locationLegend')}</legend>

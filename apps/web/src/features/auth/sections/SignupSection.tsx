@@ -28,7 +28,7 @@ const isSignupRole = (v: string | undefined): v is SignupRole => SIGNUP_ROLES.so
  * /signup — "How will you use Gwani?" → /signup/:role, that role's form. The ONE signup path per role:
  *  - customer: name, email, password → verify the email → short welcome → customer home (or, when they
  *    came from somewhere, e.g. checkout with a guest cart, straight back there, skipping the welcome);
- *  - provider: name, phone, email, location, password, terms → verify the phone → vendor setup → dashboard;
+ *  - provider: account, business and location details → verify the email → vendor dashboard;
  *  - rider: phone + one-time code → name, area and vehicle → rider home.
  */
 export function SignupSection() {
@@ -65,7 +65,7 @@ export function SignupSection() {
     return (
       <ProviderSignupForm
         onBack={back}
-        onDone={() => navigate(AUTH_ROUTES.verifyPhone, { replace: true, state: { next: AUTH_ROUTES.vendorSetup } satisfies SignupFlowState })} />);
+        onDone={() => navigate(AUTH_ROUTES.verifyEmail, { replace: true, state: { from, next: ROLE_META[ROLE.Provider].home } satisfies SignupFlowState })} />);
 
   }
   return <RiderSignup onBack={back} />;

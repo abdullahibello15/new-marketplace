@@ -10,16 +10,45 @@ import { AppError } from '../http/errors.js'
 
 const hash = (value: string) => createHash('sha256').update(value).digest('hex')
 const tradeCategories = ['plumber', 'electrician', 'tailor', 'dispatch_rider', 'grocer', 'carpenter', 'mechanic', 'painter', 'hair_stylist', 'other'] as const
-const setupSchema = z.object({
+export const vendorSetupSchema = z.object({
   kind: z.enum(['service', 'retail']),
   businessName: z.string().trim().min(2).max(80),
   tradeCategory: z.enum(tradeCategories),
 }).strict().superRefine((value, context) => {
   const retail = value.tradeCategory === 'grocer'
-  if (value.tradeCategory !== 'other' && (retail !== (value.kind === 'retail'))) {
+  if ((retail ? 'retail' : 'service') !== value.kind) {
     context.addIssue({ code: 'custom', path: ['tradeCategory'], message: 'The trade category does not match the business type.' })
   }
+  if (/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(value.businessName)) {
+    context.addIssue({ code: 'custom', path: ['businessName'], message: 'Enter a business name, not an email address.' })
+  }
 })
+
+type VendorTransaction = Parameters<Parameters<Db['transaction']>[0]>[0]
+
+/** Insert a provider's vendor row. Call inside the account/setup transaction so a failure rolls back together. */
+export async function createVendorForProvider(
+  tx: VendorTransaction,
+  input: { userId: string; town: string; lga: string; business: z.infer<typeof vendorSetupSchema> },
+) {
+  const town = input.town.trim()
+  if (town.length < 2 || town.length > 80 || /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(town)) {
+    throw new AppError(400, 'bad_request', 'Enter a town or landmark, not an email address.', 'auth:error.townEmail')
+  }
+  if (input.lga.trim().length < 2 || input.lga.trim().length > 100) throw new AppError(400, 'validation_failed')
+  const business = vendorSetupSchema.parse(input.business)
+  const [vendor] = await tx.insert(vendors).values({
+    ownerUserId: input.userId,
+    businessName: business.businessName,
+    kind: business.kind,
+    tradeCategory: business.tradeCategory,
+    town,
+    lga: input.lga.trim(),
+    status: 'pending',
+    verificationStatus: 'unverified',
+  }).returning()
+  return vendor
+}
 
 const profilePatchSchema = z.object({
   name: z.string().trim().min(2).max(80),
@@ -62,7 +91,7 @@ async function vendorForUser(db: Db, userId: string) {
 export function registerVendorRoutes(app: FastifyInstance, { db, rateLimiter }: VendorRouteOptions) {
   app.post('/v1/vendors/setup', async (request, reply) => {
     const { user, roles } = await authenticateProvider(request, db)
-    const body = setupSchema.parse(request.body)
+    const body = vendorSetupSchema.parse(request.body)
     const ipAllowed = await rateLimiter.consume(`vendor-setup:ip:${request.ip}`, 10, 900)
     const userAllowed = await rateLimiter.consume(`vendor-setup:user:${user.id}`, 3, 3600)
     if (!ipAllowed || !userAllowed) throw new AppError(429, 'rate_limited')
@@ -72,22 +101,8 @@ export function registerVendorRoutes(app: FastifyInstance, { db, rateLimiter }: 
     const signup = user.providerSignup as { town?: unknown; lga?: unknown } | null
     const town = typeof signup?.town === 'string' ? signup.town.trim() : ''
     const lga = typeof signup?.lga === 'string' ? signup.lga.trim() : ''
-    if (town.length < 2 || town.length > 120 || town.includes('@')) {
-      throw new AppError(400, 'bad_request', 'Enter a town or landmark, not an email address.', 'auth:error.enterTown')
-    }
-    if (lga.length < 2 || lga.length > 100) throw new AppError(400, 'validation_failed')
-
     const created = await db.transaction(async (tx) => {
-      const [vendor] = await tx.insert(vendors).values({
-        ownerUserId: user.id,
-        businessName: body.businessName,
-        kind: body.kind,
-        tradeCategory: body.tradeCategory,
-        town,
-        lga,
-        status: 'pending',
-        verificationStatus: 'unverified',
-      }).returning()
+      const vendor = await createVendorForProvider(tx, { userId: user.id, town, lga, business: body })
       const [updatedUser] = await tx.update(users).set({ vendorId: vendor.id, providerSignup: null, updatedAt: new Date() }).where(eq(users.id, user.id)).returning()
       return { vendor, updatedUser }
     }).catch((error: unknown) => {

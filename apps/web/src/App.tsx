@@ -17,7 +17,8 @@ import { SessionGuard } from './features/auth/components/SessionGuard';
 import { AuthLayout } from './features/auth/components/AuthLayout';
 import { DevAuthBanner } from './features/auth/components/DevAuthBanner';
 import { LoginGate, RequireAuth, RequireRole, RequireVendorProfile, RequireVendorRole } from './features/auth/components/guards';
-import { AUTH_ROUTES, ROLE } from './features/auth/constants';
+import { CurrentVendorProvider } from './features/vendor-profile/context/CurrentVendorContext';
+import { AUTH_ROUTES, ROLE, ROLE_META } from './features/auth/constants';
 import { AboutPage, LandingGate } from './features/landing/components/LandingGate';
 import { VendorLandingPage } from './features/landing/sections/VendorLandingPage';
 import { LanguageSync } from './i18n/LanguageSync';
@@ -173,7 +174,7 @@ const router = createBrowserRouter(
         </Route>
       </Route>
       <Route element={<RequireAuth />}>
-        <Route path={AUTH_ROUTES.vendorSetup} element={<VendorSetupShell />}>
+        <Route path={AUTH_ROUTES.vendorSetup} element={<VendorSetupRoute />}>
           <Route index element={<VendorSetupSection />} />
         </Route>
       </Route>
@@ -230,6 +231,7 @@ const router = createBrowserRouter(
         path="/pro"
         element={
         <RequireVendorRole>
+          <CurrentVendorProvider>
             <RequireVendorProfile>
               <RequestsProvider>
                 <VendorOrdersProvider>
@@ -237,6 +239,7 @@ const router = createBrowserRouter(
                 </VendorOrdersProvider>
               </RequestsProvider>
             </RequireVendorProfile>
+          </CurrentVendorProvider>
           </RequireVendorRole>
         }>
 
@@ -327,6 +330,12 @@ function AdminEntry() {
   if (!user) return <AdminLoginSection />;
   if (!hasRole(ROLE.Admin)) return <NotAuthorised />;
   return <AdminLayout />;
+}
+
+function VendorSetupRoute() {
+  const { user } = useAuth();
+  if (user?.roles.includes(ROLE.Provider)) return <Navigate to={ROLE_META[ROLE.Provider].home} replace />;
+  return <VendorSetupShell />;
 }
 
 export function App() {
