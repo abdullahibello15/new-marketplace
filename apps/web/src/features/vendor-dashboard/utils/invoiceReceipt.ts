@@ -7,6 +7,7 @@ import { INVOICE_KIND_LABELS, INVOICE_STATUS_META } from '../constants';
 import { planById } from '../plans';
 import type { Invoice } from '../types';
 import { translate } from '../../../i18n/message';
+import { APP_FILE_PREFIX } from '../../../config/brand';
 
 const day = (iso: string) => formatDate(iso, 'd MMM yyyy');
 
@@ -33,7 +34,7 @@ export function downloadInvoiceReceipt(invoice: Invoice, vendorName: string): vo
   const url = URL.createObjectURL(new Blob([invoiceReceiptHtml(invoice, vendorName)], { type: 'text/html' }));
   const a = document.createElement('a');
   a.href = url;
-  a.download = `gwani-invoice-${invoice.id}.html`;
+  a.download = `${APP_FILE_PREFIX}-invoice-${invoice.id}.html`;
   a.click();
   URL.revokeObjectURL(url);
 }

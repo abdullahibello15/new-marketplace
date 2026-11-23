@@ -1,3 +1,4 @@
+import { APP_NAME } from '../../../config/brand';
 /*
  * The moderation guidelines moderators open beside each item. Static: edit the rules here.
  * ⚠️ PLACEHOLDER wording: confirm against Gwani's published community rules.
@@ -26,7 +27,7 @@ export const MODERATION_GUIDELINES: readonly GuidelineSection[] = [
   rules: [
   'Keep honest negative reviews, even harsh ones, if they describe the customer’s own experience.',
   'Remove insults aimed at a person (e.g. “idiot”, “thief”) unless the review is about a confirmed crime.',
-  'Remove phone numbers, links, discount codes and invitations to pay outside Gwani.',
+  `Remove phone numbers, links, discount codes and invitations to pay outside ${APP_NAME}.`,
   'Remove reviews that are clearly about another vendor or from someone who never booked.',
   'Removing a review recalculates the vendor’s rating straight away.']
 

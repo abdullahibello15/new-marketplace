@@ -4,6 +4,7 @@ import { DIVIDEND_RULES } from '../config';
 import { ADJUSTMENT_TARGET, LEDGER_ENTRY_TYPE, PAYOUT_REQUEST_STATUS } from '../constants';
 import { allocatePayout, breakdownByInvestment, dividendForPeriod, periodEndOn } from '../utils/ledger';
 import type { Investment, InvestorProfile, LedgerEntry, PayoutRequest } from '../types';
+import { APP_NAME } from '../../../config/brand';
 
 /*
  * MOCK investor ledger, relative to today so the chart always has recent data. Dividends are generated
@@ -20,14 +21,14 @@ export const mockInvestor: InvestorProfile = {
 
 const SEED: Investment = {
   id: 'gwani-seed',
-  name: 'Gwani Marketplace · Seed round',
-  description: 'Equity stake in the Gwani marketplace platform.',
+  name: `${APP_NAME} · Seed round`,
+  description: `Equity stake in the ${APP_NAME} marketplace platform.`,
   totalCapital: 50_000_000
 };
 const FLEET: Investment = {
   id: 'minna-dispatch-fleet',
   name: 'Minna Dispatch Fleet',
-  description: 'Motorbike delivery fleet carrying Gwani orders around Minna.',
+  description: `Motorbike delivery fleet carrying ${APP_NAME} orders around Minna.`,
   totalCapital: 8_000_000
 };
 

@@ -1,12 +1,28 @@
-import type { LucideIcon } from 'lucide-react';
-import type { ServiceItem } from './vendorPortal';
+import type { LucideIcon } from "lucide-react";
+import type { ServiceItem } from "./vendorPortal";
 // Types the domain rules use live in packages/domain (@zamani/domain); re-exported so this path keeps working.
-import type { Verification, TradeCategory, NigerLga, WorkingHours, GeoPoint, VendorFulfilment } from '@zamani/domain/types/marketplace';
-export type { Verification, TradeCategory, NigerLga, Weekday, DayHours, WorkingHours, GeoPoint, VendorFulfilment } from '@zamani/domain/types/marketplace';
+import type {
+  Verification,
+  TradeCategory,
+  NigerLga,
+  WorkingHours,
+  GeoPoint,
+  VendorFulfilment,
+} from "@zamani/domain/types/marketplace";
+export type {
+  Verification,
+  TradeCategory,
+  NigerLga,
+  Weekday,
+  DayHours,
+  WorkingHours,
+  GeoPoint,
+  VendorFulfilment,
+} from "@zamani/domain/types/marketplace";
 
-export type CategoryId = 'plumbing' | 'tailoring' | 'electrical' | 'logistics';
+export type CategoryId = "plumbing" | "tailoring" | "electrical" | "logistics";
 
-export type CategoryIconName = 'wrench' | 'scissors' | 'zap' | 'bike';
+export type CategoryIconName = "wrench" | "scissors" | "zap" | "bike";
 
 export interface Category {
   id: CategoryId;
@@ -33,14 +49,14 @@ export interface VendorUnavailability {
 }
 
 export type ProductCategory =
-'plumbing_supplies' |
-'electrical_supplies' |
-'fabrics' |
-'ready_made_clothing' |
-'tools' |
-'building_materials' |
-'accessories' |
-'other';
+  | "plumbing_supplies"
+  | "electrical_supplies"
+  | "fabrics"
+  | "ready_made_clothing"
+  | "tools"
+  | "building_materials"
+  | "accessories"
+  | "other";
 
 export interface ProductCategoryOption {
   id: ProductCategory;
@@ -63,12 +79,12 @@ export interface Product {
   available: boolean;
 }
 
-export type NewProductInput = Omit<Product, 'id'>;
+export type NewProductInput = Omit<Product, "id">;
 
 /** Derived from stock and lowStockThreshold; never stored, so it can't drift from the quantity. */
-export type StockStatus = 'in_stock' | 'low_stock' | 'out_of_stock';
+export type StockStatus = "in_stock" | "low_stock" | "out_of_stock";
 
-export type StockFilter = 'all' | Exclude<StockStatus, 'in_stock'>;
+export type StockFilter = "all" | Exclude<StockStatus, "in_stock">;
 
 export interface StockFilterOption {
   id: StockFilter;
@@ -78,7 +94,7 @@ export interface StockFilterOption {
   emptyHint: string;
 }
 
-export type CategoryKind = 'service' | 'retail';
+export type CategoryKind = "service" | "retail";
 
 /**
  * One entry in the shared category config (data/tradeCategories.ts). The vendor's trade field
@@ -141,12 +157,31 @@ export interface Vendor {
   acceptsCash?: boolean;
 }
 
-export type VendorProfileInput = Pick<Vendor, 'bio' | 'tradeCategory' | 'tradeCategoryOther'>;
+export type VendorProfileInput = Pick<
+  Vendor,
+  "bio" | "tradeCategory" | "tradeCategoryOther"
+>;
 
 export type VendorProfilePatch = Partial<
-  Pick<Vendor, 'name' | 'photo' | 'bio' | 'tradeCategory' | 'tradeCategoryOther' | 'gallery' | 'services' | 'workingHours' | 'serviceAreas' | 'products' | 'fulfilment' | 'acceptsCash'>>;
+  Pick<
+    Vendor,
+    | "name"
+    | "photo"
+    | "bio"
+    | "tradeCategory"
+    | "tradeCategoryOther"
+    | "gallery"
+    | "services"
+    | "workingHours"
+    | "serviceAreas"
+    | "products"
+    | "fulfilment"
+    | "acceptsCash"
+  >
+>;
 
-export type JobStage = 'requested' | 'quoted' | 'accepted' | 'in_progress' | 'completed';
+export type JobStage =
+  "requested" | "quoted" | "accepted" | "in_progress" | "completed";
 
 export interface JobStageInfo {
   id: JobStage;
@@ -166,7 +201,10 @@ export interface Job {
   createdAt: string;
 }
 
-export type NewJobInput = Pick<Job, 'vendorId' | 'description' | 'photos' | 'scheduledAt' | 'address'>;
+export type NewJobInput = Pick<
+  Job,
+  "vendorId" | "description" | "photos" | "scheduledAt" | "address"
+>;
 
 export interface MessageThread {
   id: string;

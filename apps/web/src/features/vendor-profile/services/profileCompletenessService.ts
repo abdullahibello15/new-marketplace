@@ -28,7 +28,7 @@ function accountFacts(vendor: Vendor): CompletenessAccount {
   };
 }
 
-function inputFor(vendor: Vendor): CompletenessInput {
+function inputFor(vendor: Vendor, account = accountFacts(vendor)): CompletenessInput {
   return {
     kind: completenessKindOf(vendor.tradeCategory),
     profile: {
@@ -43,7 +43,7 @@ function inputFor(vendor: Vendor): CompletenessInput {
       workingHours: vendor.workingHours,
       serviceAreas: vendor.serviceAreas
     },
-    account: accountFacts(vendor)
+    account
   };
 }
 
@@ -55,9 +55,26 @@ export function getMyProfileCompleteness(vendorId: string): Promise<MyProfileCom
     if (vendorId !== currentVendorId()) throw new ApiError(i18n.t('vendor:error.ownProfile'), 403);
     const vendor = findVendor(vendorId);
     if (!vendor) throw new ApiError(i18n.t('vendor:profile.notFoundTitle'), 404);
-    const input = inputFor(vendor);
-    return { ...calculateProfileCompleteness(input), kind: input.kind, account: input.account };
+    return profileCompletenessForVendor(vendor, accountFacts(vendor));
   }, 250);
+}
+
+/** Completeness from the already-loaded database vendor; does not consult the mock vendor store. */
+export function profileCompletenessForVendor(vendor: Vendor, account: CompletenessAccount): MyProfileCompleteness {
+  const input = inputFor(vendor, account);
+  return { ...calculateProfileCompleteness(input), kind: input.kind, account: input.account };
+}
+
+/** Use the API-loaded vendor for live sessions, retaining the store-backed path for demo sessions. */
+export function getProfileCompletenessForVendorSession(
+  vendorId: string,
+  source: { mode: 'live'; vendor: Vendor | undefined; account: CompletenessAccount } | { mode: 'mock' },
+): Promise<MyProfileCompleteness> {
+  if (source.mode === 'mock') return getMyProfileCompleteness(vendorId);
+  if (!source.vendor || source.vendor.id !== vendorId) {
+    return Promise.reject(new ApiError(i18n.t('vendor:profile.notFoundTitle'), 404));
+  }
+  return Promise.resolve(profileCompletenessForVendor(source.vendor, source.account));
 }
 
 /** GET /admin/vendors/completeness?ids= — scores for the verification queue. Admins only. */

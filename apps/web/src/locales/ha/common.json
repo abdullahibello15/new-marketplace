@@ -57,7 +57,7 @@
       "description": "Ka kai odar mutane a yankinka."
     },
     "admin": {
-      "label": "Ma’aikacin Gwani",
+      "label": "Ma’aikacin {{appName}}",
       "description": "Gudanar da kasuwar."
     }
   },
@@ -387,14 +387,14 @@
     },
     "reviewRemoved": {
       "title": "An cire wani ra’ayi daga shafinka",
-      "body": "Ya saɓa wa ƙa’idojin ra’ayi na Gwani ({{reason}}). An sake lissafa ƙimarka."
+      "body": "Ya saɓa wa ƙa’idojin ra’ayi na {{appName}} ({{reason}}). An sake lissafa ƙimarka."
     },
     "contentRemoved": {
       "title": "An cire {{kind}} naka",
       "body": "Dalili: {{reason}}. Za ka iya ɗaukaka ƙara daga “Tabbatarwa da matsayi” a dashboard ɗinka."
     },
     "warning": {
-      "title": "Gargaɗi daga Gwani",
+      "title": "Gargaɗi daga {{appName}}",
       "body": "{{reason}}. Maimaita saɓa wa ƙa’ida zai iya kai ga dakatarwa."
     },
     "suspended": {
@@ -430,7 +430,7 @@
       "body": "{{text}} Ɗora: {{needed}}."
     },
     "welcomeClaimed": {
-      "title": "Barka da zuwa Gwani",
+      "title": "Barka da zuwa {{appName}}",
       "body": "Shafinka yana aiki. Ƙara hotuna, ayyukanka da farashinsu don abokan ciniki su iya neman ka. An saita membobinka ta {{association}}."
     },
     "passwordChanged": {

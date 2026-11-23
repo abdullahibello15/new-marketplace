@@ -6,11 +6,12 @@ import { JobPhotos } from '../../../jobs/components/JobPhotos';
 import { formatNaira } from '../../../../utils/format';
 import { DeadlineBadge } from '../DeadlineBadge';
 import type { DisputeDetail } from '../../services/disputeService';
+import { APP_NAME } from '../../../../config/brand';
 
 /** The claim, evidence from both sides, and the mediation thread with each party's response deadline. */
 export function DisputeEvidence({ d }: {d: DisputeDetail;}) {
   const subjectDispute = (d.job ?? d.order)?.dispute;
-  const nameOf = (party: string) => party === 'customer' ? d.summary.customerName : party === 'vendor' ? d.summary.vendorName : 'Gwani';
+  const nameOf = (party: string) => party === 'customer' ? d.summary.customerName : party === 'vendor' ? d.summary.vendorName : APP_NAME;
 
   return (
     <div className="space-y-3">
@@ -75,7 +76,7 @@ export function DisputeEvidence({ d }: {d: DisputeDetail;}) {
             {d.dispute.messages.map((m) =>
           <li key={m.id} className={`rounded-xl px-3 py-2 ${m.from === 'mediator' ? 'bg-[#E3EEEC]' : 'bg-sand'}`}>
                 <p className="flex flex-wrap items-center gap-2 text-xs font-bold text-muted">
-                  {m.from === 'mediator' ? `${m.authorName} (Gwani) → ${m.to === 'both' ? 'both parties' : nameOf(m.to)}` : nameOf(m.from)}
+                  {m.from === 'mediator' ? `${m.authorName} (${APP_NAME}) → ${m.to === 'both' ? 'both parties' : nameOf(m.to)}` : nameOf(m.from)}
                   <span className="font-normal">{format(new Date(m.at), 'd MMM, h:mm a')}</span>
                   {m.kind === 'evidence_request' && <Badge tone="warning">Evidence request</Badge>}
                 </p>

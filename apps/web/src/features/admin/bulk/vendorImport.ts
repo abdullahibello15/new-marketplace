@@ -5,6 +5,7 @@ import { csvWithBom, mapTableToRows, matchOption, type ImportSpec, type Spreadsh
 import { VENDOR_IMPORT } from '../config/bulkImport';
 import { VENDOR_IMPORT_COLUMNS, type ExistingMatch, type ImportLookup, type RawVendorRow, type RowSuggestion, type VendorImportColumn, type VendorRowCheck } from './types';
 import type { NigerLga, TradeCategory } from '../../../types/marketplace';
+import { APP_NAME } from '../../../config/brand';
 
 /*
  * THE rules for the bulk vendor import (pure, runs in the browser). Columns and header spellings, the
@@ -161,8 +162,8 @@ export function checkVendorRow(raw: RawVendorRow, ctx: RowContext): VendorRowChe
   if (byPhone) existing = { ...byPhone, by: 'phone' };else
   if (byEmail) existing = { ...byEmail, by: 'email' };
   if (existing?.kind === 'invited') fail(existing.by, `Already invited as ${existing.vendorName} in an earlier import, and not claimed yet.`);else
-  if (existing?.alreadyMember) warnings.push(`${existing.vendorName} is already on Gwani and already a member of this association. Nothing to do; it will be skipped.`);else
-  if (existing) warnings.push(`${existing.vendorName} is already on Gwani (same ${existing.by}). Choose Skip, or Link to add them to the association.`);
+  if (existing?.alreadyMember) warnings.push(`${existing.vendorName} is already on ${APP_NAME} and already a member of this association. Nothing to do; it will be skipped.`);else
+  if (existing) warnings.push(`${existing.vendorName} is already on ${APP_NAME} (same ${existing.by}). Choose Skip, or Link to add them to the association.`);
 
   const profile =
   errors.length === 0 && phone && trade.match && lga.match ?

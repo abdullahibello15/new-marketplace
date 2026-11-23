@@ -3,7 +3,7 @@ import { useFormContext, useWatch } from 'react-hook-form';
 import { useAsyncData } from '../../../hooks/useAsyncData';
 import { useAuth } from '../../auth/hooks/useAuth';
 import { useCurrentVendor } from '../../auth/hooks/useCurrentVendor';
-import { getMyProfileCompleteness } from '../services/profileCompletenessService';
+import { getProfileCompletenessForVendorSession } from '../services/profileCompletenessService';
 import { calculateProfileCompleteness, completenessKindOf } from '../utils/completeness';
 import type { MyProfileCompleteness, ProfileCompleteness, ProfileFormData, ProfileFormValues } from '../types';
 
@@ -12,10 +12,18 @@ import type { MyProfileCompleteness, ProfileCompleteness, ProfileFormData, Profi
  * the account changes (both come from live stores), so the score updates as soon as the vendor saves.
  */
 export function useProfileCompleteness() {
-  const { vendorId, vendor } = useCurrentVendor();
+  const { vendorId, vendor, live } = useCurrentVendor();
   const { user } = useAuth();
-  // `vendor` and `user` are only dependencies: a new object means saved data changed, so fetch again.
-  const load = useCallback(() => getMyProfileCompleteness(vendorId), [vendorId, vendor, user]); // eslint-disable-line react-hooks/exhaustive-deps
+  const account = useMemo(() => ({
+    phoneVerified: Boolean(user?.phone && user.phoneVerified),
+    emailAdded: Boolean(user?.email),
+    documentsSubmitted: Boolean(vendor && vendor.verification !== 'unverified'),
+  }), [user?.email, user?.phone, user?.phoneVerified, vendor]);
+  // Live sessions calculate from the API-loaded vendor; only demo sessions use the mock store.
+  const load = useCallback(() => getProfileCompletenessForVendorSession(
+    vendorId,
+    live ? { mode: 'live', vendor, account } : { mode: 'mock' },
+  ), [account, live, vendorId, vendor]);
   return useAsyncData(load);
 }
 

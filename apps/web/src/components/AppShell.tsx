@@ -8,6 +8,7 @@ import { MobileMoreMenu } from './shell/MobileMoreMenu';
 import { SidebarLink } from './shell/SidebarLink';
 import { AccountPanel } from '../features/auth/components/AccountPanel';
 import type { NavItem } from '../types/navigation';
+import { APP_NAME, APP_INITIAL } from '../config/brand';
 
 interface AppShellProps {
   navItems: NavItem[];
@@ -46,8 +47,8 @@ export function AppShell({ navItems, homeTo, modeLabel, account, accountSubtitle
     <div className="min-h-screen w-full bg-cream font-sans text-ink">
       <aside className="fixed inset-y-0 left-0 hidden w-64 print:hidden flex-col overflow-y-auto bg-pine-deep px-5 py-7 text-white lg:flex">
         <Link to={homeTo} className="flex items-center gap-2.5 rounded-lg px-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-mustard text-lg font-extrabold text-ink">G</span>
-          <span className="text-xl font-extrabold tracking-tight">Gwani</span>
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-mustard text-lg font-extrabold text-ink" aria-hidden="true">{APP_INITIAL}</span>
+          <span className="max-w-40 text-sm font-extrabold leading-tight">{APP_NAME}</span>
           {modeLabel &&
           <span className="rounded-md bg-white/10 px-2 py-0.5 text-xs font-bold text-mustard">{modeLabel}</span>
           }

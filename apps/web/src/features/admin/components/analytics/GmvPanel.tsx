@@ -8,6 +8,7 @@ import { AnalyticsSkeleton, ChartCard, Delta, MetricCard } from './AnalyticsPart
 import { CHART_COLORS, compactNaira } from './chartUtils';
 import { PeriodBar } from './AnalyticsControls';
 import type { AnalyticsQuery } from '../../analytics/types';
+import { APP_FILE_PREFIX } from '../../../../config/brand';
 
 const BUCKET_WORD = { day: 'daily', week: 'weekly', month: 'monthly' } as const;
 const share = (part: number, total: number) => total ? `${Math.round(part / total * 1000) / 10}%` : '0%';
@@ -43,7 +44,7 @@ function BreakdownTable({ rows, keyLabel, total }: {rows: {key: string;label?: s
 export function GmvPanel({ query }: {query: AnalyticsQuery;}) {
   const load = useCallback(() => getGmvAnalytics(query), [query]);
   const { data, status, error, reload } = useAsyncData(load);
-  const file = (name: string) => `gwani-${name}-${data?.range.start.slice(0, 10)}-to-${data?.range.end.slice(0, 10)}.csv`;
+  const file = (name: string) => `${APP_FILE_PREFIX}-${name}-${data?.range.start.slice(0, 10)}-to-${data?.range.end.slice(0, 10)}.csv`;
 
   if (status === 'error' && !data) return <ErrorState message={error ?? ''} onRetry={reload} />;
   if (!data) return <AnalyticsSkeleton />;

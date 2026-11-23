@@ -9,6 +9,7 @@ import { requirePermission } from './adminSession';
 import { recordAudit } from './auditService';
 import type { Vendor } from '../../../types/marketplace';
 import type { AuditEntry } from '../types';
+import { APP_NAME } from '../../../config/brand';
 
 /*
  * Following up with at-risk vendors (our backend, mocked): from the SLA and churn dashboards (Analyst,
@@ -19,7 +20,7 @@ import type { AuditEntry } from '../types';
 
 function currentVendor(vendorId: string): Vendor {
   const vendor = getAllVendors().find((v) => v.id === vendorId);
-  if (!vendor) throw new ApiError('That vendor isn’t on Gwani any more.', 404);
+  if (!vendor) throw new ApiError(`That vendor isn’t on ${APP_NAME} any more.`, 404);
   return vendor;
 }
 

@@ -1,4 +1,5 @@
 import type { PublicReview } from '../types';
+import { APP_NAME } from '../../../config/brand';
 
 /*
  * MOCK: recent customer reviews that went live but were flagged automatically (keyword list) for the
@@ -16,7 +17,7 @@ export const mockFlaggedReviews: FlaggedReview[] = [
 { id: 'flag-r5', vendorId: 'emeka-paints', reviewerName: 'Usman W.', rating: 1, comment: 'Fraud. Collected money and disappeared for two weeks.', serviceName: null, createdAt: ago(26), reply: null },
 { id: 'flag-r6', vendorId: 'ibrahim-electrical', reviewerName: 'Rukayya H.', rating: 5, comment: 'Great job. Call my cousin on 0812 345 6789 for generator repairs too.', serviceName: 'Fault tracing & repair', createdAt: ago(31), reply: null },
 { id: 'flag-r7', vendorId: 'danladi-carpentry', reviewerName: 'Daniel M.', rating: 1, comment: 'Idiot carpenter. The wardrobe door fell off in a week.', serviceName: null, createdAt: ago(38), reply: null },
-{ id: 'flag-r8', vendorId: 'zainab-dispatch', reviewerName: 'Victor C.', rating: 4, comment: 'Quick delivery. Pay me directly next time and avoid Gwani fees.', serviceName: 'Same-day parcel delivery', createdAt: ago(44), reply: null },
+{ id: 'flag-r8', vendorId: 'zainab-dispatch', reviewerName: 'Victor C.', rating: 4, comment: `Quick delivery. Pay me directly next time and avoid ${APP_NAME} fees.`, serviceName: 'Same-day parcel delivery', createdAt: ago(44), reply: null },
 { id: 'flag-r9', vendorId: 'swift-wheels', reviewerName: 'Hadiza B.', rating: 1, comment: 'Scam rider, the package never arrived and he blocked my number.', serviceName: null, createdAt: ago(52), reply: null },
 { id: 'flag-r10', vendorId: 'yusuf-borehole', reviewerName: 'Joseph E.', rating: 5, comment: 'Excellent pump installation. Contact 0705 111 2233 for cheaper parts.', serviceName: null, createdAt: ago(60), reply: null },
 { id: 'flag-r11', vendorId: 'sadiya-stitches', reviewerName: 'Amina R.', rating: 3, comment: 'Average work. Honestly the owner is a fool with customers.', serviceName: null, createdAt: ago(70), reply: null },

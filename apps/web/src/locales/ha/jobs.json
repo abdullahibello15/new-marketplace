@@ -805,7 +805,7 @@
     },
     "disputedVendor": {
       "title": "An kai ƙorafi",
-      "body": "{{name}} ya kai ƙorafi game da {{ref}}. Ma’aikatan Gwani za su duba."
+      "body": "{{name}} ya kai ƙorafi game da {{ref}}. Ma’aikatan {{appName}} za su duba."
     },
     "disputedCustomer": {
       "title": "Mun karɓi ƙorafinka",

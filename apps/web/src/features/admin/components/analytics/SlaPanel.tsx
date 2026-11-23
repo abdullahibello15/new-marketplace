@@ -17,6 +17,7 @@ import { VendorSlaHistory } from './VendorSlaHistory';
 import type { AnalyticsQueryChanges } from '../../hooks/useAnalyticsQuery';
 import type { AnalyticsQuery, SlaFilters } from '../../analytics/types';
 import type { SlaGroupRow } from '../../services/analyticsService';
+import { APP_FILE_PREFIX } from '../../../../config/brand';
 
 interface SlaPanelProps {
   query: AnalyticsQuery;
@@ -74,7 +75,7 @@ function Trend({ points }: {points: number | null;}) {
 export function SlaPanel({ query, filters, search, vendor, onChange }: SlaPanelProps) {
   const load = useCallback(() => getSlaAnalytics(query, filters), [query, filters]);
   const { data, status, error, reload } = useAsyncData(load);
-  const file = (name: string) => `gwani-${name}-${data?.range.start.slice(0, 10)}-to-${data?.range.end.slice(0, 10)}.csv`;
+  const file = (name: string) => `${APP_FILE_PREFIX}-${name}-${data?.range.start.slice(0, 10)}-to-${data?.range.end.slice(0, 10)}.csv`;
   const vendors = useMemo(() => {
     const q = search.trim().toLowerCase();
     return (data?.vendors ?? []).filter((v) => !q || v.name.toLowerCase().includes(q));

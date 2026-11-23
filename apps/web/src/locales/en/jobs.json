@@ -805,7 +805,7 @@
     },
     "disputedVendor": {
       "title": "Problem reported",
-      "body": "{{name}} reported a problem with {{ref}}. Gwani’s team will review it."
+      "body": "{{name}} reported a problem with {{ref}}. {{appName}}’s team will review it."
     },
     "disputedCustomer": {
       "title": "We’ve got your report",

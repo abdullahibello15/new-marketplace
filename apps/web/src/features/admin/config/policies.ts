@@ -1,3 +1,4 @@
+import { APP_NAME } from '../../../config/brand';
 /*
  * Admin workflow settings: claim locks, response deadlines, preset reasons and the automated moderation
  * flags. ⚠️ PLACEHOLDER values: confirm them against the build spec.
@@ -43,7 +44,7 @@ export const MODERATION_REMOVE_REASONS = [
 
 /** Preset reasons for a written warning. */
 export const MODERATION_WARN_REASONS = [
-{ id: 'contact_details', label: 'Sharing contact details to take customers off Gwani' },
+{ id: 'contact_details', label: `Sharing contact details to take customers off ${APP_NAME}` },
 { id: 'duplicate', label: 'Using another vendor’s photos' },
 { id: 'misleading', label: 'Misleading listings or prices' }];
 

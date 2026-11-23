@@ -23,6 +23,7 @@ import { getVendorImport, resendImportInvite, undoVendorImport } from '../servic
 import { IMPORT_STATUS_META } from '../components/bulk/importStatus';
 import type { InviteChannel, InviteStatus } from '../../profile-claim/types';
 import type { ImportRowOutcome, VendorImportDetailRow } from '../bulk/types';
+import { APP_FILE_PREFIX } from '../../../config/brand';
 
 const OUTCOME_TONE: Record<ImportRowOutcome, ImportRowTone> = { created: 'ready', linked: 'ready', skipped: 'skipped', failed: 'invalid' };
 const OUTCOME_LABEL: Record<ImportRowOutcome, string> = { created: 'Created', linked: 'Linked', skipped: 'Skipped', failed: 'Failed' };
@@ -105,7 +106,7 @@ export function VendorImportDetailSection() {
     );
     const csv = () =>
     downloadText(
-      `gwani-import-${record.id}.csv`,
+      `${APP_FILE_PREFIX}-import-${record.id}.csv`,
       csvWithBom([
       ['row', 'full_name', 'business_name', 'phone', 'email', 'result', 'reason', 'vendor_id', 'invitation', 'claimed_at'],
       ...data.rows.map((r) => [r.line, r.fullName, r.businessName, formatLocalPhone(r.phone), r.email ?? '', r.outcome, r.reason ?? '', r.vendorId ?? '', r.invite ? INVITE_LABEL[r.invite.status].label : '', r.invite?.claimedAt ?? ''])]

@@ -1,3 +1,4 @@
+import { APP_NAME } from '../../../config/brand';
 /*
  * Response-time SLA rules: the ONE place that says how fast vendors must respond. The SLA helper (sla.ts),
  * the admin SLA dashboard and the public "Usually responds within…" line all read this.
@@ -52,7 +53,7 @@ export const SLA_RULES: Record<SlaType, SlaRule> = {
   },
   dispute_response: {
     label: 'Dispute response',
-    description: 'From a reported problem (or Gwani asking for evidence) to the vendor’s answer.',
+    description: `From a reported problem (or ${APP_NAME} asking for evidence) to the vendor’s answer.`,
     withinHoursMinutes: 8 * 60, // PLACEHOLDER: one working day
     afterHoursWallClockMinutes: 24 * 60 // PLACEHOLDER
   },

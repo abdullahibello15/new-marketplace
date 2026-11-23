@@ -131,7 +131,7 @@ export function resetPasswordNow(resetToken: string, password: string, now: Date
 
   resetTokens.delete(resetToken);
   const saved = saveUser({ ...user, passwordHash: mockHash(password), hasPassword: true });
-  endSessionsFor(saved.id, 'password_changed');
+  endSessionsFor(saved.id, 'password_changed', now);
   clearPasswordLoginFailures(saved);
   notifyPasswordChanged(saved, now);
   return saved;

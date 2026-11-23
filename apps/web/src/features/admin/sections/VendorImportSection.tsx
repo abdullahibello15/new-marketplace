@@ -18,6 +18,7 @@ import { VendorImportReview } from '../components/bulk/VendorImportReview';
 import { ImportSettingsStep } from '../components/bulk/ImportSettingsStep';
 import { ImportRunStep } from '../components/bulk/ImportRunStep';
 import type { ExistingChoice, ImportLookup, ImportPartner, ImportRowRequest, VendorImportColumn, VendorImportSettings } from '../bulk/types';
+import { APP_NAME, APP_FILE_PREFIX } from '../../../config/brand';
 
 const STEPS = ['Partner', 'Upload', 'Check', 'Settings', 'Import'] as const;
 const SAMPLE_CSV = '/samples/vendor-import-sample.csv';
@@ -28,7 +29,7 @@ const HELP: Record<VendorImportColumn, string> = {
   business_name: 'As customers will see it.',
   phone: 'Nigerian mobile: 0803…, 0813…, 0903…, 0703… or +234…. Saved as +234.',
   email: 'Used for the invitation if you choose email.',
-  trade_category: 'One of Gwani’s trade categories, e.g. Plumber, Tailor, Electrician.',
+  trade_category: `One of ${APP_NAME}’s trade categories, e.g. Plumber, Tailor, Electrician.`,
   lga: 'A Niger State LGA, e.g. Chanchaga, Bosso, Suleja.',
   town_landmark: 'Town, area or landmark, e.g. “Tunga, near Kure Market”.',
   years_experience: 'Whole number.',
@@ -82,7 +83,7 @@ export function VendorImportSection() {
       if (existing) {
         return (choices[row.id] ?? 'skip') === 'link' ?
         { line: row.line, action: 'link', vendorId: existing.vendorId, vendorName: existing.vendorName, contact: formatLocalPhone(c.profile.phone), profile: contact } :
-        { line: row.line, action: 'skip', reason: `Already on Gwani as ${existing.vendorName}; skipped.`, profile: contact };
+        { line: row.line, action: 'skip', reason: `Already on ${APP_NAME} as ${existing.vendorName}; skipped.`, profile: contact };
       }
       return { line: row.line, action: 'create', profile: c.profile };
     });
@@ -145,7 +146,7 @@ export function VendorImportSection() {
             reading={reading}
             error={fileError}
             limitsText={`.csv or .xlsx, up to ${Math.round(VENDOR_IMPORT.maxBytes / 1024)} KB and ${VENDOR_IMPORT.maxRows} vendors. Only the first sheet is read.`}
-            template={{ fileName: 'gwani-vendor-import-template.csv', build: buildVendorTemplateCsv, intro: 'One member per row. The template has the columns and an example row.' }}
+            template={{ fileName: `${APP_FILE_PREFIX}-vendor-import-template.csv`, build: buildVendorTemplateCsv, intro: 'One member per row. The template has the columns and an example row.' }}
             columns={(Object.keys(COLUMN_LABELS) as VendorImportColumn[]).map((c) => ({ name: c, required: REQUIRED.has(c), help: `${COLUMN_LABELS[c]}. ${HELP[c]}` }))}
             templateExtra={
             <a href={SAMPLE_CSV} download className="mt-2 block text-center text-sm font-semibold text-pine underline underline-offset-2">

@@ -1,11 +1,21 @@
 # ZAMANI NG MARKET HUB Backend: Build Plan
 
-> How the real backend replaces the mock services. Written October 2026, before any backend code exists.
+> How the real backend replaces the mock services. Written October 2026, before any backend code existed; updated
+> November 2026 to match what has been built (auth, vendors, products, reviews, subscriptions, public routes).
+
+## Status (November 2026)
+
+- **Done:** Phase 0 (monorepo, `packages/domain`, `packages/contracts`, Fastify skeleton, Drizzle, Docker Compose, CI;
+  Terraform not started), Phase 1 auth (OTP, signup, login, rotating refresh token, sessions, password reset), and the
+  first part of Phase 2: vendor setup and profile, vendor products (CRUD and spreadsheet import, no images yet),
+  reviews with vendor replies, a read-only subscription endpoint, and the public routes `GET /v1/vendors`,
+  `/v1/vendors/:vendorId`, `/v1/vendors/:vendorId/reviews`, `/v1/products`, `/v1/products/:productId`.
+- **Still mock only in the web app:** jobs, orders, payments and escrow, admin, investor, reminders, discovery search.
 
 
 ## Context
 
-ZAMANI NG MARKET HUB is a working front-end prototype with **no backend**. About 45 service files in `src/features/*/services/` hold all the data in memory and answer through `mockResponse()` in [src/services/mockApi.ts](../apps/web/src/services/mockApi.ts). Real users, money and documents need a real backend before launch: a database, real authentication, Paystack payments with escrow, SMS and email, file storage, and server-side enforcement of every rule the browser checks today.
+ZAMANI NG MARKET HUB started as a working front-end prototype with **no backend**. About 45 service files in `src/features/*/services/` hold all the data in memory and answer through `mockResponse()` in [src/services/mockApi.ts](../apps/web/src/services/mockApi.ts). Real users, money and documents need a real backend before launch: a database, real authentication, Paystack payments with escrow, SMS and email, file storage, and server-side enforcement of every rule the browser checks today.
 
 The prototype was built with a backend in mind, which makes this easier:
 - **Every service is already async.** Each returns a Promise and throws `ApiError(message, status)`, so a service body can become a `fetch` without changing any page.
@@ -34,11 +44,11 @@ The prototype was built with a backend in mind, which makes this easier:
 ### Stack
 | Concern | Choice | Why |
 |---|---|---|
-| HTTP | **Fastify** + `fastify-type-provider-zod` | Fast and simple. Can reuse the existing **zod** schemas (`features/*/schemas.ts`) for validation. |
+| HTTP | **Fastify** | Fast and simple. Route handlers validate with the **zod** schemas from `packages/contracts` (`schema.parse(request.body)`); `fastify-type-provider-zod` isn't used. |
 | DB access | **Drizzle ORM** + drizzle-kit migrations | TypeScript-first and close to SQL, with explicit transactions (important for money). |
 | Database | PostgreSQL 16, PostGIS (distance search), pg_trgm (text search) | Enough for search at MVP scale, no Elasticsearch needed |
 | Jobs and scheduling | **BullMQ** on Redis | Replaces the `runScheduled…Tasks()` read-time stand-ins |
-| Auth | Own implementation: argon2id, JWT access token (15 min), rotating opaque refresh token in an httpOnly cookie, sessions table | Mirrors `sessionBackend.ts` and [sessionConfig.ts](../apps/web/src/features/auth/sessionConfig.ts) exactly |
+| Auth | Own implementation: **scrypt** password hashes (Node's built-in `crypto.scrypt`, 16-byte random salt, 64-byte key, stored as `salt:hash`), an **opaque access token** (15 min; 10 min for staff) whose SHA-256 hash is stored on the `sessions` row, a rotating opaque refresh token in an httpOnly cookie | Mirrors `sessionBackend.ts` and [sessionConfig.ts](../apps/web/src/features/auth/sessionConfig.ts). Decided: scrypt instead of argon2id (no native dependency), and opaque tokens instead of JWTs, so revoking a session takes effect on the next request. The cost is one `sessions` lookup per authenticated request. |
 | SMS / OTP | **Termii** (Nigerian, DND-route OTP) | |
 | Email / push | AWS SES / Firebase Cloud Messaging | |
 | PDFs | Keep generating on the client (jsPDF already works). The server only provides receipt data. | |
@@ -53,9 +63,14 @@ The prototype was built with a backend in mind, which makes this easier:
 ```
 apps/web/            ← the current Vite app moved here (src/, public/, vite.config.ts…)
 apps/api/            ← Fastify server + worker entry point
-  src/modules/<auth|vendors|discovery|jobs|orders|payments|escrow|subscriptions|reminders|admin|investor|files|notifications>/
-      routes.ts  service.ts  repo.ts  (one per module)
-  src/db/schema/*.ts  src/db/migrations/  src/jobs/*.ts  src/integrations/{paystack,termii,ses,s3}.ts
+  src/<module>/service.ts     ← one folder per module directly under src/ (auth, vendors, products, reviews,
+                                subscriptions, marketplace so far). service.ts exports register<Module>Routes(app, …)
+                                and holds the routes, the queries and the response mapping together; there is no
+                                separate routes.ts / repo.ts yet. app.ts registers each module.
+  src/<module>/*.integration.test.ts   ← route tests against Testcontainers Postgres
+  src/vendors/access.ts       ← authenticateProvider() and vendorForUser(), shared by the vendor-side modules
+  src/auth/service.ts         ← authenticateSession(): the one access-token lookup every authenticated route uses
+  src/db/schema/*.ts  src/db/migrations/  scripts/  (later: src/jobs/*.ts, src/integrations/{paystack,termii,ses,s3}.ts)
 packages/domain/     ← pure rules, moved out of the frontend (both sides import them)
 packages/contracts/  ← zod request/response schemas + DTO types for each endpoint
 ```
@@ -87,9 +102,9 @@ times are stored.
   `process.env.TZ`.
 
 - **Identity:**
-  - `users` (phone E.164, unique email, argon2 password hash, language, status)
+  - `users` (phone E.164, unique email, scrypt password hash, language, status)
   - `user_roles`
-  - `sessions` (refresh token *hash*, device, `remember`, `expires_at`, `revoked_at`)
+  - `sessions` (access token *hash* and `access_expires_at`, refresh token *hash* and the previous hashes for reuse detection, device, `remember`, `expires_at`, `revoked_at`)
   - `otp_challenges` (code hash, purpose, attempts, lockout)
 - **Vendors:**
   - `vendors` (owner user, trade, type service/retail, LGA, PostGIS `location`, `verification_tier`, `standing`, rating cache)
@@ -123,7 +138,7 @@ times are stored.
 ## 4. Cross-cutting rules
 
 - **API style:** REST under `/v1`. Resource routes follow the service functions (for example `jobService.sendQuote` → `POST /v1/jobs/:id/quote`). Errors look like `{ error: { code, message, messageKey } }` with the status codes the services already use (400/401/403/404/409).
-- **AuthZ:** a Fastify `preHandler` checks role and ownership on every route. For admins, `requirePermission()` uses the shared `roles.ts` (the same matrix the UI uses). **The server is the authority.**
+- **AuthZ:** every protected handler starts by calling `authenticateSession()` (or `authenticateProvider()`, which also requires the assigned `provider` role) and then checks ownership itself, for example through `vendorForUser()`. There are no Fastify `preHandler` hooks yet. For admins, `requirePermission()` uses the shared `roles.ts` (the same matrix the UI uses). **The server is the authority.**
 - **Idempotency:** an `Idempotency-Key` header on payment, quote acceptance and payout routes. Paystack webhooks are deduplicated by event id.
 - **Webhooks:** verify the HMAC-SHA512 `x-paystack-signature`, store the raw event, process it on the worker. Never trust the client's "payment done" redirect; always run `transaction/verify` on the server.
 - **Rate limits:** Redis-backed limits on OTP send and verify (per phone and per IP), login, and password reset.
@@ -143,7 +158,7 @@ times are stored.
 
 Each phase has three parts: (a) migrations and tables, (b) API module and routes, (c) **switch that feature's frontend services** from `mockResponse` to the real API.
 
-**How the frontend switches:** add `apiRequest()` in `apps/web/src/services/apiClient.ts`. It does the same thing as `mockResponse` (auth hooks, 401 → refresh → retry), but over `fetch` with `credentials: 'include'`. A `VITE_API_MODE=mock|live` setting chooses the implementation for each feature, so features move over one at a time and mock mode keeps working for demos.
+**How the frontend switches:** add `apiRequest()` in `apps/web/src/services/apiClient.ts`. It does the same thing as `mockResponse` (auth hooks, 401 → refresh → retry), but over `fetch` with `credentials: 'include'`. *Planned* a `VITE_API_MODE=mock|live` setting to choose the implementation per feature. **Not built:** each switched feature (auth, vendor profile, vendor products, reviews, subscription) calls `apiRequest` directly and needs the API running; features not yet switched stay on `mockResponse`.
 
 ### Phase 0: Foundations (≈2 wk)
 - Convert to a monorepo, extract `packages/domain` (§2) and `packages/contracts`.
@@ -220,7 +235,8 @@ The real API must keep the same rules:
 | `POST /v1/payments`, `GET /v1/payments/:ref` | Owner of the job or order, verified | `paymentService.initiatePayment` / `verifyPayment` |
 
 ```ts
-// apps/api/src/modules/orders/routes.ts (sketch)
+// apps/api/src/orders/service.ts (sketch, written before the API existed: the built modules call
+// authenticateSession()/authenticateProvider() inside each handler instead of preHandler hooks)
 const customerOnly = { preHandler: [app.authenticate, requireCustomer, requireVerifiedContact] };
 
 app.get('/v1/cart', { preHandler: [app.authenticate, requireCustomer] }, (req) => carts.get(req.user.id));
@@ -230,7 +246,7 @@ app.post('/v1/checkout', { ...customerOnly, schema: { body: checkoutSchema } }, 
 ```
 
 - **Who can call what:**
-  - `app.authenticate` verifies the access JWT. No token, or a bad one, → 401. The web client's `apiRequest` then refreshes once and, failing that, sends the person to `/login` with `from`, which brings them back to where they were.
+  - `app.authenticate` (today: `authenticateSession()`) looks up the opaque access token's hash in `sessions`. No token, or a bad one, → 401. The web client's `apiRequest` then refreshes once and, failing that, sends the person to `/login` with `from`, which brings them back to where they were.
   - `requireCustomer` → 403 without the customer role.
   - `requireVerifiedContact` → 403 `contact_unverified`.
 - **Merge:** the same rule as `mergeCarts` in `orders/utils/cart.ts`: quantities add up, capped at stock. In one statement:
@@ -286,7 +302,7 @@ app.post('/v1/checkout', { ...customerOnly, schema: { body: checkoutSchema } }, 
   - API route tests against Testcontainers Postgres + Redis.
   - Every state transition, including the illegal ones (409), and every permission denial (403).
   - Two concurrent quote acceptances / payouts: exactly one succeeds.
-- **Contract:** web and API both compile against `packages/contracts`. Run the app with `VITE_API_MODE=live` against local Docker Compose and click through each switched feature, using the README demo accounts reseeded into staging.
+- **Contract:** web and API both compile against `packages/contracts`. Run the app against local Docker Compose and click through each switched feature, using the README demo accounts reseeded into staging.
 - **Payments:**
   - Paystack **test mode** end to end: card, transfer, USSD; webhook replay is a no-op the second time.
   - Escrow → release → payout, then confirm the ledger balances to zero per escrow.

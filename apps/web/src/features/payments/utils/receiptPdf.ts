@@ -7,7 +7,7 @@ import notoRegularUrl from '@expo-google-fonts/noto-sans/400Regular/NotoSans_400
 import { PAYMENT_SUBJECT, TRANSACTION_STATUS_META } from '../constants';
 import type { jsPDF } from 'jspdf';
 import type { ReceiptDocument } from '../types';
-import { APP_NAME } from '../../../config/brand';
+import { APP_FILE_PREFIX, APP_NAME } from '../../../config/brand';
 
 /*
  * Receipt PDFs, generated in the browser with jsPDF. Text uses Noto Sans (embedded), because jsPDF's
@@ -229,7 +229,7 @@ async function createPdf(docs: readonly ReceiptDocument[], title: string): Promi
 }
 
 export const receiptFileName = (d: Pick<ReceiptDocument, 'kind' | 'reference'>) =>
-`gwani-${d.kind === 'refund_note' ? 'refund-note' : 'receipt'}-${d.reference}.pdf`;
+`${APP_FILE_PREFIX}-${d.kind === 'refund_note' ? 'refund-note' : 'receipt'}-${d.reference}.pdf`;
 
 /** Saves one receipt (or refund note) as a PDF. */
 export async function downloadReceiptPdf(doc: ReceiptDocument): Promise<void> {

@@ -16,7 +16,12 @@ Booking and renewal reminder texts are not in the JSON files. Their Hausa versio
 - // REVIEW `common:trade.mechanic.label`: "Makanike". This is the common loanword. Check the spelling.
 - // REVIEW `common:trade.hair_stylist.browse`: "Gyaran gashi da kwalliya".
 - // REVIEW `common:role.provider.label` and `vendor` wording everywhere: "Mai sana’a". It is used for every vendor, including shops that only sell goods. Is "Mai sana’a" fine for a shop owner, or should shops be "Mai shago"?
-- // REVIEW `common:role.admin.label`: "Ma’aikacin Gwani".
+- // REVIEW `common:role.admin.label`: "Ma’aikacin {{appName}}".
+- // REVIEW the old name "Gwani" was replaced by {{appName}} (ZAMANI NG MARKET HUB) everywhere, including the
+  vendor, admin and payment texts and the SMS reminders in `src/features/reminders/templates.ts`. Several sentences
+  agreed with "Gwani" as feminine ("Gwani ta ce", "Gwani za ta duba", "Gwani ta dakatar"). Check that "ta" still
+  reads naturally with the new name (`vendor:verification.gwaniSays`, `vendor:verification.toastSent`,
+  `vendor:error.adminSuspended`), or rephrase, e.g. "Ma’aikatan {{appName}} …".
 - // REVIEW `common:vehicle.tricycle`: "Keke NAPEP (adaidaita sahu)". Which name do Minna riders use?
 
 ## Actions and navigation

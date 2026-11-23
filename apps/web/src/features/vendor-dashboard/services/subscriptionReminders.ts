@@ -1,12 +1,17 @@
-import { getAllVendors } from '../../../services/vendorStore';
-import { JOB_ACTOR } from '../../jobs/constants';
-import { SUBSCRIPTION_AUDIENCE } from '../../reminders/constants';
-import { cancelSubscriptionRemindersNow, scheduleSubscriptionRemindersNow } from '../../reminders/services/reminderService';
-import { BUNDLE_RULES } from '../bundles';
-import { ASSOCIATION_MEMBER_STATUS, DASHBOARD_ROUTES } from '../constants';
-import { BILLING_RULES, planById } from '../plans';
-import { findAssociation } from './associationService';
-import type { Association, AssociationMember, Subscription } from '../types';
+import { getAllVendors } from "../../../services/vendorStore";
+import { getApiAccessToken } from "../../../services/apiClient";
+import { currentAccessToken } from "../../auth/session";
+import { JOB_ACTOR } from "../../jobs/constants";
+import { SUBSCRIPTION_AUDIENCE } from "../../reminders/constants";
+import {
+  cancelSubscriptionRemindersNow,
+  scheduleSubscriptionRemindersNow,
+} from "../../reminders/services/reminderService";
+import { BUNDLE_RULES } from "../bundles";
+import { ASSOCIATION_MEMBER_STATUS, DASHBOARD_ROUTES } from "../constants";
+import { BILLING_RULES, planById } from "../plans";
+import { findAssociation } from "./associationService";
+import type { Association, AssociationMember, Subscription } from "../types";
 
 /*
  * Subscription renewal reminders, built on the booking reminder service (same preferences, push/SMS
@@ -15,13 +20,22 @@ import type { Association, AssociationMember, Subscription } from '../types';
  */
 
 export const vendorReminderKey = (vendorId: string) => `vendor:${vendorId}`;
-export const memberReminderKey = (associationId: string, vendorId: string) => `assoc:${associationId}:member:${vendorId}`;
-export const adminReminderKey = (associationId: string) => `assoc:${associationId}:admin`;
+export const memberReminderKey = (associationId: string, vendorId: string) =>
+  `assoc:${associationId}:member:${vendorId}`;
+export const adminReminderKey = (associationId: string) =>
+  `assoc:${associationId}:admin`;
 
-const nameOf = (vendorId: string) => getAllVendors().find((v) => v.id === vendorId)?.name ?? vendorId;
+const nameOf = (vendorId: string) =>
+  getAllVendors().find((v) => v.id === vendorId)?.name ?? vendorId;
+const isLiveProviderSession = () =>
+  Boolean(currentAccessToken() && currentAccessToken() === getApiAccessToken());
 
 /** A vendor paying for themselves: reminders about their own end date. */
-export function scheduleVendorReminders(sub: Pick<Subscription, 'vendorId' | 'planId' | 'renewsOn'>, reason?: string): void {
+export function scheduleVendorReminders(
+  sub: Pick<Subscription, "vendorId" | "planId" | "renewsOn">,
+  reason?: string,
+): void {
+  if (isLiveProviderSession()) return;
   scheduleSubscriptionRemindersNow(
     {
       key: vendorReminderKey(sub.vendorId),
@@ -33,9 +47,9 @@ export function scheduleVendorReminders(sub: Pick<Subscription, 'vendorId' | 'pl
       renewsOn: sub.renewsOn,
       graceDays: BILLING_RULES.graceDays,
       associationName: null,
-      path: DASHBOARD_ROUTES.subscription
+      path: DASHBOARD_ROUTES.subscription,
     },
-    reason
+    reason,
   );
 }
 
@@ -43,7 +57,11 @@ export function scheduleVendorReminders(sub: Pick<Subscription, 'vendorId' | 'pl
  * An association: the admin is reminded about the bundle payment; each covered member about the bundle's
  * renewal date (and their own-plan reminders stop while covered). Members no longer covered lose theirs.
  */
-export function scheduleAssociationReminders(associationId: string, reason?: string): void {
+export function scheduleAssociationReminders(
+  associationId: string,
+  reason?: string,
+): void {
+  if (isLiveProviderSession()) return;
   const a = findAssociation(associationId);
   const plan = planById(BUNDLE_RULES.memberPlanId);
   scheduleSubscriptionRemindersNow(
@@ -57,13 +75,16 @@ export function scheduleAssociationReminders(associationId: string, reason?: str
       renewsOn: a.renewsOn,
       graceDays: BILLING_RULES.graceDays,
       associationName: a.name,
-      path: DASHBOARD_ROUTES.association
+      path: DASHBOARD_ROUTES.association,
     },
-    reason
+    reason,
   );
   for (const m of a.members) {
     if (m.status === ASSOCIATION_MEMBER_STATUS.Active) {
-      cancelSubscriptionRemindersNow(vendorReminderKey(m.vendorId), `Covered by ${a.name}`);
+      cancelSubscriptionRemindersNow(
+        vendorReminderKey(m.vendorId),
+        `Covered by ${a.name}`,
+      );
       scheduleSubscriptionRemindersNow(
         {
           key: memberReminderKey(a.id, m.vendorId),
@@ -75,9 +96,9 @@ export function scheduleAssociationReminders(associationId: string, reason?: str
           renewsOn: a.renewsOn,
           graceDays: BILLING_RULES.graceDays,
           associationName: a.name,
-          path: DASHBOARD_ROUTES.subscription
+          path: DASHBOARD_ROUTES.subscription,
         },
-        reason
+        reason,
       );
     } else if (m.status === ASSOCIATION_MEMBER_STATUS.Removed) {
       scheduleRemovedMemberReminders(a, m);
@@ -86,8 +107,22 @@ export function scheduleAssociationReminders(associationId: string, reason?: str
 }
 
 /** A removed member keeps access until the paid-up date, then needs their own plan: remind them about that date. */
-export function scheduleRemovedMemberReminders(a: Association, m: AssociationMember): void {
-  cancelSubscriptionRemindersNow(memberReminderKey(a.id, m.vendorId), `Removed from ${a.name}`);
+export function scheduleRemovedMemberReminders(
+  a: Association,
+  m: AssociationMember,
+): void {
+  if (isLiveProviderSession()) return;
+  cancelSubscriptionRemindersNow(
+    memberReminderKey(a.id, m.vendorId),
+    `Removed from ${a.name}`,
+  );
   if (!m.accessUntil) return;
-  scheduleVendorReminders({ vendorId: m.vendorId, planId: BUNDLE_RULES.memberPlanId, renewsOn: m.accessUntil }, `Removed from ${a.name}`);
+  scheduleVendorReminders(
+    {
+      vendorId: m.vendorId,
+      planId: BUNDLE_RULES.memberPlanId,
+      renewsOn: m.accessUntil,
+    },
+    `Removed from ${a.name}`,
+  );
 }

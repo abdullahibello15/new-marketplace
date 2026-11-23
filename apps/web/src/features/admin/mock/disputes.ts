@@ -3,6 +3,7 @@ import { mockJobs } from '../../jobs/mock/jobs';
 import { mockOrders } from '../../orders/mock/orders';
 import { ADMIN_POLICIES } from '../config/policies';
 import type { DisputeCase, DisputeEvidence, InternalNote, MediationMessage, PartyMessage } from '../types';
+import { APP_NAME } from '../../../config/brand';
 
 /*
  * MOCK mediation cases for every disputed job and order in the mock data: the customer's claim, the
@@ -75,13 +76,13 @@ function buildCase(kind: 'job' | 'order', id: string, openedAt: string, details:
   const messages: MediationMessage[] = [];
   const request = o.customerEvidenceRequest;
   if (request) {
-    messages.push({ id: 'msg-req', from: 'mediator', to: 'customer', authorName: o.assignee?.adminName ?? 'Gwani', body: request.message, at: hoursAgo(request.hoursAgo), kind: 'evidence_request' });
+    messages.push({ id: 'msg-req', from: 'mediator', to: 'customer', authorName: o.assignee?.adminName ?? APP_NAME, body: request.message, at: hoursAgo(request.hoursAgo), kind: 'evidence_request' });
     if (request.response && request.respondedHoursAgo !== undefined) {
       evidence.push({ id: 'ev-3', party: 'customer', kind: 'response', text: request.response, attachments: [], at: hoursAgo(request.respondedHoursAgo) });
       messages.push({ id: 'msg-reply', from: 'customer', to: 'mediator', authorName: 'Customer', body: request.response, at: hoursAgo(request.respondedHoursAgo), kind: 'message' });
     }
   }
-  (o.messages ?? []).forEach((m, i) => messages.push({ id: `msg-${i + 1}`, from: 'mediator', to: m.to, authorName: o.assignee?.adminName ?? 'Gwani', body: m.body, at: hoursAgo(m.hoursAgo), kind: 'message' }));
+  (o.messages ?? []).forEach((m, i) => messages.push({ id: `msg-${i + 1}`, from: 'mediator', to: m.to, authorName: o.assignee?.adminName ?? APP_NAME, body: m.body, at: hoursAgo(m.hoursAgo), kind: 'message' }));
   const notes: InternalNote[] = (o.notes ?? []).map((n, i) => ({ id: `note-${i + 1}`, authorName: n.author, body: n.body, at: hoursAgo(n.hoursAgo) }));
   const assignedAt = o.assignee ? hoursAgo(o.assignee.hoursAgo) : null;
 

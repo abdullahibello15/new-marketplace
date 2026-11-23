@@ -31,7 +31,7 @@ export const REMINDER_TEMPLATES: Record<AppLanguage, Record<ReminderRuleId, Reco
       vendor: {
         pushTitle: 'Job tomorrow',
         pushBody: 'Reminder: [service] for [customer] is [day] at [time]. [address]',
-        sms: 'Gwani: Job [ref] for [customer] is [day] at [time]. [address]'
+        sms: `${APP_NAME}: Job [ref] for [customer] is [day] at [time]. [address]`
       }
     },
     two_hours: {
@@ -43,7 +43,7 @@ export const REMINDER_TEMPLATES: Record<AppLanguage, Record<ReminderRuleId, Reco
       vendor: {
         pushTitle: 'Job in [lead]',
         pushBody: '[service] for [customer] starts in [lead], at [time]. [address]',
-        sms: 'Gwani: Job [ref] for [customer] starts in [lead], at [time]. [address]'
+        sms: `${APP_NAME}: Job [ref] for [customer] starts in [lead], at [time]. [address]`
       }
     }
   },
@@ -57,7 +57,7 @@ export const REMINDER_TEMPLATES: Record<AppLanguage, Record<ReminderRuleId, Reco
       vendor: {
         pushTitle: 'Aiki gobe',
         pushBody: 'Tunatarwa: [service] na [customer] [day] da [time]. [address]',
-        sms: 'Gwani: Aiki [ref] na [customer] [day] da [time]. [address]'
+        sms: `${APP_NAME}: Aiki [ref] na [customer] [day] da [time]. [address]`
       }
     },
     two_hours: {
@@ -69,7 +69,7 @@ export const REMINDER_TEMPLATES: Record<AppLanguage, Record<ReminderRuleId, Reco
       vendor: {
         pushTitle: 'Aiki cikin [lead]',
         pushBody: '[service] na [customer] zai fara cikin [lead], da [time]. [address]',
-        sms: 'Gwani: Aiki [ref] na [customer] zai fara cikin [lead], da [time]. [address]'
+        sms: `${APP_NAME}: Aiki [ref] na [customer] zai fara cikin [lead], da [time]. [address]`
       }
     }
   }
@@ -113,68 +113,68 @@ export const SUBSCRIPTION_TEMPLATES: Record<AppLanguage, Record<SubscriptionRemi
       vendor: {
         pushTitle: 'Your plan ends in [days]',
         pushBody: '[vendor], your [plan] plan ends on [expiry]. Renew to stay visible and keep getting requests.',
-        sms: 'Gwani: [vendor], your [plan] plan ends [expiry]. Renew: [link]'
+        sms: `${APP_NAME}: [vendor], your [plan] plan ends [expiry]. Renew: [link]`
       },
       member: {
         pushTitle: 'Bundle renews in [days]',
         pushBody: '[association] renews your [plan] plan on [expiry]. Nothing for you to pay.',
-        sms: 'Gwani: [association] renews your [plan] plan on [expiry]. Nothing to pay. [link]'
+        sms: `${APP_NAME}: [association] renews your [plan] plan on [expiry]. Nothing to pay. [link]`
       },
       admin: {
         pushTitle: 'Bundle payment due in [days]',
         pushBody: 'The [association] bundle ends on [expiry]. Pay the renewal to keep every member active.',
-        sms: 'Gwani: [association] bundle ends [expiry]. Pay renewal: [link]'
+        sms: `${APP_NAME}: [association] bundle ends [expiry]. Pay renewal: [link]`
       }
     },
     today: {
       vendor: {
         pushTitle: 'Your plan ends today',
         pushBody: '[vendor], your [plan] plan ends today. Renew now: you then get a [days] grace period before your profile is paused.',
-        sms: 'Gwani: [vendor], your [plan] plan ends today. Renew: [link]'
+        sms: `${APP_NAME}: [vendor], your [plan] plan ends today. Renew: [link]`
       },
       member: {
         pushTitle: 'Bundle ends today',
         pushBody: 'The [association] bundle that pays your [plan] plan ends today. Your association admin needs to renew it.',
-        sms: 'Gwani: [association] bundle for your plan ends today. Ask your admin to renew. [link]'
+        sms: `${APP_NAME}: [association] bundle for your plan ends today. Ask your admin to renew. [link]`
       },
       admin: {
         pushTitle: 'Bundle ends today',
         pushBody: 'The [association] bundle ends today. Pay the renewal so members aren’t paused after the grace period.',
-        sms: 'Gwani: [association] bundle ends today. Pay renewal: [link]'
+        sms: `${APP_NAME}: [association] bundle ends today. Pay renewal: [link]`
       }
     },
     grace: {
       vendor: {
         pushTitle: 'Grace period: renew by [graceEnd]',
         pushBody: '[vendor], your [plan] plan ended [days] ago. You’re still visible until [graceEnd]; renew before then to avoid a pause.',
-        sms: 'Gwani: [vendor], plan ended. Still visible until [graceEnd]. Renew: [link]'
+        sms: `${APP_NAME}: [vendor], plan ended. Still visible until [graceEnd]. Renew: [link]`
       },
       member: {
         pushTitle: 'Bundle payment overdue',
         pushBody: 'The [association] bundle ended [days] ago. If it isn’t renewed by [graceEnd], your profile is paused.',
-        sms: 'Gwani: [association] bundle overdue. Paused after [graceEnd] if not renewed. [link]'
+        sms: `${APP_NAME}: [association] bundle overdue. Paused after [graceEnd] if not renewed. [link]`
       },
       admin: {
         pushTitle: 'Bundle overdue: pay by [graceEnd]',
         pushBody: 'The [association] bundle ended [days] ago. Members are paused after [graceEnd] unless you renew.',
-        sms: 'Gwani: [association] bundle overdue. Members paused after [graceEnd]. Pay: [link]'
+        sms: `${APP_NAME}: [association] bundle overdue. Members paused after [graceEnd]. Pay: [link]`
       }
     },
     suspended: {
       vendor: {
         pushTitle: 'Your profile is paused',
         pushBody: '[vendor], customers can see you but can’t send new requests. Renew [plan] and you’re back straight away.',
-        sms: 'Gwani: [vendor], profile paused: no new requests. Renew to restore: [link]'
+        sms: `${APP_NAME}: [vendor], profile paused: no new requests. Renew to restore: [link]`
       },
       member: {
         pushTitle: 'Your profile is paused',
         pushBody: 'The [association] bundle wasn’t renewed, so new requests are paused. Ask your association admin to renew.',
-        sms: 'Gwani: profile paused, [association] bundle not renewed. Ask your admin. [link]'
+        sms: `${APP_NAME}: profile paused, [association] bundle not renewed. Ask your admin. [link]`
       },
       admin: {
         pushTitle: 'Members are paused',
         pushBody: 'The [association] bundle wasn’t renewed, so members can’t get new requests. Pay the renewal to restore them all.',
-        sms: 'Gwani: [association] members paused. Pay renewal to restore: [link]'
+        sms: `${APP_NAME}: [association] members paused. Pay renewal to restore: [link]`
       }
     }
   },
@@ -183,68 +183,68 @@ export const SUBSCRIPTION_TEMPLATES: Record<AppLanguage, Record<SubscriptionRemi
       vendor: {
         pushTitle: 'Tsarinka zai ƙare cikin [days]',
         pushBody: '[vendor], tsarinka na [plan] zai ƙare a [expiry]. Sabunta don ka ci gaba da bayyana da samun buƙatu.',
-        sms: 'Gwani: [vendor], tsarinka na [plan] zai ƙare [expiry]. Sabunta: [link]'
+        sms: `${APP_NAME}: [vendor], tsarinka na [plan] zai ƙare [expiry]. Sabunta: [link]`
       },
       member: {
         pushTitle: 'Za a sabunta tsarin ƙungiya cikin [days]',
         pushBody: '[association] za ta sabunta tsarinka na [plan] a [expiry]. Babu abin da za ka biya.',
-        sms: 'Gwani: [association] za ta sabunta tsarinka na [plan] a [expiry]. Babu biya. [link]'
+        sms: `${APP_NAME}: [association] za ta sabunta tsarinka na [plan] a [expiry]. Babu biya. [link]`
       },
       admin: {
         pushTitle: 'Biyan tsarin ƙungiya cikin [days]',
         pushBody: 'Tsarin ƙungiyar [association] zai ƙare a [expiry]. Biya sabuntawa don kowane memba ya ci gaba da aiki.',
-        sms: 'Gwani: Tsarin [association] zai ƙare [expiry]. Biya sabuntawa: [link]'
+        sms: `${APP_NAME}: Tsarin [association] zai ƙare [expiry]. Biya sabuntawa: [link]`
       }
     },
     today: {
       vendor: {
         pushTitle: 'Tsarinka zai ƙare yau',
         pushBody: '[vendor], tsarinka na [plan] zai ƙare yau. Sabunta yanzu: sannan za ka sami rangwamen [days] kafin a dakatar da shafinka.',
-        sms: 'Gwani: [vendor], tsarinka na [plan] zai ƙare yau. Sabunta: [link]'
+        sms: `${APP_NAME}: [vendor], tsarinka na [plan] zai ƙare yau. Sabunta: [link]`
       },
       member: {
         pushTitle: 'Tsarin ƙungiya zai ƙare yau',
         pushBody: 'Tsarin ƙungiyar [association] da ke biyan tsarinka na [plan] zai ƙare yau. Shugaban ƙungiyarka yana buƙatar ya sabunta.',
-        sms: 'Gwani: Tsarin [association] na tsarinka zai ƙare yau. Roƙi shugaba ya sabunta. [link]'
+        sms: `${APP_NAME}: Tsarin [association] na tsarinka zai ƙare yau. Roƙi shugaba ya sabunta. [link]`
       },
       admin: {
         pushTitle: 'Tsarin ƙungiya zai ƙare yau',
         pushBody: 'Tsarin ƙungiyar [association] zai ƙare yau. Biya sabuntawa don kada a dakatar da membobi bayan lokacin rangwame.',
-        sms: 'Gwani: Tsarin [association] zai ƙare yau. Biya sabuntawa: [link]'
+        sms: `${APP_NAME}: Tsarin [association] zai ƙare yau. Biya sabuntawa: [link]`
       }
     },
     grace: {
       vendor: {
         pushTitle: 'Lokacin rangwame: sabunta kafin [graceEnd]',
         pushBody: '[vendor], tsarinka na [plan] ya ƙare [days] da suka wuce. Kana nan a bayyane har zuwa [graceEnd]; sabunta kafin lokacin don kada a dakatar.',
-        sms: 'Gwani: [vendor], tsari ya ƙare. A bayyane har [graceEnd]. Sabunta: [link]'
+        sms: `${APP_NAME}: [vendor], tsari ya ƙare. A bayyane har [graceEnd]. Sabunta: [link]`
       },
       member: {
         pushTitle: 'Biyan tsarin ƙungiya ya wuce lokaci',
         pushBody: 'Tsarin ƙungiyar [association] ya ƙare [days] da suka wuce. Idan ba a sabunta kafin [graceEnd] ba, za a dakatar da shafinka.',
-        sms: 'Gwani: Tsarin [association] ya wuce lokaci. Za a dakatar bayan [graceEnd]. [link]'
+        sms: `${APP_NAME}: Tsarin [association] ya wuce lokaci. Za a dakatar bayan [graceEnd]. [link]`
       },
       admin: {
         pushTitle: 'Tsarin ƙungiya ya wuce lokaci: biya kafin [graceEnd]',
         pushBody: 'Tsarin ƙungiyar [association] ya ƙare [days] da suka wuce. Za a dakatar da membobi bayan [graceEnd] sai ka sabunta.',
-        sms: 'Gwani: Tsarin [association] ya wuce lokaci. Za a dakatar da membobi bayan [graceEnd]. Biya: [link]'
+        sms: `${APP_NAME}: Tsarin [association] ya wuce lokaci. Za a dakatar da membobi bayan [graceEnd]. Biya: [link]`
       }
     },
     suspended: {
       vendor: {
         pushTitle: 'An dakatar da shafinka',
         pushBody: '[vendor], abokan ciniki suna ganinka amma ba za su iya aika sababbin buƙatu ba. Sabunta [plan] kuma za ka dawo nan take.',
-        sms: 'Gwani: [vendor], an dakatar da shafi: babu sababbin buƙatu. Sabunta: [link]'
+        sms: `${APP_NAME}: [vendor], an dakatar da shafi: babu sababbin buƙatu. Sabunta: [link]`
       },
       member: {
         pushTitle: 'An dakatar da shafinka',
         pushBody: 'Ba a sabunta tsarin ƙungiyar [association] ba, don haka an dakatar da sababbin buƙatu. Roƙi shugaban ƙungiyarka ya sabunta.',
-        sms: 'Gwani: an dakatar da shafi, ba a sabunta tsarin [association] ba. Roƙi shugaba. [link]'
+        sms: `${APP_NAME}: an dakatar da shafi, ba a sabunta tsarin [association] ba. Roƙi shugaba. [link]`
       },
       admin: {
         pushTitle: 'An dakatar da membobi',
         pushBody: 'Ba a sabunta tsarin ƙungiyar [association] ba, don haka membobi ba za su sami sababbin buƙatu ba. Biya sabuntawa don dawo da su duka.',
-        sms: 'Gwani: An dakatar da membobin [association]. Biya sabuntawa: [link]'
+        sms: `${APP_NAME}: An dakatar da membobin [association]. Biya sabuntawa: [link]`
       }
     }
   }

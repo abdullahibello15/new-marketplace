@@ -6,6 +6,7 @@ import { productCategories } from '../../data/productCategories';
 import { buildTemplateCsv } from '../../utils/productImport';
 import { downloadText } from '../../utils/spreadsheetImport';
 import { PRODUCT_IMAGES_MAX } from '../../utils/products';
+import { APP_FILE_PREFIX } from '../../config/brand';
 
 export interface DropzoneColumn {
   name: string;
@@ -38,7 +39,7 @@ const productColumns = (): DropzoneColumn[] => [
 
 
 const productTemplate = () => ({
-  fileName: 'gwani-products-template.csv',
+  fileName: `${APP_FILE_PREFIX}-products-template.csv`,
   build: buildTemplateCsv,
   intro: i18n.t('vendor:products.templateIntro')
 });

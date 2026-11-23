@@ -1,4 +1,5 @@
 import { APP_LANGUAGES, type AppLanguage } from '../../i18n/config';
+import { APP_NAME } from '../../config/brand';
 /*
  * Authentication: THE role list and the sign-in rules. Every shell, guard and service reads roles from here.
  * ⚠️ Limits marked PLACEHOLDER should be confirmed against the build spec.
@@ -24,7 +25,7 @@ export const ROLE_META: Record<Role, {label: string;description: string;home: st
   customer: { label: 'Customer', description: 'Find and book trusted local services and products.', home: '/' },
   provider: { label: 'Provider', description: 'Offer your services or sell your products.', home: '/pro' },
   rider: { label: 'Rider', description: 'Deliver orders in your area.', home: '/rider' },
-  admin: { label: 'Gwani staff', description: 'Run the marketplace.', home: '/admin' }
+  admin: { label: `${APP_NAME} staff`, description: 'Run the marketplace.', home: '/admin' }
 };
 
 export const AUTH_ROUTES = {

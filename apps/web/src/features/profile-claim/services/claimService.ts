@@ -11,6 +11,7 @@ import { buildDraftVendor } from '../../vendor-profile/utils/draftVendor';
 import { CLAIM_ROUTE } from '../constants';
 import type { Vendor } from '../../../types/marketplace';
 import type { ClaimInput, ClaimView, DraftProfile, InviteChannel, InviteMessage, VendorInvite } from '../types';
+import { APP_NAME } from '../../../config/brand';
 
 /*
  * MOCK store of draft vendor profiles created by bulk imports, and the public "claim your profile" API.
@@ -34,9 +35,9 @@ function messageText(invite: VendorInvite, channel: InviteChannel, origin: strin
   const link = `${origin}${claimPath(invite.token)}`;
   const until = format(new Date(invite.expiresAt), 'd MMM yyyy');
   if (channel === 'sms') {
-    return `Gwani: ${invite.associationName} has added ${invite.profile.businessName} to Gwani. Claim your profile to start getting customers: ${link} (link works until ${until}).`;
+    return `${APP_NAME}: ${invite.associationName} has added ${invite.profile.businessName} to ${APP_NAME}. Claim your profile to start getting customers: ${link} (link works until ${until}).`;
   }
-  return `Hello ${invite.profile.fullName},\n\n${invite.associationName} has created a Gwani profile for ${invite.profile.businessName}. Customers can't see it until you claim it.\n\nClaim your profile: ${link}\n\nYou'll set up your login, check your details and accept Gwani's terms. The link works until ${until}.`;
+  return `Hello ${invite.profile.fullName},\n\n${invite.associationName} has created a ${APP_NAME} profile for ${invite.profile.businessName}. Customers can't see it until you claim it.\n\nClaim your profile: ${link}\n\nYou'll set up your login, check your details and accept ${APP_NAME}'s terms. The link works until ${until}.`;
 }
 
 /** Records one invitation message (SMS to the phone, or email). Falls back to SMS when there's no email. */

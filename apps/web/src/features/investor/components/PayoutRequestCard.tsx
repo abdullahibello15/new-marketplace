@@ -8,6 +8,7 @@ import { formatNaira } from '../../../utils/format';
 import { DIVIDEND_RULES } from '../config';
 import { INVESTOR_ROUTES } from '../constants';
 import type { InvestorBalances } from '../types';
+import { APP_NAME } from '../../../config/brand';
 
 interface PayoutRequestCardProps {
   balances: InvestorBalances;
@@ -51,12 +52,12 @@ export function PayoutRequestCard({ balances: b, payoutAccount, hasPending, busy
         Request payout{b.requestable > 0 && !hasPending ? ` of ${formatNaira(b.requestable)}` : ''}
       </Button>
       {blocked && <p id="payout-blocked" className="mt-2 text-xs text-white/75">{blocked}</p>}
-      <p className="mt-2 text-xs text-white/60">Minimum {formatNaira(DIVIDEND_RULES.minimumPayout)}. Payouts are checked and approved by Gwani before they’re sent.</p>
+      <p className="mt-2 text-xs text-white/60">Minimum {formatNaira(DIVIDEND_RULES.minimumPayout)}. Payouts are checked and approved by {APP_NAME} before they’re sent.</p>
 
       <ConfirmDialog
         open={confirming}
         title={`Request a payout of ${formatNaira(b.requestable)}?`}
-        description={`Your available dividends will be paid to ${payoutAccount} once Gwani approves the request. It shows as pending until then. This is a demo: no real money moves.`}
+        description={`Your available dividends will be paid to ${payoutAccount} once ${APP_NAME} approves the request. It shows as pending until then. This is a demo: no real money moves.`}
         confirmLabel="Request payout"
         loading={busy}
         onConfirm={async () => {

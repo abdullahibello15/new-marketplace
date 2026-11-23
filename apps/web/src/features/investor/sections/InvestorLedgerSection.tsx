@@ -10,6 +10,7 @@ import { LedgerTable } from '../components/LedgerTable';
 import { useInvestorDashboard } from '../hooks/useInvestorDashboard';
 import { useLedgerView } from '../hooks/useLedgerView';
 import type { InvestorDashboard } from '../types';
+import { APP_NAME } from '../../../config/brand';
 
 const EMPTY: InvestorDashboard['entries'] = [];
 
@@ -36,7 +37,7 @@ export function InvestorLedgerSection() {
           canExport={view.rows.length > 0} />
 
         <p className="text-sm text-muted" aria-live="polite">
-          {view.rows.length} of {d.data.entries.length} entries · read-only: entries are recorded by Gwani and can’t be edited.
+          {view.rows.length} of {d.data.entries.length} entries · read-only: entries are recorded by {APP_NAME} and can’t be edited.
         </p>
         {view.rows.length === 0 ?
         <EmptyState

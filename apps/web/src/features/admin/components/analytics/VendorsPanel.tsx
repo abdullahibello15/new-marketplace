@@ -12,6 +12,7 @@ import { CHART_COLORS } from './chartUtils';
 import { PeriodBar } from './AnalyticsControls';
 import type { BusinessKind, AnalyticsQuery } from '../../analytics/types';
 import type { NigerLga, TradeCategory } from '../../../../types/marketplace';
+import { APP_NAME, APP_FILE_PREFIX } from '../../../../config/brand';
 
 /** The customer search, filtered to one trade and one LGA (the same filter the search page offers). */
 const searchLink = (category: TradeCategory, lga: NigerLga) =>
@@ -21,7 +22,7 @@ const searchLink = (category: TradeCategory, lga: NigerLga) =>
 export function VendorsPanel({ query, onKindChange }: {query: AnalyticsQuery;onKindChange: (kind: BusinessKind) => void;}) {
   const load = useCallback(() => getVendorAnalytics(query), [query]);
   const { data, status, error, reload } = useAsyncData(load);
-  const file = (name: string) => `gwani-${name}-${query.kind}-${data?.range.start.slice(0, 10)}-to-${data?.range.end.slice(0, 10)}.csv`;
+  const file = (name: string) => `${APP_FILE_PREFIX}-${name}-${query.kind}-${data?.range.start.slice(0, 10)}-to-${data?.range.end.slice(0, 10)}.csv`;
 
   if (status === 'error' && !data) return <ErrorState message={error ?? ''} onRetry={reload} />;
   if (!data) return <AnalyticsSkeleton />;
@@ -53,7 +54,7 @@ export function VendorsPanel({ query, onKindChange }: {query: AnalyticsQuery;onK
           compare={query.compare}
           upIsGood={false}
           previousText={`previous: ${s.suspended.previous}`}
-          info="Vendors suspended at the end of the period: a subscription lapsed past its grace period, or suspended by Gwani. All vendor types." />
+          info={`Vendors suspended at the end of the period: a subscription lapsed past its grace period, or suspended by ${APP_NAME}. All vendor types.`} />
 
         <MetricCard
           label="Verified share"

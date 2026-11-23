@@ -99,8 +99,8 @@ export function deleteUser(id: string): void {
 export const allUsers = () => [...db().values()];
 
 /** Ends every session of one account on the server at once (suspension, removal, password reset). */
-export function endSessionsFor(userId: string, reason: SessionEndReason = 'account_suspended'): void {
-  endUserSessionsNow(userId, reason, new Date());
+export function endSessionsFor(userId: string, reason: SessionEndReason = 'account_suspended', now: Date = new Date()): void {
+  endUserSessionsNow(userId, reason, now);
 }
 
 /** A suspended staff account can't sign in or keep using an existing session. */

@@ -12,6 +12,7 @@ import { CHART_COLORS, compactNaira } from './chartUtils';
 import { PeriodBar } from './AnalyticsControls';
 import type { AnalyticsQuery } from '../../analytics/types';
 import type { RevenueLine } from '../../analytics/aggregations';
+import { APP_NAME, APP_FILE_PREFIX } from '../../../../config/brand';
 
 const LINE_COLORS: Record<RevenueLine, string> = { starter: CHART_COLORS.mustard, standard: CHART_COLORS.pine, premium: CHART_COLORS.purple, bundle: CHART_COLORS.clay };
 
@@ -19,7 +20,7 @@ const LINE_COLORS: Record<RevenueLine, string> = { starter: CHART_COLORS.mustard
 export function SubscriptionsPanel({ query }: {query: AnalyticsQuery;}) {
   const load = useCallback(() => getSubscriptionAnalytics(query), [query]);
   const { data, status, error, reload } = useAsyncData(load);
-  const file = (name: string) => `gwani-${name}-${data?.range.start.slice(0, 10)}-to-${data?.range.end.slice(0, 10)}.csv`;
+  const file = (name: string) => `${APP_FILE_PREFIX}-${name}-${data?.range.start.slice(0, 10)}-to-${data?.range.end.slice(0, 10)}.csv`;
 
   if (status === 'error' && !data) return <ErrorState message={error ?? ''} onRetry={reload} />;
   if (!data) return <AnalyticsSkeleton />;
@@ -133,7 +134,7 @@ export function SubscriptionsPanel({ query }: {query: AnalyticsQuery;}) {
       <div className="grid gap-4 xl:grid-cols-2">
         <ChartCard
           title="Subscribers by status"
-          info="At the end of the period, using the same status rules as the rest of Gwani. Closed accounts aren’t counted."
+          info={`At the end of the period, using the same status rules as the rest of ${APP_NAME}. Closed accounts aren’t counted.`}
           csv={{
             fileName: file('subscribers-by-status'),
             rows: () => [

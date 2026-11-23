@@ -79,6 +79,18 @@ const verifyPassword = async (password: string, encoded: string) => {
   return actual.length === expected.length && timingSafeEqual(actual, expected)
 }
 
+/** The one access-token lookup: a live, unrevoked session whose user isn't suspended. Throws 401 otherwise. */
+export async function authenticateSession(request: FastifyRequest, db: Db) {
+  const value = request.headers.authorization?.replace(/^Bearer\s+/i, '')
+  if (!value) throw unauthorized()
+  const [session] = await db.select().from(sessions).where(and(eq(sessions.accessTokenHash, hash(value)), isNull(sessions.revokedAt), gt(sessions.accessExpiresAt, new Date()))).limit(1)
+  if (!session) throw unauthorized()
+  const [user] = await db.select().from(users).where(eq(users.id, session.userId)).limit(1)
+  if (!user || user.adminSuspendedAt) throw unauthorized()
+  const roles = (await db.select({ role: userRoles.role }).from(userRoles).where(eq(userRoles.userId, user.id))).map((x) => x.role)
+  return { session, user, roles }
+}
+
 export async function publicUser(db: Db, row: typeof users.$inferSelect, roles: string[]) {
   const [vendor] = await db.select({ id: vendors.id }).from(vendors).where(eq(vendors.ownerUserId, row.id)).limit(1)
   return {
@@ -178,16 +190,7 @@ export async function registerAuthRoutes(app: import('fastify').FastifyInstance,
     setRefresh(reply, refreshToken, remember && !staff ? 30 * 24 * 3600 : undefined)
     return { user: await publicUser(db, row, roles), accessToken, accessExpiresAt: accessExpiresAt.toISOString(), sessionId }
   }
-  const currentSession = async (request: FastifyRequest) => {
-    const value = request.headers.authorization?.replace(/^Bearer\s+/i, '')
-    if (!value) throw unauthorized()
-    const [session] = await db.select().from(sessions).where(and(eq(sessions.accessTokenHash, hash(value)), isNull(sessions.revokedAt), gt(sessions.accessExpiresAt, new Date()))).limit(1)
-    if (!session) throw unauthorized()
-    const [user] = await db.select().from(users).where(eq(users.id, session.userId)).limit(1)
-    if (!user || user.adminSuspendedAt) throw unauthorized()
-    const roles = (await db.select({ role: userRoles.role }).from(userRoles).where(eq(userRoles.userId, user.id))).map((x) => x.role)
-    return { session, user, roles }
-  }
+  const currentSession = (request: FastifyRequest) => authenticateSession(request, db)
   const validatePassword = (value: string) => {
     if (value.length < 8 || value.length > 128) throw new AppError(400, 'bad_request', 'Password must be 8–128 characters.', 'auth:error.weakPassword')
   }

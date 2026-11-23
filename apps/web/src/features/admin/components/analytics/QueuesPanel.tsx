@@ -10,6 +10,7 @@ import { ADMIN_ROLES, type AdminRole } from '../../config/roles';
 import { DISPUTE_CASE_STATUS_META, MODERATION_TAB_LABELS, VERIFICATION_STATUS_META } from '../../constants';
 import { getAdminAnalytics } from '../../services/analyticsService';
 import { AnalyticsSkeleton, ChartCard } from './AnalyticsParts';
+import { APP_FILE_PREFIX } from '../../../../config/brand';
 
 function Group({ title, children }: {title: string;children: ReactNode;}) {
   return (
@@ -58,7 +59,7 @@ export function QueuesPanel() {
         title="Admin actions, last 7 days"
         info={`From the audit log. ${m.removedLast7Days} removed and ${m.approvedLast7Days} approved in moderation.`}
         empty={data.actionsByAdmin.length === 0}
-        csv={{ fileName: `gwani-admin-actions-${format(new Date(), 'yyyy-MM-dd')}.csv`, rows: () => [['Staff', 'Role', 'Actions'], ...data.actionsByAdmin.map((a) => [a.name, ADMIN_ROLES[a.role as AdminRole]?.label ?? a.role, a.count])] }}>
+        csv={{ fileName: `${APP_FILE_PREFIX}-admin-actions-${format(new Date(), 'yyyy-MM-dd')}.csv`, rows: () => [['Staff', 'Role', 'Actions'], ...data.actionsByAdmin.map((a) => [a.name, ADMIN_ROLES[a.role as AdminRole]?.label ?? a.role, a.count])] }}>
 
         <table className="w-full text-left text-sm">
           <thead className="text-xs font-bold uppercase tracking-wider text-muted">

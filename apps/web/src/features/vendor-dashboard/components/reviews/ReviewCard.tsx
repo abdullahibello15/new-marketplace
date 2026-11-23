@@ -1,11 +1,11 @@
-import { useTranslation } from 'react-i18next';
-import { formatDate as formatPattern } from '../../../../utils/format';
-import { FlagIcon, MessageSquareReplyIcon } from 'lucide-react';
-import { Badge } from '../../../../components/ui/Badge';
-import { Button } from '../../../../components/ui/Button';
-import { StarRating } from '../../../../components/ui/StarRating';
-import { ReviewReplyForm } from './ReviewReplyForm';
-import type { Review } from '../../types';
+import { useTranslation } from "react-i18next";
+import { formatDate as formatPattern } from "../../../../utils/format";
+import { FlagIcon, MessageSquareReplyIcon } from "lucide-react";
+import { Badge } from "../../../../components/ui/Badge";
+import { Button } from "../../../../components/ui/Button";
+import { StarRating } from "../../../../components/ui/StarRating";
+import { ReviewReplyForm } from "./ReviewReplyForm";
+import type { Review } from "../../types";
 
 interface ReviewCardProps {
   review: Review;
@@ -14,64 +14,109 @@ interface ReviewCardProps {
   onCancelReply: () => void;
   onReply: (id: string, body: string) => Promise<boolean>;
   onReport: (review: Review) => void;
+  showReport?: boolean;
 }
 
-const formatDate = (iso: string) => formatPattern(iso, 'd MMM yyyy');
+const formatDate = (iso: string) => formatPattern(iso, "d MMM yyyy");
 
-export function ReviewCard({ review, replying, onStartReply, onCancelReply, onReply, onReport }: ReviewCardProps) {
-  const { t } = useTranslation('vendor');
+export function ReviewCard({
+  review,
+  replying,
+  onStartReply,
+  onCancelReply,
+  onReply,
+  onReport,
+  showReport = true,
+}: ReviewCardProps) {
+  const { t } = useTranslation("vendor");
   const headingId = `review-${review.id}`;
   return (
-    <article aria-labelledby={headingId} className="rounded-2xl border border-line bg-white p-4 lg:p-5">
+    <article
+      aria-labelledby={headingId}
+      className="rounded-2xl border border-line bg-white p-4 lg:p-5"
+    >
       <header className="flex flex-wrap items-start justify-between gap-x-3 gap-y-1">
         <div className="min-w-0">
-          <h3 id={headingId} className="font-bold text-ink">{review.customerName}</h3>
+          <h3 id={headingId} className="font-bold text-ink">
+            {review.customerName}
+          </h3>
           <p className="text-sm text-muted">
-            {review.item} · <time dateTime={review.createdAt}>{formatDate(review.createdAt)}</time>
+            {review.item && <>{review.item} · </>}
+            <time dateTime={review.createdAt}>
+              {formatDate(review.createdAt)}
+            </time>
           </p>
         </div>
         <StarRating value={review.rating} />
       </header>
 
-      {review.comment ?
-      <p className="mt-3 whitespace-pre-line text-[15px] text-ink">{review.comment}</p> :
+      {review.comment ? (
+        <p className="mt-3 whitespace-pre-line text-[15px] text-ink">
+          {review.comment}
+        </p>
+      ) : (
+        <p className="mt-3 text-sm italic text-muted">
+          {t("reviews.noComment")}
+        </p>
+      )}
 
-      <p className="mt-3 text-sm italic text-muted">{t('reviews.noComment')}</p>
-      }
-
-      {review.report &&
-      <Badge tone="warning" dot className="mt-3">
-          {t('reviews.reported', { date: formatDate(review.report.reportedAt) })}
+      {review.report && (
+        <Badge tone="warning" dot className="mt-3">
+          {t("reviews.reported", {
+            date: formatDate(review.report.reportedAt),
+          })}
         </Badge>
-      }
+      )}
 
-      {review.reply &&
-      <div className="mt-4 rounded-xl bg-sand px-4 py-3">
+      {review.reply && (
+        <div className="mt-4 rounded-xl bg-sand px-4 py-3">
           <p className="text-xs font-bold uppercase tracking-wider text-muted">
-            {t('reviews.yourReply')} · <time dateTime={review.reply.createdAt}>{formatDate(review.reply.createdAt)}</time>
+            {t("reviews.yourReply")} ·{" "}
+            <time dateTime={review.reply.createdAt}>
+              {formatDate(review.reply.createdAt)}
+            </time>
           </p>
-          <p className="mt-1 whitespace-pre-line text-[15px] text-ink">{review.reply.body}</p>
+          <p className="mt-1 whitespace-pre-line text-[15px] text-ink">
+            {review.reply.body}
+          </p>
         </div>
-      }
+      )}
 
-      {replying && !review.reply &&
-      <ReviewReplyForm customerName={review.customerName} onSubmit={(body) => onReply(review.id, body)} onCancel={onCancelReply} />
-      }
+      {replying && !review.reply && (
+        <ReviewReplyForm
+          customerName={review.customerName}
+          onSubmit={(body) => onReply(review.id, body)}
+          onCancel={onCancelReply}
+        />
+      )}
 
-      {!replying && (!review.reply || !review.report) &&
-      <div className="mt-4 flex flex-wrap gap-2">
-          {!review.reply &&
-        <Button variant="secondary" size="sm" icon={MessageSquareReplyIcon} onClick={() => onStartReply(review.id)}>
-              {t('reviews.replyPublicly')}
+      {!replying && (!review.reply || (showReport && !review.report)) && (
+        <div className="mt-4 flex flex-wrap gap-2">
+          {!review.reply && (
+            <Button
+              variant="secondary"
+              size="sm"
+              icon={MessageSquareReplyIcon}
+              onClick={() => onStartReply(review.id)}
+            >
+              {t("reviews.replyPublicly")}
             </Button>
-        }
-          {!review.report &&
-        <Button variant="ghost" size="sm" icon={FlagIcon} onClick={() => onReport(review)} aria-label={t('reviews.reportFrom', { name: review.customerName })}>
-              {t('reviews.report')}
+          )}
+          {showReport && !review.report && (
+            <Button
+              variant="ghost"
+              size="sm"
+              icon={FlagIcon}
+              onClick={() => onReport(review)}
+              aria-label={t("reviews.reportFrom", {
+                name: review.customerName,
+              })}
+            >
+              {t("reviews.report")}
             </Button>
-        }
+          )}
         </div>
-      }
-    </article>);
-
+      )}
+    </article>
+  );
 }

@@ -1,4 +1,4 @@
-import i18n from '../i18n';
+import i18n from "../i18n";
 /**
  * The seam between mock data and a real backend, and THE request helper. Every service resolves through
  * `mockResponse`, so swapping a service body for a `fetch` call later doesn't change any caller: they
@@ -13,11 +13,13 @@ const MOCK_LATENCY_MS = 450;
 
 export class ApiError extends Error {
   readonly status: number;
+  readonly details?: unknown;
 
-  constructor(message: string, status = 500) {
+  constructor(message: string, status = 500, details?: unknown) {
     super(message);
-    this.name = 'ApiError';
+    this.name = "ApiError";
     this.status = status;
+    this.details = details;
   }
 }
 
@@ -51,19 +53,28 @@ export const requestAccessToken = (): string | null | undefined => requestToken;
 /** Runs `fn` once at a time: callers arriving while it's running share the same result. */
 export function createSingleFlight<T>(fn: () => Promise<T>): () => Promise<T> {
   let inFlight: Promise<T> | null = null;
-  return () => inFlight ??= fn().finally(() => {
-    inFlight = null;
-  });
+  return () =>
+    (inFlight ??= fn().finally(() => {
+      inFlight = null;
+    }));
 }
 
-function send<T>(produce: () => T, latencyMs: number, token: string | null): Promise<T> {
+function send<T>(
+  produce: () => T,
+  latencyMs: number,
+  token: string | null,
+): Promise<T> {
   return new Promise((resolve, reject) => {
     setTimeout(() => {
       requestToken = token;
       try {
         resolve(structuredClone(produce()));
       } catch (error) {
-        reject(error instanceof Error ? error : new ApiError(i18n.t('common:error.generic')));
+        reject(
+          error instanceof Error
+            ? error
+            : new ApiError(i18n.t("common:error.generic")),
+        );
       } finally {
         requestToken = undefined;
       }
@@ -71,7 +82,8 @@ function send<T>(produce: () => T, latencyMs: number, token: string | null): Pro
   });
 }
 
-const isUnauthorized = (e: unknown) => e instanceof ApiError && e.status === 401;
+const isUnauthorized = (e: unknown) =>
+  e instanceof ApiError && e.status === 401;
 
 /**
  * Resolves with a deep copy of what `produce` returns after a short delay, like a network round trip.
@@ -79,7 +91,11 @@ const isUnauthorized = (e: unknown) => e instanceof ApiError && e.status === 401
  * like an error response. `auth: false` is for the auth endpoints themselves (sign-in, refresh, sign-out),
  * which must never trigger a refresh.
  */
-export async function mockResponse<T>(produce: () => T, latencyMs = MOCK_LATENCY_MS, { auth = true }: {auth?: boolean;} = {}): Promise<T> {
+export async function mockResponse<T>(
+  produce: () => T,
+  latencyMs = MOCK_LATENCY_MS,
+  { auth = true }: { auth?: boolean } = {},
+): Promise<T> {
   const hooks = auth ? authHooks : null;
   if (!hooks) return send(produce, latencyMs, null);
   await hooks.ensureFresh();
@@ -88,7 +104,8 @@ export async function mockResponse<T>(produce: () => T, latencyMs = MOCK_LATENCY
     return await send(produce, latencyMs, token);
   } catch (e) {
     if (!isUnauthorized(e) || !token) throw e;
-    if (await hooks.refresh()) return send(produce, latencyMs, hooks.accessToken());
+    if (await hooks.refresh())
+      return send(produce, latencyMs, hooks.accessToken());
     hooks.onSessionExpired();
     throw e;
   }

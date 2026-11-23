@@ -19,6 +19,7 @@ import { ADMIN_ROLES, type AdminRole } from '../config/roles';
 import { ADMIN_ROUTES, ADMIN_STATUS_META } from '../constants';
 import { inviteAdmin, listAdmins } from '../services/adminAccountService';
 import type { AdminAccount, AdminStatus } from '../types';
+import { APP_NAME } from '../../../config/brand';
 
 const select = `${field} ${ok} py-2.5`;
 type Sort = 'name' | 'last_login';
@@ -73,7 +74,7 @@ export function AdminsSection() {
     return (
       <div className="overflow-x-auto rounded-2xl border border-line bg-white">
         <table className="w-full min-w-[980px] text-left text-sm">
-          <caption className="sr-only">Gwani admins. Select a name to see their details and manage them.</caption>
+          <caption className="sr-only">{APP_NAME} admins. Select a name to see their details and manage them.</caption>
           <thead className="border-b border-line bg-cream text-xs font-bold uppercase tracking-wider text-muted">
             <tr>
               <th scope="col" className="px-4 py-3" aria-sort={sort === 'name' ? 'ascending' : undefined}>Name</th>

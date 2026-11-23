@@ -1,4 +1,5 @@
 import type { RangePreset } from './types';
+import { APP_NAME } from '../../../config/brand';
 
 /*
  * Analytics definitions: the ONE place that says what each figure means. The aggregation helpers read
@@ -13,11 +14,11 @@ export const ACTIVE_VENDOR_RULE = {
   /** And not suspended at the end of the period (lapsed past the grace period, or suspended by Gwani). */
   excludeSuspended: true,
   description:
-  'An active vendor completed at least 1 job or order in the period and wasn’t suspended at the end of it (a lapsed subscription past its grace period, or suspended by Gwani).'
+  `An active vendor completed at least 1 job or order in the period and wasn’t suspended at the end of it (a lapsed subscription past its grace period, or suspended by ${APP_NAME}).`
 } as const;
 
 export const GMV_DEFINITION =
-'GMV-equivalent is the total value of completed work through Gwani: for services, the accepted quote of each completed job; for retail, the order total of each completed order. It’s counted on the day the work was completed. Cancelled, disputed and unfinished work isn’t counted.';
+`GMV-equivalent is the total value of completed work through ${APP_NAME}: for services, the accepted quote of each completed job; for retail, the order total of each completed order. It’s counted on the day the work was completed. Cancelled, disputed and unfinished work isn’t counted.`;
 
 export const RATE_DEFINITIONS = {
   cancellation: 'Cancelled jobs and orders ÷ jobs booked and orders confirmed, in the period.',

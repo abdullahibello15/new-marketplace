@@ -57,7 +57,7 @@
       "description": "Deliver orders in your area."
     },
     "admin": {
-      "label": "Gwani staff",
+      "label": "{{appName}} staff",
       "description": "Run the marketplace."
     }
   },
@@ -387,14 +387,14 @@
     },
     "reviewRemoved": {
       "title": "A review on your profile was removed",
-      "body": "It broke Gwani’s review rules ({{reason}}). Your rating has been recalculated."
+      "body": "It broke {{appName}}’s review rules ({{reason}}). Your rating has been recalculated."
     },
     "contentRemoved": {
       "title": "Your {{kind}} was removed",
       "body": "Reason: {{reason}}. You can appeal from Verification & standing in your dashboard."
     },
     "warning": {
-      "title": "Warning from Gwani",
+      "title": "Warning from {{appName}}",
       "body": "{{reason}}. Repeated breaches can lead to suspension."
     },
     "suspended": {
@@ -430,7 +430,7 @@
       "body": "{{text}} Upload: {{needed}}."
     },
     "welcomeClaimed": {
-      "title": "Welcome to Gwani",
+      "title": "Welcome to {{appName}}",
       "body": "Your profile is live. Add photos, your services and prices so customers can book you. Your membership through {{association}} is set up."
     },
     "passwordChanged": {

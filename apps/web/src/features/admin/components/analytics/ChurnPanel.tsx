@@ -13,6 +13,7 @@ import { CHART_COLORS } from './chartUtils';
 import type { ChurnType } from '../../analytics/churn';
 import type { AnalyticsQuery } from '../../analytics/types';
 import type { ChurnBreakdownKey } from '../../services/analyticsService';
+import { APP_FILE_PREFIX } from '../../../../config/brand';
 
 const TYPES: {id: ChurnType;label: string;}[] = [
 { id: 'subscription', label: 'Subscription churn' },
@@ -39,7 +40,7 @@ export function ChurnPanel({ query, type, onTypeChange }: {query: AnalyticsQuery
   const load = useCallback(() => getChurnAnalytics(query, type), [query, type]);
   const { data, status, error, reload } = useAsyncData(load);
   const [breakdown, setBreakdown] = useState<ChurnBreakdownKey>('plan');
-  const file = (name: string) => `gwani-${name}-${type}-${data?.range.start.slice(0, 10)}-to-${data?.range.end.slice(0, 10)}.csv`;
+  const file = (name: string) => `${APP_FILE_PREFIX}-${name}-${type}-${data?.range.start.slice(0, 10)}-to-${data?.range.end.slice(0, 10)}.csv`;
 
   const typeBar =
   <section aria-label="Churn definition" className="flex flex-wrap items-center gap-3 rounded-2xl border border-line bg-white p-3">
@@ -110,7 +111,7 @@ export function ChurnPanel({ query, type, onTypeChange }: {query: AnalyticsQuery
         empty={data.cohorts.every((c) => c.size === 0)}
         emptyText="No vendors joined in the last 12 months."
         csv={{
-          fileName: `gwani-retention-cohorts-${type}.csv`,
+          fileName: `${APP_FILE_PREFIX}-retention-cohorts-${type}.csv`,
           rows: () => [['Joined', 'Vendors', ...Array.from({ length: maxOffset }, (_, i) => `Month ${i} (%)`)], ...data.cohorts.map((c) => [c.label, c.size, ...c.cells.map((x) => x.share ?? '')])]
         }}>
 
@@ -211,7 +212,7 @@ export function ChurnPanel({ query, type, onTypeChange }: {query: AnalyticsQuery
         info={`Current vendors in the grace period, with completed work down by half or more over the last ${CHURN.risk.activityWindowDays} days, or whose latest ${CHURN.risk.recentReviews} reviews average ${CHURN.risk.ratingDropBy}★ or more below their earlier ones. As of today; doesn’t follow the date range. Messages go to the vendor as a notification; flags are internal. Both are written to the audit log.`}
         empty={data.atRisk.length === 0}
         emptyText="No vendors show signs of churning right now."
-        csv={{ fileName: 'gwani-churn-at-risk.csv', rows: () => [['Vendor', 'Trade', 'LGA', 'Plan', 'Reasons'], ...data.atRisk.map((r) => [r.name, r.categoryLabel, r.lga, r.planLabel, r.signals.map((x) => x.text).join('; ')])] }}>
+        csv={{ fileName: `${APP_FILE_PREFIX}-churn-at-risk.csv`, rows: () => [['Vendor', 'Trade', 'LGA', 'Plan', 'Reasons'], ...data.atRisk.map((r) => [r.name, r.categoryLabel, r.lga, r.planLabel, r.signals.map((x) => x.text).join('; ')])] }}>
 
         <ChurnAtRiskList rows={data.atRisk} />
       </ChartCard>

@@ -12,6 +12,7 @@ import { ExportCsvButton } from './AnalyticsParts';
 import { formatMinutes } from './chartUtils';
 import type { AnalyticsQuery } from '../../analytics/types';
 import type { SlaVerdict } from '../../analytics/sla';
+import { APP_FILE_PREFIX } from '../../../../config/brand';
 
 const VERDICT: Record<SlaVerdict, {label: string;tone: 'success' | 'danger' | 'neutral';}> = {
   met: { label: 'Met', tone: 'success' },
@@ -69,7 +70,7 @@ function HistoryBody({ vendorId, query }: {vendorId: string;query: AnalyticsQuer
         <span className="flex-1" />
         <ExportCsvButton
           label="response history"
-          fileName={`gwani-sla-history-${data.vendor.id}-${data.range.start.slice(0, 10)}-to-${data.range.end.slice(0, 10)}.csv`}
+          fileName={`${APP_FILE_PREFIX}-sla-history-${data.vendor.id}-${data.range.start.slice(0, 10)}-to-${data.range.end.slice(0, 10)}.csv`}
           rows={() => [
           ['Requested', 'Type', 'Request', 'LGA', 'Due by', 'Responded', 'Working minutes to respond', 'Working minutes late', 'Result'],
           ...rows.map((r) => [r.requestedAt, r.typeLabel, r.label, r.lga, r.deadline, r.respondedAt ?? '', r.responseMinutes ?? '', r.lateMinutes, VERDICT[r.verdict].label])]

@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { format } from 'date-fns';
 import { filterLedger, ledgerCsv, withRunningBalance } from '../utils/ledger';
 import type { Investment, LedgerEntry, LedgerFilters } from '../types';
+import { APP_FILE_PREFIX } from '../../../config/brand';
 
 export const DEFAULT_LEDGER_FILTERS: LedgerFilters = { type: 'all', from: '', to: '' };
 
@@ -18,7 +19,7 @@ export function useLedgerView(entries: readonly LedgerEntry[], investments: read
     const url = URL.createObjectURL(new Blob([ledgerCsv(rows, investments)], { type: 'text/csv;charset=utf-8' }));
     const a = document.createElement('a');
     a.href = url;
-    a.download = `gwani-investor-ledger-${format(new Date(), 'yyyy-MM-dd')}.csv`;
+    a.download = `${APP_FILE_PREFIX}-investor-ledger-${format(new Date(), 'yyyy-MM-dd')}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   }

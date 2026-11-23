@@ -1,4 +1,5 @@
 import { BIO_MAX_LENGTH } from '../../../data/tradeCategories';
+import { APP_NAME } from '../../../config/brand';
 
 /*
  * Bulk vendor import (trade-association partnerships): the ONE place for its limits and options.
@@ -46,7 +47,7 @@ export type InviteMethod = keyof typeof INVITE_METHOD_LABELS;
 
 /** The consent statement the admin must confirm before uploading members' details. */
 export const CONSENT_TEXT =
-'I confirm the partner association has its members’ consent to share these details with Gwani so we can create their profiles and invite them.';
+`I confirm the partner association has its members’ consent to share these details with ${APP_NAME} so we can create their profiles and invite them.`;
 
 /** MOCK server behaviour, so failed rows can be tried: creating a vendor whose phone ends in this fails. */
 export const MOCK_IMPORT = { failingPhoneSuffix: '0000' } as const;

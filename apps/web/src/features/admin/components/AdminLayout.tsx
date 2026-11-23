@@ -9,6 +9,7 @@ import { AUTH_ROUTES } from '../../auth/constants';
 import { RoleSwitcher } from '../../auth/components/RoleSwitcher';
 import { useAdminSession } from '../hooks/useAdminSession';
 import { NotAuthorised } from './NotAuthorised';
+import { APP_NAME, APP_INITIAL } from '../../../config/brand';
 
 const SECTION_NAV: Record<AdminSection, {to: string;label: string;icon: LucideIcon;}> = {
   verification: { to: ADMIN_ROUTES.verification, label: 'Verification', icon: FileCheck2Icon },
@@ -33,8 +34,8 @@ function SidebarContent({ sections, onNavigate }: {sections: AdminSection[];onNa
   return (
     <div className="flex h-full flex-col">
       <Link to={ADMIN_ROUTES.home} onClick={onNavigate} className="flex items-center gap-2.5 rounded-lg px-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60">
-        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-mustard text-lg font-extrabold text-ink">G</span>
-        <span className="text-xl font-extrabold tracking-tight">Gwani</span>
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-mustard text-lg font-extrabold text-ink" aria-hidden="true">{APP_INITIAL}</span>
+        <span className="max-w-32 text-sm font-extrabold leading-tight">{APP_NAME}</span>
         <span className="rounded-md bg-white/10 px-2 py-0.5 text-xs font-bold text-mustard">Admin</span>
       </Link>
       <nav aria-label="Admin" className="mt-10 flex flex-col gap-1">
@@ -123,7 +124,7 @@ export function AdminLayout() {
 
           <MenuIcon className="h-6 w-6" aria-hidden="true" />
         </button>
-        <span className="font-extrabold">Gwani Admin</span>
+        <span className="text-sm font-extrabold leading-tight">{APP_NAME} Admin</span>
         <span className="ml-auto truncate text-sm text-white/70">{admin.name}</span>
       </header>
 

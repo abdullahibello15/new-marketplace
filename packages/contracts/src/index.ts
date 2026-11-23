@@ -1,3 +1,7 @@
 export * from './errors.js'
 export * from './auth.js'
 export * from './health.js'
+export * from './vendors.js'
+export * from './products.js'
+export * from './reviews.js'
+export * from './marketplace.js'

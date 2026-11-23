@@ -4,6 +4,7 @@ import { useToast } from '../../../hooks/useToast';
 import { errorMessage } from '../../../lib/errors';
 import { getReceiptDocument, listReceiptDocuments } from '../services/transactionService';
 import type { ReceiptDocument, ReceiptViewer } from '../types';
+import { APP_FILE_PREFIX } from '../../../config/brand';
 
 /** The PDF code (jsPDF and the fonts) only loads when someone actually downloads. */
 const loadPdf = () => import('../utils/receiptPdf');
@@ -44,7 +45,7 @@ export function useReceiptDownload() {
       toast.error(i18n.t('payments:receipt.noneInRange'));
       return;
     }
-    await pdf.downloadReceiptsPdf(docs, `gwani-receipts-${from || 'start'}-to-${to || 'today'}.pdf`);
+    await pdf.downloadReceiptsPdf(docs, `${APP_FILE_PREFIX}-receipts-${from || 'start'}-to-${to || 'today'}.pdf`);
     toast.success(i18n.t('payments:receipt.saved', { count: docs.length }));
   });
 

@@ -1,8 +1,10 @@
 # ZAMANI NG MARKET HUB — Project Overview
 
-> What the `new-marketplace` project is, how it's built, how each part works, and what's still needed before it could be a real product. Last updated: October 2026.
+> What the `new-marketplace` project is, how it's built, how each part works, and what's still needed before it could be a real product. Last updated: November 2026.
 >
-> The web app now lives in `apps/web` (npm workspaces monorepo); the `src/…` paths below are relative to it.
+> An npm workspaces monorepo: the web app in `apps/web` (the `src/…` paths below are relative to it), the API in
+> `apps/api`, the shared business rules in `packages/domain` and the request/response schemas in `packages/contracts`.
+> The backend build plan and its status are in [docs/BACKEND_PLAN.md](docs/BACKEND_PLAN.md).
 
 ---
 
@@ -19,30 +21,40 @@ One single-page app holds **four areas**, each with its own layout and navigatio
 | **Investor** | `/investor` | People with a stake in ZAMANI NG MARKET HUB ventures | Read-only dividend ledger, payouts |
 | **Admin console** | `/admin` | ZAMANI NG MARKET HUB staff | Vendor verification, dispute mediation, content moderation, analytics, audit log |
 
-**It has no backend.** Every "API" is a TypeScript service that keeps data in memory and answers through a fake network delay (see §4.2). Data resets on reload, except for a few things kept in `localStorage`: the cart, the selected place, and the demo admin sign-in.
+**The backend is partly built.** A real API (`apps/api`: Fastify, PostgreSQL through Drizzle, Redis) now serves:
+- **auth:** OTP, signup, login, rotating refresh token, sessions, password reset;
+- **the vendor's own data:** profile, products (including spreadsheet import), reviews and replies, and the current subscription;
+- **public reads:** vendor list and profile, vendor reviews, the product catalogue.
 
-**Origin:** the project started as a [Magic Patterns](https://magicpatterns.com) design export. The package name `magic-patterns-vite-template` and the HTML title "Service Booking App Design" are still left over from that.
+The web app calls these through `apiRequest()` in `src/services/apiClient.ts`. Everything else (jobs, orders, payments
+and escrow, admin, investor, reminders, discovery search) is still a mock: a TypeScript service that keeps data in
+memory and answers through a fake network delay (see §4.2). Mock data resets on reload, except for a few things kept
+in `localStorage`: the cart, the selected place, and the demo admin sign-in. See §4.5 for the API.
+
+**Origin:** the project started as a [Magic Patterns](https://magicpatterns.com) design export. The package and the page title have since been renamed.
 
 ---
 
 ## 2. Running it, and the current health
 
+Full setup, including the API and Docker, is in the [README](README.md). From the repo root:
+
 ```bash
 npm install
-npm run dev        # Vite dev server
-npm run build      # production build to dist/
-npm run lint       # ESLint
-npm test           # Vitest (unit tests)
-npx tsc --noEmit   # type-check (Vite doesn't type-check)
+npm run dev              # web app (Vite dev server)
+npm run db:up            # Postgres + Redis in Docker, then: npm run db:migrate
+npm run dev:api          # API on http://127.0.0.1:3000
+npm run build            # web production build
+npm run lint             # ESLint, every workspace
+npm run typecheck        # tsc --noEmit, every workspace
+npm test                 # unit tests (web, domain, API)
+npm run test:tz          # the same under TZ=Africa/Lagos and TZ=UTC
+npm run test:integration # API tests against Postgres (needs Docker)
 ```
 
-| Check | Result |
-|---|---|
-| `npx tsc --noEmit` | ✅ No errors |
-| `npm test` | ✅ 108 tests in 6 files, all passing |
-| `npm run lint` | ✅ 0 errors, 3 warnings (`react-refresh/only-export-components` in the three files in `src/contexts/`) |
-| `npm run build` | ✅ Builds. Vite warns that the main chunk is over 500 kB. Most pages, the admin console, jsPDF and the PDF fonts are split into chunks that load on demand. |
-| Version control | Git. Most of the work is **not committed yet**: everything after `51ff6cd` is in the working tree. |
+CI ([.github/workflows/ci.yml](.github/workflows/ci.yml)) runs lint, typecheck, unit tests in both timezones,
+integration tests, the web build and a Docker image smoke test. Vite still warns that the web app's main chunk is over
+500 kB.
 
 ### Demo walkthrough
 
@@ -149,6 +161,24 @@ Time-based rules run **when data is read**, as a stand-in for cron jobs:
 - pending investor payouts are approved.
 
 Each is a `runScheduled…Tasks()` function called at the start of reads.
+
+---
+
+### 4.5 The API (`apps/api`)
+
+- **Layout:** one folder per module under `src/` (`auth`, `vendors`, `products`, `reviews`, `subscriptions`,
+  `marketplace`). Each `service.ts` exports `register<Module>Routes()`, and `app.ts` registers them all.
+- **Validation:** handlers parse bodies, params and queries with the zod schemas from `@zamani/contracts`, which the
+  web app imports too.
+- **Auth:**
+  - Passwords are hashed with scrypt.
+  - Access tokens are opaque; their SHA-256 hash is stored on the `sessions` row and checked by `authenticateSession()`.
+  - The refresh token rotates on each use, in an httpOnly cookie on `/v1/auth`.
+  - Vendor routes use `authenticateProvider()` (requires the `provider` role) and `vendorForUser()`.
+- **Money** is stored and sent as integer kobo. The web app converts to naira at its service boundary.
+- **Tests:** `*.integration.test.ts` files run against throwaway Postgres containers (`npm run test:integration`,
+  needs Docker).
+- **Scripts:** `admin:create`, `activate-vendor` (a new vendor starts as `pending`) and `reviews:seed`.
 
 ---
 
@@ -320,15 +350,15 @@ Unit tests cover the **pure rule helpers**, where mistakes cost money or trust:
 | `investor/utils/ledger.test.ts` | Balances, running balance, accumulation series, payout split |
 | `admin/analytics/aggregations.test.ts` | Ranges and buckets, GMV, funnel, rates, active vendors, MRR, churn, renewals, at-risk revenue |
 
-There are **no component, integration or end-to-end tests**. The UI was checked by hand and with server-side render smoke checks, which weren't kept.
+The web app has **no component or end-to-end tests**; the UI was checked by hand. The API has route-level integration tests against Postgres (§4.5), and the domain tests now live in `packages/domain`.
 
 ---
 
 ## 11. Known gaps and tech debt
 
 **Needs a backend before launch**
-- Real authentication and roles. Today the customer and vendor are fixed demo users, and the admin and investor sign-ins are mocked.
-- A database and APIs behind every service. A real payment provider (Paystack, Flutterwave or similar) for payments, payouts and webhooks. SMS and push providers. File storage for photos and documents.
+- Auth, vendor data and the public catalogue are on the real API. The admin and investor sign-ins are still mocked.
+- APIs behind every remaining mock service (jobs, orders, payments, admin, investor, reminders, discovery search). A real payment provider (Paystack, Flutterwave or similar) for payments, payouts and webhooks. SMS and push providers. File storage for photos and documents.
 - Server-side checks for every rule the browser enforces today (permissions, state transitions, amounts).
 
 **Functional gaps**
